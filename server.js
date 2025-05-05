@@ -42,6 +42,34 @@ if (!JWT_SECRET) {
   throw new Error('JWT_SECRET is required in environment variables');
 }
 
+// Add process-level error handling at the very top
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', {
+    error: err.message,
+    stack: err.stack,
+    name: err.name
+  });
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED REJECTION:', {
+    reason: reason instanceof Error ? reason.message : reason,
+    stack: reason instanceof Error ? reason.stack : null
+  });
+});
+
+// Force synchronous logging
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+
+console.log = function() {
+  process.stdout.write(JSON.stringify(Array.from(arguments)) + '\n');
+};
+
+console.error = function() {
+  process.stderr.write(JSON.stringify(Array.from(arguments)) + '\n');
+};
+
 // Wrap server startup in try-catch
 try {
   const app = express();
@@ -61,10 +89,35 @@ try {
   // Apply CORS before any other middleware
   app.use(cors(corsOptions));
 
-  // Add request logging middleware
+  // Add request logging before any middleware
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    console.log('Headers:', req.headers);
+    const start = Date.now();
+    
+    // Log request
+    process.stdout.write(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      type: 'request',
+      method: req.method,
+      url: req.url,
+      headers: req.headers,
+      body: req.method !== 'GET' ? req.body : undefined
+    }) + '\n');
+
+    // Log response
+    const originalEnd = res.end;
+    res.end = function() {
+      const duration = Date.now() - start;
+      process.stdout.write(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        type: 'response',
+        method: req.method,
+        url: req.url,
+        statusCode: res.statusCode,
+        duration: duration
+      }) + '\n');
+      originalEnd.apply(res, arguments);
+    };
+
     next();
   });
 
