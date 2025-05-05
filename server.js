@@ -140,9 +140,17 @@ try {
       await prisma.$connect();
       console.log('Successfully connected to database');
       
-      // Test query
-      const userCount = await prisma.user.count();
-      console.log('Database connection test - User count:', userCount);
+      try {
+        // Test query
+        const userCount = await prisma.user.count();
+        console.log('Database connection test - User count:', userCount);
+      } catch (error) {
+        if (error.code === 'P2021') {
+          console.log('Database connected but tables not yet created - this is normal during first deployment');
+        } else {
+          throw error;
+        }
+      }
     } catch (error) {
       console.error('Database connection error:', {
         error: error.message,
