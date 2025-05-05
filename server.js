@@ -144,13 +144,33 @@ try {
       console.log('Successfully connected to database');
       
       try {
-        // Test query
+        // Test queries
         const userCount = await prisma.user.count();
         console.log('Database connection test - User count:', userCount);
+
+        const characterCount = await prisma.character.count();
+        console.log('Database connection test - Character count:', characterCount);
+
+        const userPrefCount = await prisma.userPreference.count();
+        console.log('Database connection test - UserPreference count:', userPrefCount);
+
+        // Test database schema
+        const tables = await prisma.$queryRaw`
+          SELECT table_name 
+          FROM information_schema.tables 
+          WHERE table_schema = 'public'
+        `;
+        console.log('Available database tables:', tables);
+
       } catch (error) {
         if (error.code === 'P2021') {
           console.log('Database connected but tables not yet created - this is normal during first deployment');
         } else {
+          console.error('Database schema test error:', {
+            message: error.message,
+            code: error.code,
+            meta: error.meta
+          });
           throw error;
         }
       }
@@ -200,13 +220,35 @@ try {
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: process.env.NODE_ENV === "production" ? 5 : 100, // More lenient in development
-    message: { error: "Too many attempts. Please wait 15 minutes before trying again." }
+    message: { error: "Too many attempts. Please wait 15 minutes before trying again." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    trustProxy: true,
+    handler: (req, res) => {
+      console.log('Rate limit exceeded:', {
+        ip: req.ip,
+        path: req.path,
+        headers: req.headers
+      });
+      res.status(429).json({ error: "Too many attempts. Please wait 15 minutes before trying again." });
+    }
   });
 
   const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: process.env.NODE_ENV === "production" ? 100 : 1000, // More lenient in development
-    message: { error: "Too many API requests. Please try again later." }
+    message: { error: "Too many API requests. Please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    trustProxy: true,
+    handler: (req, res) => {
+      console.log('API rate limit exceeded:', {
+        ip: req.ip,
+        path: req.path,
+        headers: req.headers
+      });
+      res.status(429).json({ error: "Too many API requests. Please try again later." });
+    }
   });
 
   // Apply rate limiting to specific endpoints
@@ -251,7 +293,14 @@ try {
 
   // Global error handler
   app.use((err, req, res, next) => {
-    logger.error('Unhandled error:', err);
+    console.error('Global error handler:', {
+      error: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    });
     
     if (process.env.NODE_ENV === "production") {
       res.status(500).json({ error: "An unexpected error occurred" });
