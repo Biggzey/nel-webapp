@@ -134,6 +134,26 @@ try {
     console.error('Database error:', e);
   });
 
+  // Test database connection
+  async function testDbConnection() {
+    try {
+      await prisma.$connect();
+      console.log('Successfully connected to database');
+      
+      // Test query
+      const userCount = await prisma.user.count();
+      console.log('Database connection test - User count:', userCount);
+    } catch (error) {
+      console.error('Database connection error:', {
+        error: error.message,
+        code: error.code,
+        meta: error.meta,
+        stack: error.stack
+      });
+      throw error; // Re-throw to prevent server start if DB is not available
+    }
+  }
+
   // Configure CSRF protection
   const csrfProtection = csrf({ cookie: true });
 
@@ -1384,6 +1404,7 @@ try {
 
   // Start server
   const PORT = process.env.PORT || 3001;
+  await testDbConnection(); // Test DB connection before starting server
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
