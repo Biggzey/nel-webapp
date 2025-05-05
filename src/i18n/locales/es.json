@@ -1,0 +1,48 @@
+{
+  "common": {
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "username": "Nombre de Usuario",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "loading": "Cargando..."
+  },
+  "auth": {
+    "loginTitle": "Bienvenido de Nuevo",
+    "signupTitle": "Crear Cuenta",
+    "forgotPassword": "¿Olvidaste tu Contraseña?",
+    "noAccount": "¿No tienes una cuenta?",
+    "haveAccount": "¿Ya tienes una cuenta?",
+    "confirmPassword": "Confirmar Contraseña"
+  },
+  "characters": {
+    "title": "Mis Personajes",
+    "create": "Crear Personaje",
+    "edit": "Editar Personaje",
+    "delete": "Eliminar Personaje",
+    "name": "Nombre",
+    "personality": "Personalidad",
+    "backstory": "Historia",
+    "noCharacters": "Aún no hay personajes"
+  },
+  "chat": {
+    "sendMessage": "Enviar Mensaje",
+    "typeMessage": "Escribe tu mensaje...",
+    "clearChat": "Limpiar Chat",
+    "loadMore": "Cargar Más",
+    "noMessages": "Aún no hay mensajes"
+  },
+  "errors": {
+    "required": "Este campo es obligatorio",
+    "invalidEmail": "Correo electrónico inválido",
+    "passwordMismatch": "Las contraseñas no coinciden",
+    "invalidCredentials": "Correo o contraseña inválidos",
+    "serverError": "Ocurrió un error en el servidor"
+  }
+} 

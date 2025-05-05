@@ -1,0 +1,48 @@
+{
+  "common": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "username": "Username",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "loginTitle": "Welcome Back",
+    "signupTitle": "Create Account",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "confirmPassword": "Confirm Password"
+  },
+  "characters": {
+    "title": "My Characters",
+    "create": "Create Character",
+    "edit": "Edit Character",
+    "delete": "Delete Character",
+    "name": "Name",
+    "personality": "Personality",
+    "backstory": "Backstory",
+    "noCharacters": "No characters yet"
+  },
+  "chat": {
+    "sendMessage": "Send Message",
+    "typeMessage": "Type your message...",
+    "clearChat": "Clear Chat",
+    "loadMore": "Load More",
+    "noMessages": "No messages yet"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Invalid email address",
+    "passwordMismatch": "Passwords do not match",
+    "invalidCredentials": "Invalid email or password",
+    "serverError": "Server error occurred"
+  }
+} 

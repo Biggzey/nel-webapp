@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int         @id @default(autoincrement())
+  email          String      @unique
+  username       String      @unique  // Required for all users
+  passwordHash   String
+  role           String      @default("USER")  // Can be "SUPER_ADMIN", "ADMIN", "MODERATOR", or "USER" in descending hierarchy
+  characters     Character[]
+  preferences    UserPreference?
+  blocked        Boolean     @default(false)
+  blockedUntil   DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model Character {
+  id                Int          @id @default(autoincrement())
+  userId           Int
+  name             String
+  status           String       @default("")
+  personality      String       @default("")
+  avatar           String
+  systemPrompt     String       @default("")
+  customInstructions String     @default("")
+  bookmarked       Boolean      @default(false)
+  age              String?
+  gender           String?
+  race             String?
+  occupation       String?
+  likes            String?
+  dislikes         String?
+  backstory        String?
+  fullImage        String?
+  messages         ChatMessage[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id          Int       @id @default(autoincrement())
+  characterId Int
+  role        String    // 'user' or 'assistant'
+  content     String
+  reactions   Json?     // Store reactions as JSON
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+}
+
+model UserPreference {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @unique
+  selectedCharId Int
+  chatTheme     String   @default("default")  // Store the user's chat theme preference
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

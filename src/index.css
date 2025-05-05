@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark transition-colors duration-300;
+  }
+}
+
+/* Begin Cursor styles */
+:root {
+  --character-primary: #7B68EE;
+  --character-message: #f0f2f5;
+}
+
+.chat-message {
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.user-message {
+  @apply bg-chat-user text-chat-user;
+  margin-left: auto;
+  border-radius: 1rem 0.25rem 1rem 1rem;
+}
+
+.character-message {
+  @apply bg-chat-assistant text-chat-assistant;
+  margin-right: auto;
+  border-radius: 0.25rem 1rem 1rem 1rem;
+}
+
+/* Scrollbar styling for the messages pane */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  @apply bg-background-light dark:bg-background-dark;
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  @apply bg-text-secondary-light dark:bg-text-secondary-dark rounded;
+}
