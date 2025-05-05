@@ -1411,44 +1411,53 @@ try {
         return res.status(400).json({ error: "Cannot delete your own admin account" });
       }
 
-      // Delete all related data
-      await prisma.$transaction([
+      // Delete all related data in a transaction
+      await prisma.$transaction(async (prisma) => {
         // Delete all chat messages for all user's characters
-        prisma.chatMessage.deleteMany({
+        await prisma.chatMessage.deleteMany({
           where: {
             character: {
               userId: userId
             }
           }
-        }),
+        });
+
         // Delete all characters
-        prisma.character.deleteMany({
+        await prisma.character.deleteMany({
           where: {
             userId: userId
           }
-        }),
+        });
+
         // Delete user preferences
-        prisma.userPreference.deleteMany({
+        await prisma.userPreference.deleteMany({
           where: {
             userId: userId
           }
-        }),
+        });
+
         // Finally delete the user
-        prisma.user.delete({
+        await prisma.user.delete({
           where: {
             id: userId
           }
-        })
-      ]);
+        });
+      });
 
-      // Set headers to clear auth cookie
+      // Clear auth cookies for the deleted user
       res.clearCookie('token', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/'
       });
 
-      res.json({ 
+      // Send success response with cache control headers
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }).json({ 
         success: true,
         message: "User and all associated data deleted successfully"
       });

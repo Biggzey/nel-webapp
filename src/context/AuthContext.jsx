@@ -17,37 +17,56 @@ export function AuthProvider({ children }) {
   // Initialize user role from localStorage (or null)
   const [userRole, setUserRole] = useState(null);
 
+  // Global fetch interceptor for handling auth errors
+  const authenticatedFetch = async (url, options = {}) => {
+    if (token) {
+      options.headers = {
+        ...options.headers,
+        Authorization: `Bearer ${token}`
+      };
+    }
+
+    try {
+      const response = await fetch(url, options);
+      
+      // Handle authentication errors globally
+      if (response.status === 401 || response.status === 403) {
+        console.log('Session invalid, logging out');
+        logout();
+        return null;
+      }
+      
+      return response;
+    } catch (error) {
+      console.error('Fetch error:', error);
+      throw error;
+    }
+  };
+
   // Whenever token changes, persist or remove it in localStorage
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
 
       // Fetch user role when token changes
-      fetch(`${API_BASE_URL}/api/user/role`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      .then(res => {
-        if (!res.ok) {
-          // If we get a 401/403, the user might have been deleted
-          if (res.status === 401 || res.status === 403) {
-            console.log('User session invalid - logging out');
-            logout();
-            return;
+      authenticatedFetch(`${API_BASE_URL}/api/user/role`)
+        .then(res => {
+          if (!res) return; // User was logged out due to invalid session
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
           }
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data) {
-          setUserRole(data.role);
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching user role:', err);
-      });
+          return res.json();
+        })
+        .then(data => {
+          if (data) {
+            setUserRole(data.role);
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching user role:', err);
+          // Clear invalid session
+          logout();
+        });
     } else {
       localStorage.removeItem("token");
       setUserRole(null);
@@ -113,6 +132,8 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUserRole(null);
     localStorage.removeItem("token");
+    // Clear any auth cookies
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     navigate("/login", { replace: true });
   }
 
@@ -145,7 +166,8 @@ export function AuthProvider({ children }) {
       isAdmin,
       isModerator,
       canModifyRole,
-      signup
+      signup,
+      authenticatedFetch
     }}>
       {children}
     </AuthContext.Provider>
