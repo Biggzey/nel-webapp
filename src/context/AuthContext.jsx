@@ -28,9 +28,22 @@ export function AuthProvider({ children }) {
           Authorization: `Bearer ${token}`
         }
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          // If we get a 401/403, the user might have been deleted
+          if (res.status === 401 || res.status === 403) {
+            console.log('User session invalid - logging out');
+            logout();
+            return;
+          }
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
-        setUserRole(data.role);
+        if (data) {
+          setUserRole(data.role);
+        }
       })
       .catch(err => {
         console.error('Error fetching user role:', err);
@@ -42,45 +55,25 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   // Call this to sign up. Throws on error.
-  async function signup(email, username, password, confirmPassword) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/signup`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Origin": window.location.origin
-        },
-        credentials: 'include',
-        mode: 'cors',
-        body: JSON.stringify({ email, username, password, confirmPassword }),
-      });
+  async function signup(email, username, password) {
+    const response = await fetch(`${API_BASE_URL}/api/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, username, password }),
+    });
 
-      if (response.status === 429) {
-        throw new Error("Too many attempts. Please wait a moment before trying again.");
-      }
-
-      // Handle CORS errors
-      if (response.type === 'opaque' || response.status === 0) {
-        throw new Error("Unable to connect to the server. This might be a CORS issue.");
-      }
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
-      }
-
-      return true; // Signup successful
-    } catch (error) {
-      console.error('Signup error:', error);
-      if (error.message === 'Failed to fetch') {
-        throw new Error('Unable to connect to the server. Please check if the backend is running.');
-      }
-      throw error;
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || `HTTP error! status: ${response.status}`);
     }
+
+    const { token: newToken } = await response.json();
+    setToken(newToken);
+    navigate("/", { replace: true });
   }
 
-  // Call this to log in. Throws on error.
   async function login(identifier, password) {
     try {
       console.log('Attempting login...');
@@ -119,6 +112,7 @@ export function AuthProvider({ children }) {
   function logout() {
     setToken(null);
     setUserRole(null);
+    localStorage.removeItem("token");
     navigate("/login", { replace: true });
   }
 

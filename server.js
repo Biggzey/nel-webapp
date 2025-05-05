@@ -1441,7 +1441,17 @@ try {
         })
       ]);
 
-      res.json({ success: true });
+      // Set headers to clear auth cookie
+      res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
+
+      res.json({ 
+        success: true,
+        message: "User and all associated data deleted successfully"
+      });
     } catch (error) {
       console.error("Error deleting user:", error);
       res.status(500).json({ error: "Failed to delete user" });
