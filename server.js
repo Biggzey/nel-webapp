@@ -188,6 +188,10 @@ try {
 
   // Serve static files in production with cache control
   if (process.env.NODE_ENV === "production") {
+    // Serve API docs at /api-docs
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+    // Serve static files from the dist directory
     app.use(express.static(join(__dirname, "dist"), {
       maxAge: '1y',
       etag: true,
@@ -205,7 +209,7 @@ try {
     }));
 
     // Handle client-side routing - must be after API routes
-    app.get('/*', (req, res) => {
+    app.get('*', function(req, res) {
       res.sendFile(join(__dirname, 'dist', 'index.html'));
     });
   }
