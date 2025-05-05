@@ -10,9 +10,13 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3001',
-        description: 'Development server',
-      },
+        url: process.env.NODE_ENV === 'production' 
+          ? 'https://nel-webapp.onrender.com' 
+          : 'http://localhost:3001',
+        description: process.env.NODE_ENV === 'production' 
+          ? 'Production server' 
+          : 'Development server',
+      }
     ],
     components: {
       securitySchemes: {
