@@ -61,15 +61,48 @@ try {
   // Apply CORS before any other middleware
   app.use(cors(corsOptions));
 
-  // Remove manual CORS headers since we're using the cors package
+  // Add request logging middleware
   app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     console.log('Headers:', req.headers);
     next();
   });
 
-  // Parse JSON bodies
-  app.use(express.json());
+  // Add error-catching middleware for JSON parsing
+  app.use(express.json({
+    verify: (req, res, buf) => {
+      try {
+        JSON.parse(buf);
+      } catch (e) {
+        console.error('JSON parsing error:', {
+          error: e.message,
+          body: buf.toString(),
+          path: req.path,
+          method: req.method
+        });
+        res.status(400).json({ error: 'Invalid JSON in request body' });
+        throw e;
+      }
+    }
+  }));
+
+  // Add error-catching middleware
+  app.use((err, req, res, next) => {
+    console.error('Middleware error:', {
+      error: err.message,
+      stack: err.stack,
+      path: req.path,
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    });
+    
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+      return res.status(400).json({ error: 'Invalid JSON in request body' });
+    }
+
+    next(err);
+  });
 
   // Initialize monitoring if dependencies are available
   if (expressWinston && responseTime && logger && metrics) {
@@ -365,10 +398,23 @@ try {
    *         description: Invalid input data
    */
   app.post("/api/signup", async (req, res) => {
+    console.log('Signup request received:', {
+      path: req.path,
+      method: req.method,
+      headers: req.headers,
+      body: { ...req.body, password: '[REDACTED]' }
+    });
+
     const { email, username, password, confirmPassword } = req.body;
     
     // Check if all required fields are present
     if (!email || !username || !password || !confirmPassword) {
+      console.log('Signup validation failed - missing fields:', {
+        hasEmail: !!email,
+        hasUsername: !!username,
+        hasPassword: !!password,
+        hasConfirmPassword: !!confirmPassword
+      });
       return res.status(400).json({ error: "All fields are required" });
     }
 
@@ -530,9 +576,20 @@ try {
    *         description: Invalid credentials
    */
   app.post("/api/login", async (req, res) => {
+    console.log('Login request received:', {
+      path: req.path,
+      method: req.method,
+      headers: req.headers,
+      body: { ...req.body, password: '[REDACTED]' }
+    });
+
     const { identifier, password } = req.body;
     
     if (!identifier || !password) {
+      console.log('Login validation failed - missing fields:', {
+        hasIdentifier: !!identifier,
+        hasPassword: !!password
+      });
       return res.status(400).json({ error: "Login identifier and password required" });
     }
 
@@ -549,7 +606,7 @@ try {
         }
       });
 
-      console.log('User found:', { 
+      console.log('User lookup result:', { 
         found: !!user,
         id: user?.id,
         email: user?.email,
