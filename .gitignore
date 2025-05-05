@@ -67,3 +67,8 @@ dist-ssr/
 
 # Optional eslint cache
 .eslintcache
+
+# Prometheus binaries
+prometheus/*.exe
+prometheus/prometheus
+prometheus/promtool
