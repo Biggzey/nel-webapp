@@ -367,39 +367,81 @@ try {
 
       // Create user first
       const hash = await bcrypt.hash(password, 10);
-      const user = await prisma.user.create({
-        data: { 
-          email, 
-          username,
-          passwordHash: hash,
-        }
-      });
+      try {
+        const user = await prisma.user.create({
+          data: { 
+            email, 
+            username,
+            passwordHash: hash,
+          }
+        });
+        console.log('User created successfully:', { id: user.id, email: user.email });
 
-      // Then create Nelliel character
-      const nelliel = await prisma.character.create({
-        data: {
-          userId: user.id,
-          name: "Nelliel",
-          personality: "Your custom AI companion.",
-          avatar: "/nel-avatar.png",
-          bookmarked: false,
-          systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
-          customInstructions: "",
-          status: "Ready to chat"
-        }
-      });
+        // Then create Nelliel character
+        try {
+          const nelliel = await prisma.character.create({
+            data: {
+              userId: user.id,
+              name: "Nelliel",
+              personality: "Your custom AI companion.",
+              avatar: "/nel-avatar.png",
+              bookmarked: false,
+              systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
+              customInstructions: "",
+              status: "Ready to chat"
+            }
+          });
+          console.log('Nelliel character created:', { id: nelliel.id });
 
-      // Create user preferences with Nelliel as default character
-      await prisma.userPreference.create({
-        data: {
-          userId: user.id,
-          selectedCharId: nelliel.id
+          // Create user preferences with Nelliel as default character
+          try {
+            await prisma.userPreference.create({
+              data: {
+                userId: user.id,
+                selectedCharId: nelliel.id
+              }
+            });
+            console.log('User preferences created successfully');
+            res.json({ success: true });
+          } catch (prefErr) {
+            console.error("Failed to create user preferences:", {
+              error: prefErr.message,
+              code: prefErr.code,
+              meta: prefErr.meta,
+              stack: prefErr.stack
+            });
+            // Cleanup on failure
+            await prisma.character.delete({ where: { id: nelliel.id } });
+            await prisma.user.delete({ where: { id: user.id } });
+            throw prefErr;
+          }
+        } catch (charErr) {
+          console.error("Failed to create Nelliel character:", {
+            error: charErr.message,
+            code: charErr.code,
+            meta: charErr.meta,
+            stack: charErr.stack
+          });
+          // Cleanup on failure
+          await prisma.user.delete({ where: { id: user.id } });
+          throw charErr;
         }
-      });
-
-      res.json({ success: true });
+      } catch (userErr) {
+        console.error("Failed to create user:", {
+          error: userErr.message,
+          code: userErr.code,
+          meta: userErr.meta,
+          stack: userErr.stack
+        });
+        throw userErr;
+      }
     } catch (err) {
-      console.error("Signup error:", err);
+      console.error("Signup error:", {
+        error: err.message,
+        code: err.code,
+        meta: err.meta,
+        stack: err.stack
+      });
       res.status(500).json({ error: "Failed to create account" });
     }
   });
@@ -458,7 +500,12 @@ try {
         }
       });
 
-      console.log('User found:', { found: !!user }); // Log if user was found
+      console.log('User found:', { 
+        found: !!user,
+        id: user?.id,
+        email: user?.email,
+        username: user?.username 
+      });
 
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -491,6 +538,7 @@ try {
       }
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+      console.log('Token generated successfully');
       
       // Set cookie for additional security
       res.cookie('token', token, {
@@ -506,7 +554,8 @@ try {
         error: err.message,
         stack: err.stack,
         code: err.code,
-        meta: err.meta
+        meta: err.meta,
+        body: req.body
       });
       res.status(500).json({ error: "An unexpected error occurred during login" });
     }
