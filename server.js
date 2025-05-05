@@ -46,6 +46,9 @@ if (!JWT_SECRET) {
 try {
   const app = express();
 
+  // Configure trust proxy for rate limiting behind reverse proxy
+  app.set('trust proxy', 1);
+
   // Configure CORS with more secure options
   const corsOptions = {
     origin: true, // Allow all origins in development
@@ -362,39 +365,37 @@ try {
         return res.status(400).json({ error: "Username already taken" });
       }
 
-      // Create user with their own Nelliel instance
+      // Create user first
       const hash = await bcrypt.hash(password, 10);
       const user = await prisma.user.create({
         data: { 
           email, 
           username,
           passwordHash: hash,
-          characters: {
-            create: [{
-              name: "Nelliel",
-              personality: "Your custom AI companion.",
-              avatar: "/nel-avatar.png",
-              bookmarked: false,
-              systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
-              customInstructions: "",
-              status: "Ready to chat"
-            }]
-          }
-        },
-        include: {
-          characters: true
+        }
+      });
+
+      // Then create Nelliel character
+      const nelliel = await prisma.character.create({
+        data: {
+          userId: user.id,
+          name: "Nelliel",
+          personality: "Your custom AI companion.",
+          avatar: "/nel-avatar.png",
+          bookmarked: false,
+          systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
+          customInstructions: "",
+          status: "Ready to chat"
         }
       });
 
       // Create user preferences with Nelliel as default character
-      if (user.characters.length > 0) {
-        await prisma.userPreference.create({
-          data: {
-            userId: user.id,
-            selectedCharId: user.characters[0].id
-          }
-        });
-      }
+      await prisma.userPreference.create({
+        data: {
+          userId: user.id,
+          selectedCharId: nelliel.id
+        }
+      });
 
       res.json({ success: true });
     } catch (err) {
