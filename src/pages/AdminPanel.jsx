@@ -402,13 +402,13 @@ export default function AdminPanel() {
                               Unblock
                             </button>
                           ) : (
-                            <button
-                              onClick={() => setSelectedUser(user)}
-                              disabled={actionInProgress || user.username === 'Biggzey'}
-                              className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              Block
-                            </button>
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            disabled={actionInProgress || user.username === 'Biggzey'}
+                            className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Block
+                          </button>
                           )}
                         </>
                       )}

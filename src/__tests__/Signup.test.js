@@ -27,7 +27,7 @@ describe('Signup Component', () => {
     return render(
       <BrowserRouter>
         <AuthProvider>
-          <Signup />
+        <Signup />
         </AuthProvider>
       </BrowserRouter>
     );
@@ -53,7 +53,7 @@ describe('Signup Component', () => {
     const signupButton = screen.getByRole('button', { name: /create account/i });
     
     await act(async () => {
-      await userEvent.click(signupButton);
+    await userEvent.click(signupButton);
     });
     
     expect(screen.getByPlaceholderText(/enter your email/i)).toBeRequired();
@@ -64,13 +64,13 @@ describe('Signup Component', () => {
 
   it('shows error when passwords do not match', async () => {
     renderSignup();
-
+    
     await act(async () => {
-      await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
-      await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
-      await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
-      await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password456');
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
+    await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
+    await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
+    await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password456');
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     });
 
     await waitFor(() => {
@@ -82,13 +82,13 @@ describe('Signup Component', () => {
   it('handles successful signup', async () => {
     renderSignup();
     mockSignup.mockResolvedValueOnce(true);
-
+    
     await act(async () => {
-      await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
-      await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
-      await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
-      await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password123');
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
+    await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
+    await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
+    await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     });
 
     await waitFor(() => {
@@ -98,7 +98,7 @@ describe('Signup Component', () => {
         'Password123',
         'Password123'
       );
-    });
+      });
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/login');
@@ -111,11 +111,11 @@ describe('Signup Component', () => {
     renderSignup();
     
     await act(async () => {
-      await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
-      await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
-      await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
-      await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password123');
-      await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await userEvent.type(screen.getByPlaceholderText(/enter your email/i), 'test@example.com');
+    await userEvent.type(screen.getByPlaceholderText(/choose a username/i), 'testuser');
+    await userEvent.type(screen.getByPlaceholderText(/create a password/i), 'Password123');
+    await userEvent.type(screen.getByPlaceholderText(/confirm your password/i), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     });
 
     await waitFor(() => {
@@ -128,7 +128,7 @@ describe('Signup Component', () => {
     const loginLink = screen.getByRole('link', { name: /log in/i });
     
     await act(async () => {
-      await userEvent.click(loginLink);
+    await userEvent.click(loginLink);
     });
     
     expect(window.location.pathname).toBe('/login');

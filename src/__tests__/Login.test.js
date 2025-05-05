@@ -47,7 +47,7 @@ describe('Login Component', () => {
     const loginButton = screen.getByRole('button', { name: /log in/i });
     
     await act(async () => {
-      await userEvent.click(loginButton);
+    await userEvent.click(loginButton);
     });
     
     expect(screen.getByPlaceholderText(/enter email or username/i)).toBeRequired();
@@ -59,9 +59,9 @@ describe('Login Component', () => {
     renderLogin();
     
     await act(async () => {
-      await userEvent.type(screen.getByPlaceholderText(/enter email or username/i), 'testuser');
-      await userEvent.type(screen.getByPlaceholderText(/enter password/i), 'Password123');
-      await userEvent.click(screen.getByRole('button', { name: /log in/i }));
+    await userEvent.type(screen.getByPlaceholderText(/enter email or username/i), 'testuser');
+    await userEvent.type(screen.getByPlaceholderText(/enter password/i), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: /log in/i }));
     });
 
     await waitFor(() => {
@@ -79,9 +79,9 @@ describe('Login Component', () => {
     renderLogin();
     
     await act(async () => {
-      await userEvent.type(screen.getByPlaceholderText(/enter email or username/i), 'testuser');
-      await userEvent.type(screen.getByPlaceholderText(/enter password/i), 'Password123');
-      await userEvent.click(screen.getByRole('button', { name: /log in/i }));
+    await userEvent.type(screen.getByPlaceholderText(/enter email or username/i), 'testuser');
+    await userEvent.type(screen.getByPlaceholderText(/enter password/i), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: /log in/i }));
     });
 
     await waitFor(() => {
@@ -94,7 +94,7 @@ describe('Login Component', () => {
     const signupLink = screen.getByRole('link', { name: /sign up/i });
     
     await act(async () => {
-      await userEvent.click(signupLink);
+    await userEvent.click(signupLink);
     });
     
     expect(window.location.pathname).toBe('/signup');
