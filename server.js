@@ -183,34 +183,35 @@ try {
   app.use('/api/signup', authLimiter);
   app.use('/api/', apiLimiter);
 
-  // Remove CSRF protection for now
-  // app.use(csrfProtection);
+  // Swagger documentation - must be before static files
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-  // Serve static files in production with cache control
+  // Production static file serving and client routing
   if (process.env.NODE_ENV === "production") {
-    // Serve API docs at /api-docs
-    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-    // Serve static files from the dist directory
-    app.use(express.static(join(__dirname, "dist"), {
+    const distPath = join(__dirname, "dist");
+    
+    // First try to serve static files
+    app.use(express.static(distPath, {
       maxAge: '1y',
       etag: true,
       lastModified: true,
       setHeaders: (res, path) => {
-        // Cache HTML files for 1 hour
         if (path.endsWith('.html')) {
           res.setHeader('Cache-Control', 'public, max-age=3600');
-        }
-        // Cache other static assets for 1 year
-        else {
+        } else {
           res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
         }
       }
     }));
 
-    // Handle client-side routing - must be after API routes
-    app.get('*', function(req, res) {
-      res.sendFile(join(__dirname, 'dist', 'index.html'));
+    // For any requests that don't match static files or API routes,
+    // send the index.html file for client-side routing
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api/')) {
+        next();
+      } else {
+        res.sendFile(join(distPath, 'index.html'));
+      }
     });
   }
 
@@ -247,9 +248,6 @@ try {
   }
 
   // — AUTH ROUTES —
-
-  // Swagger documentation
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
   /**
    * @swagger
