@@ -417,6 +417,8 @@ try {
     }
 
     try {
+      console.log('Login attempt:', { identifier }); // Log login attempt
+
       // Find user by email or username
       const user = await prisma.user.findFirst({
         where: {
@@ -426,6 +428,8 @@ try {
           ]
         }
       });
+
+      console.log('User found:', { found: !!user }); // Log if user was found
 
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
@@ -451,6 +455,8 @@ try {
       }
 
       const valid = await bcrypt.compare(password, user.passwordHash);
+      console.log('Password validation:', { valid }); // Log password validation result
+
       if (!valid) {
         return res.status(401).json({ error: "Invalid credentials" });
       }
@@ -467,7 +473,12 @@ try {
       
       res.json({ token });
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error details:", {
+        error: err.message,
+        stack: err.stack,
+        code: err.code,
+        meta: err.meta
+      });
       res.status(500).json({ error: "An unexpected error occurred during login" });
     }
   });
