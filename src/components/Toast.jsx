@@ -27,14 +27,17 @@ const TOAST_TYPES = {
 export function ToastContainer({ toasts, onClose }) {
   return (
     <div className="fixed bottom-4 right-4 z-50 space-y-2 min-w-[300px] max-w-[400px]">
-      {toasts.map((toast) => (
+      {Array.isArray(toasts) && toasts.map((toast) => (
         <Toast
           key={toast.id}
           id={toast.id}
           message={toast.message}
           type={toast.type}
           duration={toast.duration}
-          onClose={() => onClose(toast.id)}
+          onClose={() => {
+            console.log('Closing toast:', toast.id);
+            onClose(toast.id);
+          }}
         />
       ))}
     </div>
@@ -43,13 +46,23 @@ export function ToastContainer({ toasts, onClose }) {
 
 function Toast({ id, message, type = 'info', duration = 3000, onClose }) {
   useEffect(() => {
+    console.log('Toast mounted:', { id, message, type, duration });
+    let timeoutId;
+    
     if (duration && onClose) {
-      const timer = setTimeout(() => {
+      timeoutId = setTimeout(() => {
+        console.log('Toast timeout triggered:', id);
         onClose(id);
       }, duration);
-      return () => clearTimeout(timer);
     }
-  }, [duration, onClose, id]);
+
+    return () => {
+      if (timeoutId) {
+        console.log('Clearing toast timeout:', id);
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [duration, onClose, id, message, type]);
 
   const toastStyle = TOAST_TYPES[type] || TOAST_TYPES.info;
 
@@ -65,7 +78,10 @@ function Toast({ id, message, type = 'info', duration = 3000, onClose }) {
         </div>
         {onClose && (
           <button
-            onClick={() => onClose(id)}
+            onClick={() => {
+              console.log('Toast close button clicked:', id);
+              onClose(id);
+            }}
             className="ml-4 hover:opacity-80 transition"
             aria-label="Close notification"
           >

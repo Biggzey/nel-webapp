@@ -23,10 +23,13 @@ function Profile({ user, onSave }) {
 
   const addToast = (toast) => {
     const id = nanoid();
-    setToasts(prev => [...prev, { ...toast, id }]);
+    const newToast = { ...toast, id };
+    console.log('Adding toast:', newToast);
+    setToasts(prev => [...prev, newToast]);
   };
 
   const removeToast = (id) => {
+    console.log('Removing toast:', id);
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
@@ -106,6 +109,11 @@ function Profile({ user, onSave }) {
 
   const handleSave = async () => {
     try {
+      console.log('Saving profile with data:', {
+        displayName: formData.displayName,
+        hasAvatar: !!formData.avatar
+      });
+
       // Update profile
       const profileRes = await fetch('/api/user/profile', {
         method: 'PUT',
@@ -122,18 +130,11 @@ function Profile({ user, onSave }) {
       let data;
       try {
         data = await profileRes.json();
+        console.log('Profile update response:', data);
       } catch (parseError) {
         console.error('Failed to parse server response:', parseError);
         throw new Error('Failed to process server response. Please try again.');
       }
-
-      // Log the response for debugging
-      console.log('Profile update response:', {
-        status: profileRes.status,
-        statusText: profileRes.statusText,
-        data,
-        headers: Object.fromEntries(profileRes.headers.entries())
-      });
 
       if (!profileRes.ok) {
         // Show specific error messages based on error code
@@ -156,7 +157,7 @@ function Profile({ user, onSave }) {
       // If we got here, the profile update was successful
       // Update parent component with the response data
       if (onSave && data.user) {
-        await onSave(data.user);
+        await onSave(data);
       }
 
       // Show success toast for profile update
@@ -342,9 +343,7 @@ function Profile({ user, onSave }) {
       </div>
 
       {/* Toast notifications */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <ToastContainer toasts={toasts} onClose={removeToast} />
-      </div>
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
@@ -501,7 +500,14 @@ export default function SettingsModal({ isOpen, onClose }) {
   ];
 
   const handleProfileSave = async (data) => {
-    await refreshUser(); // Refresh user data after profile update
+    try {
+      console.log('Profile save response:', data);
+      if (data && data.user) {
+        await refreshUser();
+      }
+    } catch (error) {
+      console.error('Error in handleProfileSave:', error);
+    }
   };
 
   if (!isOpen) return null;
