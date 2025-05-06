@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
@@ -521,6 +521,7 @@ export default function SettingsModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('profile');
   const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
+  const modalRef = useRef(null);
 
   const tabs = [
     { id: 'profile', label: t('settings.profile'), icon: 'user' },
@@ -538,28 +539,47 @@ export default function SettingsModal({ isOpen, onClose }) {
     }
   };
 
+  // Handle clicks on the backdrop
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   // Prevent closing when clicking inside the modal
   const handleModalClick = (e) => {
     e.stopPropagation();
   };
 
-  // Prevent form submission from bubbling up
-  const handleFormSubmit = (e) => {
-    e.stopPropagation();
-  };
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={handleBackdropClick}>
       {/* Backdrop with blur */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Modal */}
       <div 
+        ref={modalRef}
         className="relative w-full max-w-4xl bg-background-light dark:bg-background-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
         onClick={handleModalClick}
-        onSubmit={handleFormSubmit}
       >
         {/* Sidebar with container styling */}
         <div className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2">
@@ -583,7 +603,12 @@ export default function SettingsModal({ isOpen, onClose }) {
         {/* Content area with container styling */}
         <div className="flex-1 bg-background-container-light dark:bg-background-container-dark">
           <div className="p-6 overflow-y-auto max-h-[80vh]">
-            {activeTab === 'profile' && <Profile user={user} onSave={handleProfileSave} />}
+            {activeTab === 'profile' && (
+              <Profile 
+                user={user} 
+                onSave={handleProfileSave}
+              />
+            )}
             {activeTab === 'preferences' && <Preferences />}
           </div>
         </div>
@@ -591,7 +616,10 @@ export default function SettingsModal({ isOpen, onClose }) {
         {/* Close button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-text-light/60 dark:text-text-dark/60 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
         >
           <i className="fas fa-times" />

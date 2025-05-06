@@ -19,9 +19,11 @@ export function AuthProvider({ children }) {
       // Check if token is expired
       const payload = JSON.parse(atob(storedToken.split('.')[1]));
       if (Date.now() >= payload.exp * 1000) {
+        console.log('Token expired on init, removing');
         localStorage.removeItem("token");
         return null;
       }
+      console.log('Valid token found on init');
       return storedToken;
     } catch (error) {
       console.error('Token validation error:', error);
@@ -29,6 +31,17 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
+
+  // Add token persistence effect
+  useEffect(() => {
+    if (token) {
+      console.log('Persisting token to localStorage');
+      localStorage.setItem("token", token);
+    } else {
+      console.log('Removing token from localStorage');
+      localStorage.removeItem("token");
+    }
+  }, [token]);
 
   // Initialize user role from localStorage (or null)
   const [userRole, setUserRole] = useState(null);
@@ -103,6 +116,7 @@ export function AuthProvider({ children }) {
   // Load user data when token changes
   useEffect(() => {
     if (token) {
+      console.log('Token present, loading user data');
       refreshUser().catch(console.error);
       
       // Fetch user role
