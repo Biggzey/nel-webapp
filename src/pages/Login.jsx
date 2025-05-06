@@ -38,39 +38,39 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background-dark">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0f0f0f]">
       <div className="w-full max-w-md p-8">
         <form
           onSubmit={handleSubmit}
-          className="bg-background-secondary-light dark:bg-background-secondary-dark p-8 rounded-lg shadow-xl w-full"
+          className="bg-[#2b2b2b] p-8 rounded-lg shadow-xl w-full"
         >
-          <h1 className="text-2xl font-semibold mb-6 text-center text-text-light dark:text-text-dark">
+          <h1 className="text-2xl font-semibold mb-6 text-center text-white">
             Log In
           </h1>
           {err && (
             <div className="mb-4 text-red-500 text-sm text-center">{err}</div>
           )}
           <div className="mb-4">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Email or Username
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                className="mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                className="mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter email or username"
                 required
               />
             </label>
           </div>
           <div className="mb-6">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Password
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                className="mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter password"
                 required
               />
@@ -87,11 +87,11 @@ export default function Login() {
           >
             {isSubmitting ? 'Logging in...' : 'Log In'}
           </button>
-          <p className="mt-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+          <p className="mt-4 text-center text-gray-400 text-sm">
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="text-green-600 dark:text-green-400 hover:underline"
+              className="text-green-400 hover:underline"
             >
               Sign Up
             </Link>

@@ -128,20 +128,20 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#0f0f0f]">
       <div className="w-full max-w-md p-8">
         <form
           onSubmit={handleSignup}
-          className="bg-background-secondary-light dark:bg-background-secondary-dark p-8 rounded-lg shadow-xl w-full"
+          className="bg-[#2b2b2b] p-8 rounded-lg shadow-xl w-full"
         >
-          <h1 className="text-2xl font-semibold mb-6 text-center text-text-light dark:text-text-dark">
+          <h1 className="text-2xl font-semibold mb-6 text-center text-white">
             Sign Up
           </h1>
           {err && <div className="mb-4 text-red-500 text-sm text-center">{err}</div>}
 
           {/* Username field */}
           <div className="mb-4">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Username
               <input
                 id="signup-username"
@@ -151,10 +151,10 @@ export default function Signup() {
                 placeholder="Choose a username"
                 value={formData.username}
                 onChange={handleChange}
-                className="mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                className="mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
-              <p className="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+              <p className="mt-1 text-xs text-gray-400">
                 At least 3 characters, letters, numbers, and underscores only
               </p>
             </label>
@@ -162,7 +162,7 @@ export default function Signup() {
 
           {/* Email field */}
           <div className="mb-4">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Email
               <input
                 id="signup-email"
@@ -172,7 +172,7 @@ export default function Signup() {
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary"
+                className="mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </label>
@@ -180,7 +180,7 @@ export default function Signup() {
 
           {/* Password fields */}
           <div className="mb-4">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Password
               <input
                 id="signup-password"
@@ -190,21 +190,21 @@ export default function Signup() {
                 placeholder="Create a password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary ${
+                className={`mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary ${
                   formData.password && !isPasswordValid(formData.password)
                     ? "border-red-500"
                     : ""
                 }`}
                 required
               />
-              <p className="mt-1 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+              <p className="mt-1 text-xs text-gray-400">
                 At least 8 characters, one uppercase, one lowercase, and one number
               </p>
             </label>
           </div>
 
           <div className="mb-6">
-            <label className="block mb-2 text-text-light dark:text-text-dark">
+            <label className="block mb-2 text-white">
               Confirm Password
               <input
                 type="password"
@@ -212,7 +212,7 @@ export default function Signup() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className={`mt-1 w-full p-2 border rounded bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary ${
+                className={`mt-1 w-full p-2 border rounded bg-[#1e1e1e] text-white border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary ${
                   formData.confirmPassword && formData.password !== formData.confirmPassword
                     ? "border-red-500"
                     : ""
@@ -239,9 +239,9 @@ export default function Signup() {
             {isSubmitting ? 'Creating Account...' : 'Create Account'}
           </button>
 
-          <p className="mt-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+          <p className="mt-4 text-center text-gray-400 text-sm">
             Already have an account?{" "}
-            <Link to="/login" className="text-green-600 dark:text-green-400 hover:underline">
+            <Link to="/login" className="text-green-400 hover:underline">
               Log In
             </Link>
           </p>
