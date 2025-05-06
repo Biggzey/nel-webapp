@@ -96,6 +96,9 @@ function Profile({ user, onSave }) {
 
   const handleSave = async () => {
     try {
+      // Clear any existing toasts first
+      setToast(null);
+
       // Update profile
       const profileRes = await fetch('/api/user/profile', {
         method: 'PUT',
@@ -109,6 +112,13 @@ function Profile({ user, onSave }) {
         })
       });
 
+      // Log the response for debugging
+      console.log('Profile update response:', {
+        status: profileRes.status,
+        statusText: profileRes.statusText,
+        headers: Object.fromEntries(profileRes.headers.entries())
+      });
+
       // Handle different HTTP status codes
       if (profileRes.status === 404) {
         throw new Error('Server endpoint not found. Please try again later or contact support if the issue persists.');
@@ -116,10 +126,13 @@ function Profile({ user, onSave }) {
         throw new Error('Your session has expired. Please log in again.');
       }
 
-      const data = await profileRes.json().catch(() => ({
-        error: 'Failed to parse server response',
-        code: 'PARSE_ERROR'
-      }));
+      let data;
+      try {
+        data = await profileRes.json();
+      } catch (parseError) {
+        console.error('Failed to parse server response:', parseError);
+        throw new Error('Failed to process server response. Please try again.');
+      }
 
       if (!profileRes.ok) {
         // Show specific error messages based on error code
@@ -134,12 +147,14 @@ function Profile({ user, onSave }) {
             throw new Error('Your session has expired. Please log in again.');
           case 'UPDATE_FAILED':
             throw new Error('Failed to update profile. Please try again.');
-          case 'PARSE_ERROR':
-            throw new Error('Failed to process server response. Please try again.');
           default:
             throw new Error(data.error || 'An unexpected error occurred. Please try again.');
         }
       }
+
+      // If we got here, the profile update was successful
+      // Update parent component with the response data
+      onSave(data);
 
       // If password fields are filled, update password
       if (formData.oldPassword && formData.newPassword) {
@@ -165,7 +180,13 @@ function Profile({ user, onSave }) {
           })
         });
 
-        const pwData = await passwordRes.json().catch(() => ({}));
+        let pwData;
+        try {
+          pwData = await passwordRes.json();
+        } catch (parseError) {
+          console.error('Failed to parse password response:', parseError);
+          throw new Error('Failed to process server response. Please try again.');
+        }
 
         if (!passwordRes.ok) {
           // Show specific error messages based on error code
@@ -189,24 +210,24 @@ function Profile({ user, onSave }) {
           confirmPassword: ''
         }));
 
+        // Show success toast for password change
         setToast({
           type: 'success',
           message: t('profile.passwordChanged'),
           duration: 3000
         });
+      } else {
+        // Show success toast for profile update only
+        setToast({
+          type: 'success',
+          message: data.message || t('settings.profileUpdated'),
+          duration: 3000
+        });
       }
-
-      // Show success toast with specific message
-      setToast({
-        type: 'success',
-        message: data.message || t('settings.profileUpdated'),
-        duration: 3000
-      });
-
-      // Update parent component with the response data
-      onSave(data);
     } catch (error) {
       console.error('Error updating profile:', error);
+      
+      // Set the error toast
       setToast({
         type: 'error',
         message: error.message || 'An unexpected error occurred. Please try again.',
