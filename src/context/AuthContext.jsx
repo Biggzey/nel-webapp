@@ -32,6 +32,8 @@ export function AuthProvider({ children }) {
 
   // Initialize user role from localStorage (or null)
   const [userRole, setUserRole] = useState(null);
+  // Add user state
+  const [user, setUser] = useState(null);
 
   // Global fetch interceptor for handling auth errors
   const authenticatedFetch = async (url, options = {}) => {
@@ -77,15 +79,36 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Whenever token changes, persist or remove it in localStorage
+  // Add refreshUser function
+  const refreshUser = async () => {
+    try {
+      console.log('Refreshing user data');
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user`);
+      if (!res) return; // User was logged out
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const userData = await res.json();
+      console.log('User data refreshed:', userData);
+      setUser(userData);
+      return userData;
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      throw error;
+    }
+  };
+
+  // Load user data when token changes
   useEffect(() => {
     if (token) {
-      localStorage.setItem("token", token);
-
-      // Fetch user role when token changes
+      refreshUser().catch(console.error);
+      
+      // Fetch user role
       authenticatedFetch(`${API_BASE_URL}/api/user/role`)
         .then(res => {
-          if (!res) return; // User was logged out due to invalid session
+          if (!res) return; // User was logged out
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
           }
@@ -101,8 +124,9 @@ export function AuthProvider({ children }) {
           logout();
         });
     } else {
-      localStorage.removeItem("token");
+      setUser(null);
       setUserRole(null);
+      localStorage.removeItem("token");
     }
   }, [token]);
 
@@ -177,6 +201,7 @@ export function AuthProvider({ children }) {
   // Clears token and sends you back to login
   function logout() {
     setToken(null);
+    setUser(null);
     setUserRole(null);
     localStorage.removeItem("token");
     // Clear any auth cookies
@@ -214,7 +239,9 @@ export function AuthProvider({ children }) {
       isModerator,
       canModifyRole,
       signup,
-      authenticatedFetch
+      authenticatedFetch,
+      user,
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>
