@@ -64,7 +64,7 @@ export default function ChatWindow({ onMenuClick }) {
   async function loadMessages() {
     try {
       setIsLoading(true);
-      const res = await fetch(`/api/chat/${current.id}/messages`, {
+      const res = await fetch(`/api/chat/${current.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
