@@ -17,7 +17,8 @@
     "test:coverage": "jest --coverage",
     "test:e2e": "jest --config jest.config.e2e.js",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix"
+    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
+    "set-super-admin": "node -r esm scripts/set-super-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
