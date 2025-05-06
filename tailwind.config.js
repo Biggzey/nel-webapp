@@ -20,7 +20,7 @@ export default {
         
         // Text colors
         text: {
-          light: "#2c3e50",    // Keeping the same text color for good contrast
+          light: "#ffffff",    // Keeping the same text color for good contrast
           dark: "#ffffff",      // Dark mode text
           secondary: {
             light: "#64748b",   // Keeping the same secondary text
