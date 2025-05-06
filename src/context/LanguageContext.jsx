@@ -1,0 +1,259 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+// Define translations
+const translations = {
+  en: {
+    settings: {
+      profile: 'Profile',
+      preferences: 'Preferences',
+      theme: 'Theme',
+      system: 'System',
+      light: 'Light',
+      dark: 'Dark',
+      language: 'Language',
+      chatColor: 'Chat Bubble Color',
+      saveChanges: 'Save Changes',
+      saving: 'Saving...'
+    },
+    profile: {
+      username: 'Username',
+      displayName: 'Display Name',
+      uploadPicture: 'Click to upload a new profile picture',
+      enterUsername: 'Enter your username',
+      enterDisplayName: 'Enter your display name',
+      profilePicture: 'Profile Picture'
+    },
+    chat: {
+      sendMessage: 'Send message',
+      typeMessage: 'Type your message...',
+      loading: 'Loading messages...',
+      noMessages: 'No messages yet. Start a conversation!',
+      clearChat: 'Clear chat',
+      confirmClear: 'Are you sure you want to clear this conversation? This cannot be undone.',
+      chatCleared: 'Chat history cleared successfully',
+      noCharacterSelected: 'No character selected. Please select a character first.',
+      messageTooLong: 'Message is too long. Please keep it under 2000 characters.'
+    },
+    character: {
+      new: 'New Character',
+      edit: 'Edit Character',
+      details: 'Character Details',
+      personality: {
+        title: 'Personality Configuration',
+        traits: 'Personality',
+        traitsPlaceholder: "Describe the character's core personality traits and behaviors...",
+        traitsHelp: "Define the character's personality traits, mannerisms, and general behavior patterns.",
+        backstory: 'Backstory',
+        backstoryPlaceholder: "Write the character's background story and history...",
+        backstoryHelp: "Provide background information that shapes the character's perspective and responses.",
+        systemPrompt: 'System Prompt',
+        systemPromptPlaceholder: 'Define the core personality and role of your character...',
+        systemPromptHelp: "This is the initial system message that defines your character's core personality and behavior.",
+        customInstructions: 'Custom Instructions',
+        customInstructionsPlaceholder: 'Add any additional instructions or guidelines...',
+        customInstructionsHelp: 'Additional instructions that will be appended to the system message to further customize behavior.'
+      },
+      fields: {
+        name: 'Name',
+        namePlaceholder: 'Character name',
+        age: 'Age',
+        agePlaceholder: 'Age',
+        gender: 'Gender',
+        genderPlaceholder: 'Gender',
+        race: 'Race',
+        racePlaceholder: 'Race/Species',
+        occupation: 'Occupation',
+        occupationPlaceholder: "Character's role",
+        likes: 'Likes',
+        likesPlaceholder: 'Enter likes separated by commas (e.g., cats, reading, coffee)',
+        dislikes: 'Dislikes',
+        dislikesPlaceholder: 'Enter dislikes separated by commas (e.g., rain, loud noises, spiders)',
+        avatar: 'Avatar URL or Upload',
+        avatarPlaceholder: 'https://example.com/avatar.png',
+        fullImage: 'Full-Body Image URL or Upload',
+        fullImagePlaceholder: 'https://example.com/full.png'
+      },
+      actions: {
+        resetDefaults: 'Reset to Defaults',
+        upload: 'Upload',
+        save: 'Save',
+        cancel: 'Cancel'
+      },
+      metadata: {
+        yearsOld: 'years old'
+      }
+    },
+    sidebar: {
+      characters: 'Characters',
+      settings: 'Settings',
+      newCharacter: 'New Character',
+      search: 'Search characters...'
+    },
+    common: {
+      create: 'Create',
+      delete: 'Delete',
+      cancel: 'Cancel',
+      save: 'Save',
+      edit: 'Edit',
+      loading: 'Loading...',
+      error: 'Something went wrong',
+      refresh: 'Refresh Page',
+      goHome: 'Go to Home',
+      logout: 'Logout'
+    },
+    errors: {
+      required: 'This field is required',
+      invalidEmail: 'Invalid email address',
+      passwordMismatch: 'Passwords do not match',
+      invalidCredentials: 'Invalid email or password',
+      serverError: 'Server error occurred',
+      unexpectedError: 'We\'re sorry, but something unexpected happened. Please try refreshing the page.'
+    }
+  },
+  es: {
+    settings: {
+      profile: 'Perfil',
+      preferences: 'Preferencias',
+      theme: 'Tema',
+      system: 'Sistema',
+      light: 'Claro',
+      dark: 'Oscuro',
+      language: 'Idioma',
+      chatColor: 'Color de Burbuja de Chat',
+      saveChanges: 'Guardar Cambios',
+      saving: 'Guardando...'
+    },
+    profile: {
+      username: 'Nombre de Usuario',
+      displayName: 'Nombre para Mostrar',
+      uploadPicture: 'Haz clic para subir una nueva foto de perfil',
+      enterUsername: 'Ingresa tu nombre de usuario',
+      enterDisplayName: 'Ingresa tu nombre para mostrar',
+      profilePicture: 'Foto de Perfil'
+    },
+    chat: {
+      sendMessage: 'Enviar mensaje',
+      typeMessage: 'Escribe tu mensaje...',
+      loading: 'Cargando mensajes...',
+      noMessages: '¡No hay mensajes aún. ¡Inicia una conversación!',
+      clearChat: 'Limpiar chat',
+      confirmClear: '¿Estás seguro de que quieres borrar esta conversación? Esta acción no se puede deshacer.',
+      chatCleared: 'Historial de chat borrado exitosamente',
+      noCharacterSelected: 'No hay personaje seleccionado. Por favor, selecciona un personaje primero.',
+      messageTooLong: 'El mensaje es demasiado largo. Por favor, mantenlo por debajo de 2000 caracteres.'
+    },
+    character: {
+      new: 'Nuevo Personaje',
+      edit: 'Editar Personaje',
+      details: 'Detalles del Personaje',
+      personality: {
+        title: 'Configuración de Personalidad',
+        traits: 'Personalidad',
+        traitsPlaceholder: "Describe los rasgos de personalidad y comportamientos principales del personaje...",
+        traitsHelp: "Define los rasgos de personalidad, manierismos y patrones generales de comportamiento del personaje.",
+        backstory: 'Historia',
+        backstoryPlaceholder: "Escribe la historia y antecedentes del personaje...",
+        backstoryHelp: "Proporciona información de fondo que da forma a la perspectiva y respuestas del personaje.",
+        systemPrompt: 'Prompt del Sistema',
+        systemPromptPlaceholder: 'Define la personalidad y el rol principal de tu personaje...',
+        systemPromptHelp: "Este es el mensaje inicial del sistema que define la personalidad y el comportamiento principal de tu personaje.",
+        customInstructions: 'Instrucciones Personalizadas',
+        customInstructionsPlaceholder: 'Agrega instrucciones o pautas adicionales...',
+        customInstructionsHelp: 'Instrucciones adicionales que se agregarán al mensaje del sistema para personalizar aún más el comportamiento.'
+      },
+      fields: {
+        name: 'Nombre',
+        namePlaceholder: 'Nombre del personaje',
+        age: 'Edad',
+        agePlaceholder: 'Edad',
+        gender: 'Género',
+        genderPlaceholder: 'Género',
+        race: 'Raza',
+        racePlaceholder: 'Raza/Especie',
+        occupation: 'Ocupación',
+        occupationPlaceholder: "Rol del personaje",
+        likes: 'Gustos',
+        likesPlaceholder: 'Ingresa gustos separados por comas (ej: gatos, lectura, café)',
+        dislikes: 'Disgustos',
+        dislikesPlaceholder: 'Ingresa disgustos separados por comas (ej: lluvia, ruidos fuertes, arañas)',
+        avatar: 'URL de Avatar o Subir',
+        avatarPlaceholder: 'https://ejemplo.com/avatar.png',
+        fullImage: 'URL de Imagen Completa o Subir',
+        fullImagePlaceholder: 'https://ejemplo.com/completa.png'
+      },
+      actions: {
+        resetDefaults: 'Restablecer Valores',
+        upload: 'Subir',
+        save: 'Guardar',
+        cancel: 'Cancelar'
+      },
+      metadata: {
+        yearsOld: 'años'
+      }
+    },
+    sidebar: {
+      characters: 'Personajes',
+      settings: 'Ajustes',
+      newCharacter: 'Nuevo Personaje',
+      search: 'Buscar personajes...'
+    },
+    common: {
+      create: 'Crear',
+      delete: 'Eliminar',
+      cancel: 'Cancelar',
+      save: 'Guardar',
+      edit: 'Editar',
+      loading: 'Cargando...',
+      error: 'Algo salió mal',
+      refresh: 'Actualizar Página',
+      goHome: 'Ir al Inicio',
+      logout: 'Cerrar Sesión'
+    },
+    errors: {
+      required: 'Este campo es obligatorio',
+      invalidEmail: 'Correo electrónico inválido',
+      passwordMismatch: 'Las contraseñas no coinciden',
+      invalidCredentials: 'Correo o contraseña inválidos',
+      serverError: 'Ocurrió un error en el servidor',
+      unexpectedError: 'Lo sentimos, pero algo inesperado sucedió. Por favor, intenta refrescar la página.'
+    }
+  }
+};
+
+const LanguageContext = createContext();
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+}
+
+export function LanguageProvider({ children }) {
+  const [language, setLanguage] = useState(() => {
+    const saved = localStorage.getItem('language');
+    return saved || 'en';
+  });
+
+  // Update language in localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('language', language);
+    document.documentElement.lang = language;
+  }, [language]);
+
+  const t = (key) => {
+    const keys = key.split('.');
+    let value = translations[language];
+    for (const k of keys) {
+      value = value?.[k];
+    }
+    return value || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+} 

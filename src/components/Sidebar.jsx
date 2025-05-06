@@ -1,14 +1,16 @@
 // src/components/Sidebar.jsx
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { useCharacter } from "../context/CharacterContext";
+import { useLanguage } from "../context/LanguageContext";
+import ProfileDropdown from "./ProfileDropdown";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick }) {
   const navigate = useNavigate();
-  const { logout, isModerator } = useAuth();
-  const { dark, toggleDark } = useTheme();
+  const { isModerator } = useAuth();
+  const { t } = useLanguage();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const {
     characters,
     selectedIndex,
@@ -24,12 +26,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   } = useCharacter();
 
   const isBookmarked = bookmarks.includes(selectedIndex);
-
-  function handleLogout() {
-    logout();
-    onLinkClick();
-    navigate("/login");
-  }
 
   // Add file upload handler
   function handleAvatarUpload(e) {
@@ -48,175 +44,128 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }
 
   return (
-    <aside className={`${className} flex flex-col items-center p-6 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
-      {/* Avatar + edit */}
-      <div className="relative">
-        <img
-          src={current.avatar}
-          alt={`${current.name} Avatar`}
-          className="h-24 w-24 rounded-full border-2 border-primary object-cover"
-        />
-        <label
-          className="absolute bottom-0 right-0 bg-primary rounded-full p-1 hover:bg-primary/90 cursor-pointer"
-          title="Change Avatar"
-        >
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            className="hidden"
-          />
-          <i className="fas fa-camera text-white" />
-        </label>
+    <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
+      {/* Decorative background patterns */}
+      <div className="absolute inset-0 opacity-70">
+        {/* Top right decorative circle */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent-primary-light dark:bg-accent-primary-dark blur-3xl" />
+        {/* Bottom left decorative circle */}
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-accent-secondary-light dark:bg-accent-secondary-dark blur-3xl" />
+        {/* Animated dots pattern */}
+        <div className="absolute inset-0" style={{ 
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(123, 104, 238, 0.05) 1px, transparent 0)`,
+          backgroundSize: '24px 24px'
+        }} />
       </div>
 
-      {/* Name + bookmark + edit */}
-      <div className="mt-4 flex items-center space-x-2">
-        <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">{current.name}</h2>
-        <button
-          onClick={() => toggleBookmark(selectedIndex)}
-          className={`text-xl ${
-            isBookmarked
-              ? "text-yellow-400"
-              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-          }`}
-          title={isBookmarked ? "Remove Bookmark" : "Bookmark Character"}
-        >
-          <i className={isBookmarked ? "fas fa-star" : "far fa-star"} />
-        </button>
-        <button
-          onClick={handleOpenModal}
-          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-          title="Edit Personality"
-        >
-          <i className="fas fa-pencil-alt" />
-        </button>
-      </div>
+      {/* Content container with backdrop blur */}
+      <div className="relative w-full h-full flex flex-col items-center">
+        {/* Top controls section */}
+        <div className="w-full space-y-3 mb-6">
+          {/* New Character button */}
+          <button
+            onClick={() => {
+              handleNewCharacter();
+              onLinkClick();
+            }}
+            className="w-full bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center"
+          >
+            <span className="text-primary mr-2">
+              <i className="fas fa-plus" />
+            </span>
+            <span className="font-medium">{t('sidebar.newCharacter')}</span>
+          </button>
+        </div>
 
-      {/* Bookmarks */}
-      {bookmarks.length > 0 && (
-        <div className="mt-6 w-full space-y-2">
-          <h3 className="px-4 text-gray-500 dark:text-gray-400 uppercase text-xs">Bookmarks</h3>
-          {bookmarks.map((idx) => (
-            <button
-              key={`bm-${idx}`}
-              onClick={() => {
-                setSelectedIndex(idx);
-                onLinkClick();
-              }}
-              className="w-full text-left px-4 py-2 hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark rounded text-yellow-500"
+        {/* Character list directly on background */}
+        <div className="w-full flex-1 space-y-2 mb-6 px-2">
+          {/* Time indicator */}
+          <div className="text-xs text-gray-500 dark:text-gray-400 px-2 mb-4">{t('sidebar.characters')}</div>
+          
+          {characters.map((c, i) => (
+            <div
+              key={c.id}
+              className="group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light/50 dark:hover:bg-background-container-hover-dark/50"
             >
-              <div className="flex items-center space-x-2">
+              <button
+                onClick={() => {
+                  setSelectedIndex(i);
+                  onLinkClick();
+                }}
+                className={`flex-1 text-left flex items-center space-x-3 ${
+                  i === selectedIndex
+                    ? "text-text-light dark:text-text-dark"
+                    : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
+                }`}
+              >
                 <img
-                  src={characters[idx]?.avatar}
+                  src={c.avatar}
                   alt=""
-                  className="w-6 h-6 rounded-full object-cover"
+                  className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10"
                 />
-                <i className="fas fa-star" />
-                <span>{characters[idx]?.name || "Unknown"}</span>
-              </div>
-            </button>
+                <span className="font-medium">{c.name}</span>
+              </button>
+              {i !== 0 && (
+                <button
+                  onClick={() => handleDeleteCharacter(i)}
+                  className="ml-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600"
+                  title={t('common.delete')}
+                >
+                  <i className="fas fa-trash" />
+                </button>
+              )}
+            </div>
           ))}
         </div>
-      )}
 
-      {/* Character list */}
-      <div className="mt-6 w-full space-y-2">
-        <h3 className="px-4 text-gray-500 dark:text-gray-400 uppercase text-xs">Characters</h3>
-        {characters.map((c, i) => (
-          <div
-            key={c.id}
-            className="group flex items-center justify-between px-4 py-1 rounded hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark"
-          >
-            <button
-              onClick={() => {
-                setSelectedIndex(i);
-                onLinkClick();
-              }}
-              className={`flex-1 text-left flex items-center space-x-2 ${
-                i === selectedIndex
-                  ? "text-gray-900 dark:text-white"
-                  : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              <img
-                src={c.avatar}
-                alt=""
-                className="w-6 h-6 rounded-full object-cover"
-              />
-              <span>{c.name}</span>
-            </button>
-            {i !== 0 && (
-              <button
-                onClick={() => handleDeleteCharacter(i)}
-                className="ml-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600"
-                title="Delete character"
+        {/* Bottom controls in container */}
+        <div className="w-full mt-auto">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl">
+            {isModerator && (
+              <Link
+                to="/admin"
+                className="block px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <i className="fas fa-trash" />
-              </button>
+                <div className="flex items-center space-x-2">
+                  <span className="text-primary group-hover:scale-110 transition-transform">
+                    <i className="fas fa-shield-alt" />
+                  </span>
+                  <span>Admin Panel</span>
+                </div>
+              </Link>
             )}
-          </div>
-        ))}
-        <button
-          onClick={() => {
-            handleNewCharacter();
-            onLinkClick();
-          }}
-          className="w-full text-left px-4 py-2 hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark rounded"
-        >
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-              <i className="fas fa-plus text-sm text-gray-600 dark:text-gray-400" />
-            </div>
-            <span>New Character</span>
-          </div>
-        </button>
-      </div>
-
-      {/* Bottom controls */}
-      <div className="mt-auto w-full space-y-2">
-        {isModerator && (
-          <Link
-            to="/admin"
-            className="block px-4 py-2 hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark rounded"
-          >
-            Admin Panel
-          </Link>
-        )}
-        <button
-          onClick={() => {
-            onSettingsClick();
-            onLinkClick();
-          }}
-          className="w-full flex items-center px-4 py-2 hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark rounded"
-        >
-          <i className="fas fa-cog mr-2" />
-          Settings
-        </button>
-        <div className="flex items-center justify-between px-2 py-2">
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 text-red-600 dark:text-red-400 hover:bg-background-secondary-light dark:hover:bg-background-secondary-dark rounded px-2 py-1"
-          >
-            <i className="fas fa-sign-out-alt" />
-            <span>Logout</span>
-          </button>
-          
-          <div className="flex items-center space-x-2">
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={dark}
-                onChange={toggleDark}
+            
+            {/* Profile section with dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className="text-primary group-hover:scale-110 transition-transform">
+                    <i className="fas fa-user-circle" />
+                  </span>
+                  <span>{t('settings.profile')}</span>
+                </div>
+                <i className={`fas fa-chevron-${isProfileOpen ? 'up' : 'down'} text-text-light/60 dark:text-text-dark/60`} />
+              </button>
+              
+              <ProfileDropdown
+                isOpen={isProfileOpen}
+                onClose={() => setIsProfileOpen(false)}
+                onSettingsClick={() => {
+                  setIsProfileOpen(false);
+                  onSettingsClick();
+                }}
               />
-              <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            </label>
-            <span className="text-gray-600 dark:text-gray-400">
-              <i className={`fas ${dark ? 'fa-moon' : 'fa-sun'}`} />
-            </span>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
     </aside>
   );

@@ -1,10 +1,12 @@
 // src/components/PersonalityModal.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useCharacter } from "../context/CharacterContext";
+import { useLanguage } from "../context/LanguageContext";
 import { CharacterPrompts } from "./CharacterPrompts";
 
 export default function PersonalityModal({ isOpen, initialData, onClose, onSave }) {
   const { resetCurrentCharacter } = useCharacter();
+  const { t } = useLanguage();
   const [form, setForm] = useState(initialData);
   const inputRefs = useRef({});
 
@@ -15,7 +17,7 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
   if (!isOpen) return null;
 
   const isNew = initialData.name === "New Character";
-  const title = isNew ? "New Character" : "Edit Character";
+  const title = isNew ? t('character.new') : t('character.edit');
 
   function autoResize(field) {
     const el = inputRefs.current[field];
@@ -52,168 +54,184 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
 
   // Field configurations with custom widths and placeholders
   const fields = [
-    { label: "Name", field: "name", placeholder: "Character name" },
-    { label: "Age", field: "age", placeholder: "Age" },
-    { label: "Gender", field: "gender", placeholder: "Gender" },
-    { label: "Race", field: "race", placeholder: "Race/Species" },
-    { label: "Occupation", field: "occupation", placeholder: "Character's role" },
-    { label: "Likes", field: "likes", placeholder: "Enter likes separated by commas (e.g., cats, reading, coffee)", multiline: true },
-    { label: "Dislikes", field: "dislikes", placeholder: "Enter dislikes separated by commas (e.g., rain, loud noises, spiders)", multiline: true },
+    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder') },
+    { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
+    { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
+    { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
+    { label: t('character.fields.occupation'), field: "occupation", placeholder: t('character.fields.occupationPlaceholder') },
+    { label: t('character.fields.likes'), field: "likes", placeholder: t('character.fields.likesPlaceholder'), multiline: true },
+    { label: t('character.fields.dislikes'), field: "dislikes", placeholder: t('character.fields.dislikesPlaceholder'), multiline: true },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      {/* Decorative background patterns */}
+      <div className="absolute inset-0 opacity-70 pointer-events-none">
+        {/* Top right decorative circle */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent-primary-light dark:bg-accent-primary-dark blur-3xl" />
+        {/* Bottom left decorative circle */}
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-accent-secondary-light dark:bg-accent-secondary-dark blur-3xl" />
+      </div>
 
       {/* Modal */}
       <form
         onSubmit={handleSubmit}
-        className="relative z-10 w-full max-w-6xl rounded-lg bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-100 p-5 shadow-lg overflow-y-auto max-h-[90vh] border-2 border-border-light dark:border-border-dark"
+        className="relative z-10 w-full max-w-[90rem] rounded-xl bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-6 shadow-xl overflow-y-auto max-h-[90vh] border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up"
       >
-        <h2 className="text-2xl font-semibold mb-3">{title}</h2>
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-accent-primary-light/5 to-transparent dark:from-accent-primary-dark/5 rounded-xl pointer-events-none" />
 
-        <div className="flex gap-5">
-          {/* Left Column - Character Details */}
-          <div className="w-[400px] space-y-3">
-            <h3 className="text-lg font-semibold mb-2">Character Details</h3>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {fields.map(({ label, field, placeholder, multiline }) => (
-                <div key={field} className={multiline ? "col-span-2" : ""}>
-                  <label className="block mb-1 text-sm font-medium">{label}</label>
-                  {multiline ? (
-                    <textarea
-                      ref={el => inputRefs.current[field] = el}
-                      name={field}
-                      value={form[field] || ""}
-                      onChange={handleChange}
-                      placeholder={placeholder}
-                      className="w-full min-h-[32px] max-h-[120px] p-1.5 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark resize-none overflow-hidden"
-                      rows={1}
-                    />
-                  ) : (
-                    <input
-                      name={field}
-                      value={form[field] || ""}
-                      onChange={handleChange}
-                      placeholder={placeholder}
-                      className="w-full h-8 px-2 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark"
-                    />
-                  )}
+        {/* Content container with backdrop blur */}
+        <div className="relative">
+          <div className="flex gap-6">
+            {/* Left Column - Character Details */}
+            <div className="w-[500px] space-y-3">
+              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  {fields.map(({ label, field, placeholder, multiline }) => (
+                    <div key={field} className={multiline ? "col-span-2" : ""}>
+                      <label className="block mb-1 text-sm font-medium">{label}</label>
+                      {multiline ? (
+                        <textarea
+                          ref={el => inputRefs.current[field] = el}
+                          name={field}
+                          value={form[field] || ""}
+                          onChange={handleChange}
+                          placeholder={placeholder}
+                          className="w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden"
+                          rows={1}
+                        />
+                      ) : (
+                        <input
+                          name={field}
+                          value={form[field] || ""}
+                          onChange={handleChange}
+                          placeholder={placeholder}
+                          className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-
-            {/* Images */}
-            <div className="space-y-3">
-              <div>
-                <label className="block mb-1 text-sm font-medium">Avatar URL or Upload</label>
-                <input
-                  name="avatar"
-                  value={form.avatar || ""}
-                  onChange={handleChange}
-                  placeholder="https://example.com/avatar.png"
-                  className="w-full h-8 px-2 mb-1 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark"
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, "avatar")}
-                  className="text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:bg-blue-500 dark:file:bg-blue-600 file:text-white hover:file:bg-blue-600 dark:hover:file:bg-blue-700 file:cursor-pointer"
-                />
               </div>
 
-              <div>
-                <label className="block mb-1 text-sm font-medium">Full-Body Image URL or Upload</label>
-                <input
-                  name="fullImage"
-                  value={form.fullImage || ""}
-                  onChange={handleChange}
-                  placeholder="https://example.com/full.png"
-                  className="w-full h-8 px-2 mb-1 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark"
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e, "fullImage")}
-                  className="text-sm file:mr-4 file:py-1.5 file:px-4 file:rounded file:border-0 file:bg-blue-500 dark:file:bg-blue-600 file:text-white hover:file:bg-blue-600 dark:hover:file:bg-blue-700 file:cursor-pointer"
-                />
+              {/* Images */}
+              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}</label>
+                    <input
+                      name="avatar"
+                      value={form.avatar || ""}
+                      onChange={handleChange}
+                      placeholder={t('character.fields.avatarPlaceholder')}
+                      className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, "avatar")}
+                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">{t('character.fields.fullImage')}</label>
+                    <input
+                      name="fullImage"
+                      value={form.fullImage || ""}
+                      onChange={handleChange}
+                      placeholder={t('character.fields.fullImagePlaceholder')}
+                      className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, "fullImage")}
+                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Custom Prompts */}
+            <div className="flex-1 space-y-2 flex flex-col">
+              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark flex-1 flex flex-col">
+                <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
+                
+                {/* Main content wrapper */}
+                <div className="flex-1 flex flex-col">
+                  {/* Personality */}
+                  <div className="mb-2">
+                    <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}</label>
+                    <textarea
+                      name="personality"
+                      value={form.personality || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder={t('character.personality.traitsPlaceholder')}
+                    />
+                    <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      {t('character.personality.traitsHelp')}
+                    </p>
+                  </div>
+
+                  {/* Backstory */}
+                  <div className="mb-2">
+                    <label className="block mb-1 text-sm font-medium">{t('character.personality.backstory')}</label>
+                    <textarea
+                      name="backstory"
+                      value={form.backstory || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder={t('character.personality.backstoryPlaceholder')}
+                    />
+                    <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                      {t('character.personality.backstoryHelp')}
+                    </p>
+                  </div>
+
+                  <CharacterPrompts
+                    systemPrompt={form.systemPrompt || ""}
+                    customInstructions={form.customInstructions || ""}
+                    onChange={(field, value) => handleChange({ target: { name: field, value } })}
+                  />
+                </div>
+
+                {/* Buttons */}
+                <div className="flex items-center justify-end space-x-2 mt-auto pt-3 border-t border-border-light dark:border-border-dark">
+                  {!isNew && (
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      title={t('character.actions.resetDefaults')}
+                      className="p-2 text-red-500 hover:text-red-600 transition-colors hover:scale-110 transform duration-200"
+                    >
+                      <i className="fas fa-sync-alt" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 hover:scale-105 transform"
+                  >
+                    {t('character.actions.cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 hover:scale-105 transform"
+                  >
+                    {t('character.actions.save')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Right Column - Custom Prompts */}
-          <div className="flex-1 space-y-3">
-            <h3 className="text-lg font-semibold mb-2">Personality Configuration</h3>
-            
-            {/* Personality */}
-            <div>
-              <label className="block mb-1 text-sm font-medium">Personality</label>
-              <textarea
-                name="personality"
-                value={form.personality || ""}
-                onChange={handleChange}
-                rows={2}
-                className="w-full min-h-[32px] max-h-[120px] p-1.5 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark"
-                placeholder="Describe the character's core personality traits and behaviors..."
-              />
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                Define the character's personality traits, mannerisms, and general behavior patterns.
-              </p>
-            </div>
-
-            {/* Backstory */}
-            <div>
-              <label className="block mb-1 text-sm font-medium">Backstory</label>
-              <textarea
-                name="backstory"
-                value={form.backstory || ""}
-                onChange={handleChange}
-                rows={2}
-                className="w-full min-h-[32px] max-h-[120px] p-1.5 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark"
-                placeholder="Write the character's background story and history..."
-              />
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                Provide background information that shapes the character's perspective and responses.
-              </p>
-            </div>
-
-            <CharacterPrompts
-              systemPrompt={form.systemPrompt || ""}
-              customInstructions={form.customInstructions || ""}
-              onChange={(field, value) => handleChange({ target: { name: field, value } })}
-            />
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="mt-4 flex items-center justify-between border-t border-border-light dark:border-border-dark pt-3">
-          <div className="flex items-center space-x-3">
-            {!isNew && (
-              <button
-                type="button"
-                onClick={handleReset}
-                title="Reset to Defaults"
-                className="p-2 text-red-500 hover:text-red-600 transition"
-              >
-                <i className="fas fa-sync-alt" />
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-1.5 rounded bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition"
-            >
-              Cancel
-            </button>
-          </div>
-          <button
-            type="submit"
-            className="px-4 py-1.5 rounded bg-primary text-white hover:bg-primary/90 transition"
-          >
-            Save
-          </button>
         </div>
       </form>
     </div>

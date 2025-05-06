@@ -1,8 +1,10 @@
 import React from "react";
 import { useCharacter } from "../context/CharacterContext";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function CharacterPane() {
-  const { current } = useCharacter();
+  const { current, handleOpenModal } = useCharacter();
+  const { t } = useLanguage();
 
   // Helper function to format and limit likes/dislikes
   const formatList = (text) => {
@@ -14,9 +16,18 @@ export default function CharacterPane() {
 
   return (
     <aside className="hidden md:flex flex-col w-72 bg-background-light dark:bg-background-dark p-4 border-r border-border-light dark:border-border-dark">
-      <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark mb-2">
-        {current?.name}
-      </h2>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
+          {current?.name}
+        </h2>
+        <button
+          onClick={handleOpenModal}
+          className="p-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-all duration-200 hover:scale-110 transform group"
+          title={t('character.edit')}
+        >
+          <i className="fas fa-edit group-hover:rotate-12 transition-transform duration-200" />
+        </button>
+      </div>
       
       {/* Character Info Section - Now using grid for dynamic sizing */}
       <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden">
@@ -25,7 +36,7 @@ export default function CharacterPane() {
           {current?.age && (
             <div className="flex items-center space-x-2">
               <i className="fas fa-birthday-cake w-5" />
-              <span>{current.age} years old</span>
+              <span>{current.age} {t('character.metadata.yearsOld')}</span>
             </div>
           )}
           {current?.gender && (

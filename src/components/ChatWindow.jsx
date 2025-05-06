@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import ReactionPicker from "./ReactionPicker";
 import TypingIndicator from "./TypingIndicator";
@@ -10,6 +11,7 @@ import Toast from "./Toast";
 export default function ChatWindow({ onMenuClick }) {
   const { current } = useCharacter();
   const { token, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const model = import.meta.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
 
@@ -29,84 +31,63 @@ export default function ChatWindow({ onMenuClick }) {
   // Add toast state
   const [toast, setToast] = useState(null);
 
-  // Load chat history when character changes
+  // Load messages on mount and when character changes
   useEffect(() => {
     if (!current?.id) return;
-    
-    async function loadMessages() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(`/api/chat/${current.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (res.status === 401) {
-          logout();
-          navigate("/login", { replace: true });
-          return;
-        }
-
-        if (!res.ok) {
-          throw new Error("Failed to load chat history");
-        }
-
-        const data = await res.json();
-        setMessages(data);
-    } catch (error) {
-      console.error("Error loading chat history:", error);
-      setToast({
-        type: 'error',
-        message: 'Failed to load chat history. Some messages might be missing.',
-        duration: 5000
-      });
-      setMessages([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     loadMessages();
-  }, [current?.id, token, logout, navigate]);
+  }, [current?.id, token]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages]);
 
-  function clearChat() {
-    if (
-      window.confirm(
-        "Are you sure you want to clear this conversation? This cannot be undone."
-      )
-    ) {
-      try {
-        fetch(`/api/chat/${current.id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((res) => {
-          if (res.ok) {
-        setMessages([]);
-        setToast({
-          type: 'success',
-          message: 'Chat history cleared successfully',
-          duration: 3000
-            });
-          } else {
-            throw new Error("Failed to clear chat history");
-          }
-        });
-      } catch (error) {
-        console.error("Error clearing chat:", error);
-        setToast({
-          type: 'error',
-          message: 'Failed to clear chat history. Please try again.',
-          duration: 5000
-        });
+  // Auto-resize textarea
+  useEffect(() => {
+    autoResize();
+  }, [input]);
+
+  function scrollToBottom() {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function autoResize() {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    // Set new height
+    textarea.style.height = textarea.scrollHeight + 'px';
+  }
+
+  async function loadMessages() {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/chat/${current.id}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          logout();
+          navigate("/login");
+          return;
+        }
+        throw new Error(t('errors.serverError'));
       }
+      
+      const data = await res.json();
+      setMessages(data);
+    } catch (error) {
+      console.error('Error loading messages:', error);
+      setToast({
+        type: 'error',
+        message: error.message,
+        duration: 5000
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -118,7 +99,7 @@ export default function ChatWindow({ onMenuClick }) {
     if (!current?.id) {
       setToast({
         type: 'error',
-        message: 'No character selected. Please select a character first.',
+        message: t('chat.noCharacterSelected'),
         duration: 5000
       });
       return;
@@ -128,7 +109,7 @@ export default function ChatWindow({ onMenuClick }) {
     if (trimmed.length > 2000) {
       setToast({
         type: 'warning',
-        message: 'Message is too long. Please keep it under 2000 characters.',
+        message: t('chat.messageTooLong'),
         duration: 5000
       });
       return;
@@ -157,7 +138,7 @@ export default function ChatWindow({ onMenuClick }) {
       if (!msgRes.ok) {
         const errorData = await msgRes.json().catch(() => ({}));
         console.error('Message save error:', errorData);
-        throw new Error(errorData.error || "Failed to save user message");
+        throw new Error(errorData.error || t('errors.serverError'));
       }
 
       const savedMsg = await msgRes.json();
@@ -167,189 +148,142 @@ export default function ChatWindow({ onMenuClick }) {
       setIsTyping(true);
 
       // Get AI response
-      const res = await fetch("/api/chat", {
+      const aiRes = await fetch(`/api/chat/${current.id}/generate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          model, 
-          messages: [...messages, userMsg],
-          character: {
-            id: current.id,
-            systemPrompt: current.systemPrompt,
-            customInstructions: current.customInstructions,
-            personality: current.personality,
-            backstory: current.backstory
-          }
-        }),
+        body: JSON.stringify({ model })
       });
 
-      if (res.status === 401) {
-        logout();
-        navigate("/login", { replace: true });
-        return;
+      if (!aiRes.ok) {
+        const errorData = await aiRes.json().catch(() => ({}));
+        console.error('AI response error:', errorData);
+        throw new Error(errorData.error || t('errors.serverError'));
       }
 
-      if (!res.ok) {
-        const errorData = await res.text();
-        throw new Error(errorData || 'Failed to get response from the server');
-      }
+      const aiMsg = await aiRes.json();
+      setMessages(prev => [...prev, aiMsg]);
+      setIsTyping(false);
 
-      const data = await res.json();
-
-      // Add a small delay before showing the response
-      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 1000));
-
-      // Load latest messages to ensure we have the saved assistant response
-      const updatedMsgs = await fetch(`/api/chat/${current.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }).then(res => res.json());
-      
-      setMessages(updatedMsgs);
-    } catch (err) {
-      console.error("Chat error:", err);
+    } catch (error) {
+      console.error('Error in chat:', error);
       setToast({
         type: 'error',
-        message: 'Failed to send message. Please try again.',
+        message: error.message,
         duration: 5000
       });
-    } finally {
       setIsTyping(false);
     }
   }
 
-  async function handleEditSave(idx) {
-    const messageId = messages[idx].id;
+  async function handleEdit(index) {
+    const msg = messages[index];
+    if (!msg) return;
+
     try {
-      const res = await fetch(`/api/chat/message/${messageId}`, {
+      const res = await fetch(`/api/chat/${current.id}/message/${msg.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          content: editText,
-          reactions: messages[idx].reactions 
-        }),
+        body: JSON.stringify({ content: editText })
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update message");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || t('errors.serverError'));
       }
 
-      const updated = await res.json();
-      setMessages(prev => prev.map((m, i) => i === idx ? updated : m));
+      const updatedMsg = await res.json();
+      setMessages(prev => [
+        ...prev.slice(0, index),
+        updatedMsg,
+        ...prev.slice(index + 1)
+      ]);
       setEditingIndex(null);
       setEditText("");
+
     } catch (error) {
-      console.error("Error updating message:", error);
+      console.error('Error editing message:', error);
       setToast({
         type: 'error',
-        message: 'Failed to update message. Please try again.',
+        message: error.message,
         duration: 5000
       });
     }
   }
 
-  async function handleDelete(idx) {
-    const messageId = messages[idx].id;
+  async function handleReaction(messageId, emoji) {
     try {
-      const res = await fetch(`/api/chat/message/${messageId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to delete message");
-      }
-
-      setMessages(prev => prev.filter((_, i) => i !== idx));
-    } catch (error) {
-      console.error("Error deleting message:", error);
-      setToast({
-        type: 'error',
-        message: 'Failed to delete message. Please try again.',
-        duration: 5000
-      });
-    }
-  }
-
-  async function handleAddReaction(idx, emoji) {
-    const messageId = messages[idx].id;
-    const prevReactions = messages[idx].reactions || {};
-    const newReactions = prevReactions[emoji] ? {} : { [emoji]: 1 };
-
-    try {
-      const res = await fetch(`/api/chat/message/${messageId}`, {
-        method: "PUT",
+      const res = await fetch(`/api/chat/${current.id}/message/${messageId}/reaction`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          content: messages[idx].content,
-          reactions: newReactions
-        }),
+        body: JSON.stringify({ emoji })
       });
 
       if (!res.ok) {
-        throw new Error("Failed to update reactions");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || t('errors.serverError'));
       }
 
-      const updated = await res.json();
-      setMessages(prev => prev.map((m, i) => i === idx ? updated : m));
+      const updatedMsg = await res.json();
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? updatedMsg : msg
+      ));
+
     } catch (error) {
-      console.error("Error updating reactions:", error);
+      console.error('Error adding reaction:', error);
       setToast({
         type: 'error',
-        message: 'Failed to update reactions. Please try again.',
+        message: error.message,
         duration: 5000
       });
     }
-    setPickerIndex(null);
-    }
-
-  function autoResize() {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
   }
 
-  function handleFocus() {
-    setTimeout(() => {
-      textareaRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
+  async function clearChat() {
+    if (!window.confirm(t('chat.confirmClear'))) return;
+
+    try {
+      const res = await fetch(`/api/chat/${current.id}/clear`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
       });
-    }, 300);
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || t('errors.serverError'));
+      }
+
+      setMessages([]);
+      setToast({
+        type: 'success',
+        message: t('chat.chatCleared'),
+        duration: 3000
+      });
+
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+      setToast({
+        type: 'error',
+        message: error.message,
+        duration: 5000
+      });
+    }
   }
 
-  function handleEditInit(idx) {
-    setEditingIndex(idx);
-    setEditText(messages[idx].content);
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
   }
-  function handleEditCancel() {
-    setEditingIndex(null);
-    setEditText("");
-  }
-
-  // Helper function to check if any metadata fields are filled
-  const hasMetadata = current && (
-    current.age ||
-    current.gender ||
-    current.race ||
-    current.occupation ||
-    current.likes ||
-    current.dislikes ||
-    current.backstory
-  );
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -365,124 +299,95 @@ export default function ChatWindow({ onMenuClick }) {
         <button
           onClick={clearChat}
           className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-          title="Clear chat"
+          title={t('chat.clearChat')}
         >
           <i className="fas fa-trash" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">
-              Loading messages...
+              {t('chat.loading')}
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">
-              No messages yet. Start a conversation!
+              {t('chat.noMessages')}
             </div>
           </div>
         ) : (
-          messages.map((msg, idx) => (
-            <div
-              key={msg.id || idx}
-              className={`flex ${
-                msg.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`relative group max-w-[80%] p-3 rounded-lg ${
-                  msg.role === "user"
-                    ? "bg-[var(--chat-user-bg)] text-[var(--chat-user-text)] rounded-br-none"
-                    : "bg-[var(--chat-assistant-bg)] text-[var(--chat-assistant-text)] rounded-bl-none"
-                }`}
-              >
-                {editingIndex === idx ? (
-                  <div className="flex flex-col space-y-2">
+          messages.map((msg, i) => (
+            <div key={msg.id} className="group">
+              <div className={`chat-message ${
+                msg.role === 'user' ? 'user-message' : 'character-message'
+              }`}>
+                {editingIndex === i ? (
+                  <div className="flex items-end space-x-2">
                     <textarea
                       value={editText}
                       onChange={(e) => setEditText(e.target.value)}
-                      className="w-full p-2 rounded bg-background-secondary-light dark:bg-background-secondary-dark text-text-light dark:text-text-dark"
-                      rows={3}
+                      className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                      rows={1}
+                      autoFocus
                     />
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={handleEditCancel}
-                        className="px-2 py-1 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => handleEditSave(idx)}
-                        className="px-2 py-1 text-sm bg-background-secondary-light dark:bg-background-secondary-dark rounded-full shadow hover:shadow-md transition-shadow"
-                      >
-                        Save
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleEdit(i)}
+                      className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                    >
+                      {t('common.save')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingIndex(null);
+                        setEditText("");
+                      }}
+                      className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    >
+                      {t('common.cancel')}
+                    </button>
                   </div>
                 ) : (
                   <>
-                    <div className="whitespace-pre-wrap">{msg.content}</div>
-                    {/* Message actions */}
-                    <div
-                      className={`absolute ${
-                        msg.role === "user" ? "-left-8" : "-right-8"
-                      } top-0 hidden group-hover:flex items-center space-x-1`}
-                    >
-                      {msg.role === "user" && (
-                        <>
-                          <button
-                            onClick={() => handleEditInit(idx)}
-                            className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            title="Edit message"
-                          >
-                            <i className="fas fa-pencil-alt" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(idx)}
-                            className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                            title="Delete message"
-                          >
-                            <i className="fas fa-trash" />
-                          </button>
-                        </>
+                    <div className="relative">
+                      {msg.content}
+                      {msg.role === 'user' && (
+                        <button
+                          onClick={() => {
+                            setEditingIndex(i);
+                            setEditText(msg.content);
+                          }}
+                          className="absolute -right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title={t('common.edit')}
+                        >
+                          <i className="fas fa-pencil-alt text-gray-500 hover:text-gray-700" />
+                        </button>
                       )}
+                    </div>
+                    <div className="flex items-center space-x-2 mt-1">
                       <button
-                        onClick={() => setPickerIndex(idx)}
-                        className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                        title="Add reaction"
+                        onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                        className="text-xs text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <i className="far fa-smile" />
                       </button>
+                      {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
+                        <span key={emoji} className="text-xs text-gray-500">
+                          {emoji} {count}
+                        </span>
+                      ))}
                     </div>
-                    {/* Reactions */}
-                    {msg.reactions && Object.entries(msg.reactions).length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {Object.entries(msg.reactions).map(([emoji, count]) => (
-                          <button
-                            key={emoji}
-                            onClick={() => handleAddReaction(idx, emoji)}
-                            className="px-2 py-1 text-sm bg-background-secondary-light dark:bg-background-secondary-dark rounded-full shadow hover:shadow-md transition-shadow"
-                          >
-                            {emoji} {count}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {/* Reaction picker */}
-                    {pickerIndex === idx && (
-                      <div className="absolute bottom-full mb-2 left-0">
-                        <ReactionPicker
-                          onSelect={(emoji) => {
-                            handleAddReaction(idx, emoji);
-                            setPickerIndex(null);
-                          }}
-                          onClose={() => setPickerIndex(null)}
-                        />
-                      </div>
+                    {pickerIndex === i && (
+                      <ReactionPicker
+                        onSelect={(emoji) => {
+                          handleReaction(msg.id, emoji);
+                          setPickerIndex(null);
+                        }}
+                        onClose={() => setPickerIndex(null)}
+                      />
                     )}
                   </>
                 )}
@@ -490,15 +395,9 @@ export default function ChatWindow({ onMenuClick }) {
             </div>
           ))
         )}
+        {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Typing indicator */}
-      {isTyping && (
-        <div className="p-4 border-t border-gray-300 dark:border-gray-700">
-          <TypingIndicator />
-        </div>
-      )}
 
       {/* Input */}
       <div className="p-4 border-t border-gray-300 dark:border-gray-700">
@@ -506,26 +405,18 @@ export default function ChatWindow({ onMenuClick }) {
           <textarea
             ref={textareaRef}
             value={input}
-            onChange={(e) => {
-              setInput(e.target.value);
-              autoResize();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Type message (Enter to send, Shift+Enter for new line)"
-            className="flex-1 p-2 bg-background-secondary-light dark:bg-background-secondary-dark border border-border-light dark:border-border-dark rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('chat.typeMessage')}
+            className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             rows={1}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <i className="fas fa-paper-plane" />
+            {t('chat.sendMessage')}
           </button>
         </div>
       </div>
