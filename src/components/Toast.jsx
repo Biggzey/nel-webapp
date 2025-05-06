@@ -30,6 +30,7 @@ export function ToastContainer({ toasts, onClose }) {
       {toasts.map((toast) => (
         <Toast
           key={toast.id}
+          id={toast.id}
           message={toast.message}
           type={toast.type}
           duration={toast.duration}
@@ -40,18 +41,20 @@ export function ToastContainer({ toasts, onClose }) {
   );
 }
 
-export default function Toast({ message, type = 'info', duration = 3000, onClose }) {
+function Toast({ id, message, type = 'info', duration = 3000, onClose }) {
   useEffect(() => {
     if (duration && onClose) {
-      const timer = setTimeout(onClose, duration);
+      const timer = setTimeout(() => {
+        onClose(id);
+      }, duration);
       return () => clearTimeout(timer);
     }
-  }, [duration, onClose]);
+  }, [duration, onClose, id]);
 
   const toastStyle = TOAST_TYPES[type] || TOAST_TYPES.info;
 
   return (
-    <div className="animate-fade-in-up">
+    <div className="transform transition-all duration-300 ease-in-out">
       <div
         data-testid="toast"
         className={`flex items-center justify-between px-4 py-3 rounded-lg shadow-lg ${toastStyle.bgColor} ${toastStyle.textColor}`}
@@ -62,7 +65,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
         </div>
         {onClose && (
           <button
-            onClick={onClose}
+            onClick={() => onClose(id)}
             className="ml-4 hover:opacity-80 transition"
             aria-label="Close notification"
           >
@@ -72,4 +75,6 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
       </div>
     </div>
   );
-} 
+}
+
+export default Toast; 

@@ -24,13 +24,6 @@ function Profile({ user, onSave }) {
   const addToast = (toast) => {
     const id = nanoid();
     setToasts(prev => [...prev, { ...toast, id }]);
-    
-    // Remove toast after duration
-    if (toast.duration) {
-      setTimeout(() => {
-        removeToast(id);
-      }, toast.duration);
-    }
   };
 
   const removeToast = (id) => {
@@ -162,7 +155,9 @@ function Profile({ user, onSave }) {
 
       // If we got here, the profile update was successful
       // Update parent component with the response data
-      await onSave(data);
+      if (onSave && data.user) {
+        await onSave(data.user);
+      }
 
       // Show success toast for profile update
       addToast({
@@ -346,7 +341,7 @@ function Profile({ user, onSave }) {
         </button>
       </div>
 
-      {/* Toast notifications - position them in the bottom right */}
+      {/* Toast notifications */}
       <div className="fixed bottom-4 right-4 z-50">
         <ToastContainer toasts={toasts} onClose={removeToast} />
       </div>

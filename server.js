@@ -811,7 +811,14 @@ try {
 
       const updated = await prisma.user.update({
         where: { id: req.user.id },
-        data: updateData
+        data: updateData,
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          displayName: true,
+          avatar: true
+        }
       });
 
       console.log('Profile updated successfully:', {
@@ -822,8 +829,7 @@ try {
 
       res.json({ 
         success: true,
-        displayName: updated.displayName, 
-        avatar: updated.avatar,
+        user: updated,
         message: "Profile updated successfully"
       });
     } catch (err) {
