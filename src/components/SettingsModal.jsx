@@ -3,8 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
 import { useLanguage } from '../context/LanguageContext';
-import Toast from './Toast';
+import { ToastContainer } from './Toast';
 import { useNavigate } from 'react-router-dom';
+import { nanoid } from 'nanoid';
 
 // Tab components
 function Profile({ user, onSave }) {
@@ -18,7 +19,16 @@ function Profile({ user, onSave }) {
     confirmPassword: ''
   });
   const { navigate } = useNavigate();
-  const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (toast) => {
+    const id = nanoid();
+    setToasts(prev => [...prev, { ...toast, id }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -27,7 +37,7 @@ function Profile({ user, onSave }) {
     // Validate file size before processing
     const maxSizeMB = 5; // 5MB max for original file
     if (file.size > maxSizeMB * 1024 * 1024) {
-      setToast({
+      addToast({
         type: 'error',
         message: `Image file too large. Maximum size is ${maxSizeMB}MB. Please choose a smaller image.`,
         duration: 5000
@@ -75,7 +85,7 @@ function Profile({ user, onSave }) {
         const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
         
         setFormData(prev => ({ ...prev, avatar: resizedDataUrl }));
-        setToast({
+        addToast({
           type: 'success',
           message: 'Image uploaded and resized successfully',
           duration: 3000
@@ -84,7 +94,7 @@ function Profile({ user, onSave }) {
     };
     
     reader.onerror = () => {
-      setToast({
+      addToast({
         type: 'error',
         message: 'Failed to read image file. Please try again with a different image.',
         duration: 5000
@@ -96,9 +106,6 @@ function Profile({ user, onSave }) {
 
   const handleSave = async () => {
     try {
-      // Clear any existing toasts first
-      setToast(null);
-
       // Update profile
       const profileRes = await fetch('/api/user/profile', {
         method: 'PUT',
@@ -156,10 +163,17 @@ function Profile({ user, onSave }) {
       // Update parent component with the response data
       onSave(data);
 
+      // Show success toast for profile update
+      addToast({
+        type: 'success',
+        message: data.message || t('settings.profileUpdated'),
+        duration: 3000
+      });
+
       // If password fields are filled, update password
       if (formData.oldPassword && formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
-          setToast({
+          addToast({
             type: 'error',
             message: t('profile.passwordMismatch'),
             duration: 5000
@@ -211,24 +225,17 @@ function Profile({ user, onSave }) {
         }));
 
         // Show success toast for password change
-        setToast({
+        addToast({
           type: 'success',
           message: t('profile.passwordChanged'),
-          duration: 3000
-        });
-      } else {
-        // Show success toast for profile update only
-        setToast({
-          type: 'success',
-          message: data.message || t('settings.profileUpdated'),
           duration: 3000
         });
       }
     } catch (error) {
       console.error('Error updating profile:', error);
       
-      // Set the error toast
-      setToast({
+      // Show error toast
+      addToast({
         type: 'error',
         message: error.message || 'An unexpected error occurred. Please try again.',
         duration: 5000
@@ -338,15 +345,8 @@ function Profile({ user, onSave }) {
         </button>
       </div>
 
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
@@ -356,12 +356,21 @@ function Preferences() {
   const { language, setLanguage, t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
   const [tempColor, setTempColor] = useState(chatColor);
-  const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
   // Reset temp color when modal opens
   useEffect(() => {
     setTempColor(chatColor);
   }, [chatColor]);
+
+  const addToast = (toast) => {
+    const id = nanoid();
+    setToasts(prev => [...prev, { ...toast, id }]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   const handleSave = async () => {
     try {
@@ -369,14 +378,14 @@ function Preferences() {
       setChatColor(tempColor);
       
       // Show success toast
-      setToast({
+      addToast({
         type: 'success',
         message: t('settings.preferencesUpdated'),
         duration: 3000
       });
     } catch (error) {
       console.error('Error saving preferences:', error);
-      setToast({
+      addToast({
         type: 'error',
         message: error.message || t('errors.serverError'),
         duration: 5000
@@ -477,15 +486,8 @@ function Preferences() {
         </button>
       </div>
 
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

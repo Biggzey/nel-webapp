@@ -23,6 +23,23 @@ const TOAST_TYPES = {
   }
 };
 
+// ToastContainer component to manage multiple toasts
+export function ToastContainer({ toasts, onClose }) {
+  return (
+    <div className="fixed bottom-4 right-4 z-50 space-y-2">
+      {toasts.map((toast, index) => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => onClose(toast.id)}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function Toast({ message, type = 'info', duration = 3000, onClose }) {
   useEffect(() => {
     if (duration && onClose) {
@@ -34,7 +51,7 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
   const toastStyle = TOAST_TYPES[type] || TOAST_TYPES.info;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
+    <div className="animate-fade-in-up">
       <div
         data-testid="toast"
         className={`flex items-center space-x-2 px-4 py-3 rounded-lg shadow-lg ${toastStyle.bgColor} ${toastStyle.textColor}`}
