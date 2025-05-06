@@ -10,7 +10,7 @@ export default {
         
         // Background colors
         background: {
-          light: "#f0f7fa",    // Changed to pale cyan
+          light: "##fcba03",    // Changed to pale cyan
           dark: "#1e1e1e",     // Dark mode background
           secondary: {
             light: "#e6f3f7",   // Slightly darker pale cyan for secondary
