@@ -126,10 +126,21 @@ function Profile({ user, onSave }) {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault(); // Prevent any form submission
+    if (e) {
+      e.preventDefault(); // Prevent any default behavior
+      e.stopPropagation(); // Stop event propagation
+    }
+    
+    console.log('Save button clicked');
+    
+    if (isSaving) {
+      console.log('Already saving, ignoring click');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      console.log('Saving profile with data:', {
+      console.log('Starting profile save with data:', {
         displayName: formData.displayName,
         hasAvatar: !!formData.avatar
       });
@@ -256,12 +267,13 @@ function Profile({ user, onSave }) {
         duration: 5000
       });
     } finally {
+      console.log('Save operation completed');
       setIsSaving(false);
     }
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-6">
+    <div className="space-y-6">
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -349,7 +361,8 @@ function Profile({ user, onSave }) {
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleSave}
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -359,7 +372,7 @@ function Profile({ user, onSave }) {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </form>
+    </div>
   );
 }
 
