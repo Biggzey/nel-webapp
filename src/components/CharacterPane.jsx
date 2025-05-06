@@ -14,7 +14,7 @@ export default function CharacterPane() {
 
   return (
     <aside className="hidden md:flex flex-col w-72 bg-background-light dark:bg-background-dark p-4 border-r border-border-light dark:border-border-dark">
-      <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">
+      <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark mb-2">
         {current?.name}
       </h2>
       

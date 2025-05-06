@@ -72,7 +72,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
       {/* Name + bookmark + edit */}
       <div className="mt-4 flex items-center space-x-2">
-        <h2 className="text-2xl font-semibold">{current.name}</h2>
+        <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">{current.name}</h2>
         <button
           onClick={() => toggleBookmark(selectedIndex)}
           className={`text-xl ${
