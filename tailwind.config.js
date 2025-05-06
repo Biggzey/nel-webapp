@@ -10,8 +10,8 @@ export default {
         
         // Background colors
         background: {
-          light: "#b6b8ba",    // Soft blue-gray for comfortable viewing
-          dark: "#1e1e1e",     // Dark mode background
+          light: "#0f0f0f",    // Soft blue-gray for comfortable viewing
+          dark: "#2b2b2b",     // Dark mode background
           secondary: {
             light: "#e6f3f7",   // Slightly darker pale cyan for secondary
             dark: "#2a2a2a"     // Dark mode elevated surfaces
