@@ -22,11 +22,21 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
             {/* Profile section */}
             <div className="p-3 border-b border-container-border-light/10 dark:border-container-border-dark/10">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-semibold text-lg">
-                  {initial}
+                <div className="w-10 h-10 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white font-semibold text-lg">
+                  {user?.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span>{initial}</span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{user?.username}</div>
+                  <div className="font-medium truncate">
+                    {user?.displayName || user?.username}
+                  </div>
                   <div className="text-sm text-text-light/60 dark:text-text-dark/60 truncate">
                     {user?.email}
                   </div>

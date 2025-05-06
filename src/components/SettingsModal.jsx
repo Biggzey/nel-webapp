@@ -3,25 +3,222 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
 import { useLanguage } from '../context/LanguageContext';
+import Toast from './Toast';
+import { useNavigate } from 'react-router-dom';
 
 // Tab components
 function Profile({ user, onSave }) {
   const { t } = useLanguage();
+  const { token, logout } = useAuth();
   const [formData, setFormData] = useState({
-    username: user?.username || '',
     displayName: user?.displayName || '',
-    avatar: user?.avatar || null
+    avatar: user?.avatar || null,
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
+  const { navigate } = useNavigate();
+  const [toast, setToast] = useState(null);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
+    // Validate file size before processing
+    const maxSizeMB = 5; // 5MB max for original file
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      setToast({
+        type: 'error',
+        message: `Image file too large. Maximum size is ${maxSizeMB}MB. Please choose a smaller image.`,
+        duration: 5000
+      });
+      return;
+    }
+
+    // Create an image element to resize the file
+    const img = document.createElement('img');
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData(prev => ({ ...prev, avatar: reader.result }));
+    
+    reader.onload = (e) => {
+      img.src = e.target.result;
+      
+      img.onload = () => {
+        // Max width and height for the avatar
+        const maxWidth = 256;
+        const maxHeight = 256;
+        
+        let width = img.width;
+        let height = img.height;
+        
+        // Calculate new dimensions
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        // Create canvas and resize image
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Get resized image as base64 string
+        const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        setFormData(prev => ({ ...prev, avatar: resizedDataUrl }));
+        setToast({
+          type: 'success',
+          message: 'Image uploaded and resized successfully',
+          duration: 3000
+        });
+      };
     };
+    
+    reader.onerror = () => {
+      setToast({
+        type: 'error',
+        message: 'Failed to read image file. Please try again with a different image.',
+        duration: 5000
+      });
+    };
+    
     reader.readAsDataURL(file);
+  };
+
+  const handleSave = async () => {
+    try {
+      // Update profile
+      const profileRes = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          displayName: formData.displayName,
+          avatar: formData.avatar
+        })
+      });
+
+      // Handle different HTTP status codes
+      if (profileRes.status === 404) {
+        throw new Error('Server endpoint not found. Please try again later or contact support if the issue persists.');
+      } else if (profileRes.status === 401) {
+        throw new Error('Your session has expired. Please log in again.');
+      }
+
+      const data = await profileRes.json().catch(() => ({
+        error: 'Failed to parse server response',
+        code: 'PARSE_ERROR'
+      }));
+
+      if (!profileRes.ok) {
+        // Show specific error messages based on error code
+        switch (data.code) {
+          case 'IMAGE_TOO_LARGE':
+            throw new Error('Avatar image too large. Please choose a smaller image or reduce its dimensions.');
+          case 'NAME_TOO_LONG':
+            throw new Error('Display name too long. Maximum length is 50 characters.');
+          case 'AUTH_REQUIRED':
+            throw new Error('Please log in to update your profile.');
+          case 'INVALID_TOKEN':
+            throw new Error('Your session has expired. Please log in again.');
+          case 'UPDATE_FAILED':
+            throw new Error('Failed to update profile. Please try again.');
+          case 'PARSE_ERROR':
+            throw new Error('Failed to process server response. Please try again.');
+          default:
+            throw new Error(data.error || 'An unexpected error occurred. Please try again.');
+        }
+      }
+
+      // If password fields are filled, update password
+      if (formData.oldPassword && formData.newPassword) {
+        if (formData.newPassword !== formData.confirmPassword) {
+          setToast({
+            type: 'error',
+            message: t('profile.passwordMismatch'),
+            duration: 5000
+          });
+          return;
+        }
+
+        const passwordRes = await fetch('/api/user/password', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            oldPassword: formData.oldPassword,
+            newPassword: formData.newPassword,
+            confirmPassword: formData.confirmPassword
+          })
+        });
+
+        const pwData = await passwordRes.json().catch(() => ({}));
+
+        if (!passwordRes.ok) {
+          // Show specific error messages based on error code
+          switch (pwData.code) {
+            case 'PASSWORD_MISMATCH':
+              throw new Error('New passwords do not match.');
+            case 'INVALID_PASSWORD':
+              throw new Error('Password must be at least 8 characters long and contain uppercase, lowercase, and numbers.');
+            case 'INVALID_CURRENT_PASSWORD':
+              throw new Error('Current password is incorrect.');
+            default:
+              throw new Error(pwData.error || t('errors.serverError'));
+          }
+        }
+
+        // Clear password fields
+        setFormData(prev => ({
+          ...prev,
+          oldPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        }));
+
+        setToast({
+          type: 'success',
+          message: t('profile.passwordChanged'),
+          duration: 3000
+        });
+      }
+
+      // Show success toast with specific message
+      setToast({
+        type: 'success',
+        message: data.message || t('settings.profileUpdated'),
+        duration: 3000
+      });
+
+      // Update parent component with the response data
+      onSave(data);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setToast({
+        type: 'error',
+        message: error.message || 'An unexpected error occurred. Please try again.',
+        duration: 5000
+      });
+
+      // If session expired, redirect to login
+      if (error.message.includes('session has expired')) {
+        logout();
+        navigate('/login');
+      }
+    }
   };
 
   return (
@@ -40,7 +237,7 @@ function Profile({ user, onSave }) {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-white text-5xl font-semibold">
-                {formData.username.charAt(0).toUpperCase()}
+                {user?.username?.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
@@ -74,26 +271,61 @@ function Profile({ user, onSave }) {
           <div className="mt-1 text-xs text-text-light/60 dark:text-text-dark/60 text-right">{formData.displayName.length}/50</div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">{t('profile.username')}</label>
-          <input
-            type="text"
-            value={formData.username}
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-            className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder={t('profile.enterUsername')}
-            maxLength={20}
-          />
-          <div className="mt-1 text-xs text-text-light/60 dark:text-text-dark/60 text-right">{formData.username.length}/20</div>
+        {/* Password Change Section */}
+        <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium">{t('profile.changePassword')}</h3>
+          
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('profile.currentPassword')}</label>
+            <input
+              type="password"
+              value={formData.oldPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, oldPassword: e.target.value }))}
+              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('profile.newPassword')}</label>
+            <input
+              type="password"
+              value={formData.newPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
+              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">{t('profile.confirmPassword')}</label>
+            <input
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="••••••••"
+            />
+          </div>
         </div>
 
         <button
-          onClick={() => onSave(formData)}
+          onClick={handleSave}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors"
         >
           {t('settings.saveChanges')}
         </button>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
@@ -103,16 +335,34 @@ function Preferences() {
   const { language, setLanguage, t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
   const [tempColor, setTempColor] = useState(chatColor);
+  const [toast, setToast] = useState(null);
 
   // Reset temp color when modal opens
   useEffect(() => {
     setTempColor(chatColor);
   }, [chatColor]);
 
-  const handleSave = () => {
-    setIsSaving(true);
-    setChatColor(tempColor);
-    setIsSaving(false);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setChatColor(tempColor);
+      
+      // Show success toast
+      setToast({
+        type: 'success',
+        message: t('settings.preferencesUpdated'),
+        duration: 3000
+      });
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      setToast({
+        type: 'error',
+        message: error.message || t('errors.serverError'),
+        duration: 5000
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -205,19 +455,33 @@ function Preferences() {
           {isSaving ? t('settings.saving') : t('settings.saveChanges')}
         </button>
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
 
 export default function SettingsModal({ isOpen, onClose }) {
   const [activeTab, setActiveTab] = useState('profile');
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
 
   const tabs = [
     { id: 'profile', label: t('settings.profile'), icon: 'user' },
     { id: 'preferences', label: t('settings.preferences'), icon: 'cog' }
   ];
+
+  const handleProfileSave = async (data) => {
+    await refreshUser(); // Refresh user data after profile update
+  };
 
   if (!isOpen) return null;
 
@@ -249,7 +513,7 @@ export default function SettingsModal({ isOpen, onClose }) {
         {/* Content area with container styling */}
         <div className="flex-1 bg-background-container-light dark:bg-background-container-dark">
           <div className="p-6 overflow-y-auto max-h-[80vh]">
-            {activeTab === 'profile' && <Profile user={user} onSave={() => {}} />}
+            {activeTab === 'profile' && <Profile user={user} onSave={handleProfileSave} />}
             {activeTab === 'preferences' && <Preferences />}
           </div>
         </div>

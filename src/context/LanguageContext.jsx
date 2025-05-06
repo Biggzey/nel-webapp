@@ -13,7 +13,9 @@ const translations = {
       language: 'Language',
       chatColor: 'Chat Bubble Color',
       saveChanges: 'Save Changes',
-      saving: 'Saving...'
+      saving: 'Saving...',
+      profileUpdated: 'Profile updated successfully',
+      preferencesUpdated: 'Preferences updated successfully'
     },
     profile: {
       username: 'Username',
@@ -21,7 +23,14 @@ const translations = {
       uploadPicture: 'Click to upload a new profile picture',
       enterUsername: 'Enter your username',
       enterDisplayName: 'Enter your display name',
-      profilePicture: 'Profile Picture'
+      profilePicture: 'Profile Picture',
+      changePassword: 'Change Password',
+      currentPassword: 'Current Password',
+      newPassword: 'New Password',
+      confirmPassword: 'Confirm Password',
+      passwordChanged: 'Password updated successfully',
+      passwordMismatch: 'New passwords do not match',
+      invalidCurrentPassword: 'Current password is incorrect'
     },
     chat: {
       sendMessage: 'Send message',
@@ -121,7 +130,9 @@ const translations = {
       language: 'Idioma',
       chatColor: 'Color de Burbuja de Chat',
       saveChanges: 'Guardar Cambios',
-      saving: 'Guardando...'
+      saving: 'Guardando...',
+      profileUpdated: 'Perfil actualizado exitosamente',
+      preferencesUpdated: 'Preferencias actualizadas exitosamente'
     },
     profile: {
       username: 'Nombre de Usuario',
@@ -129,7 +140,14 @@ const translations = {
       uploadPicture: 'Haz clic para subir una nueva foto de perfil',
       enterUsername: 'Ingresa tu nombre de usuario',
       enterDisplayName: 'Ingresa tu nombre para mostrar',
-      profilePicture: 'Foto de Perfil'
+      profilePicture: 'Foto de Perfil',
+      changePassword: 'Cambiar Contraseña',
+      currentPassword: 'Contraseña Actual',
+      newPassword: 'Nueva Contraseña',
+      confirmPassword: 'Confirmar Contraseña',
+      passwordChanged: 'Contraseña actualizada exitosamente',
+      passwordMismatch: 'Las nuevas contraseñas no coinciden',
+      invalidCurrentPassword: 'La contraseña actual es incorrecta'
     },
     chat: {
       sendMessage: 'Enviar mensaje',

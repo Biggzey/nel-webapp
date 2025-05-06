@@ -10,7 +10,7 @@ import Toast from "./Toast";
 
 export default function ChatWindow({ onMenuClick }) {
   const { current } = useCharacter();
-  const { token, logout } = useAuth();
+  const { token, logout, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const model = import.meta.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
@@ -322,6 +322,18 @@ export default function ChatWindow({ onMenuClick }) {
         ) : (
           messages.map((msg, i) => (
             <div key={msg.id} className="group max-w-full">
+              {/* Message header for user messages */}
+              {msg.role === 'user' && (
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2">
+                  {user?.displayName || user?.username}
+                </div>
+              )}
+              {/* Message header for assistant messages */}
+              {msg.role === 'assistant' && (
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2">
+                  {current?.name}
+                </div>
+              )}
               <div className={`chat-message ${
                 msg.role === 'user' ? 'user-message' : 'character-message'
               }`}>

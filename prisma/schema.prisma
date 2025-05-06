@@ -11,6 +11,8 @@ model User {
   id             Int         @id @default(autoincrement())
   email          String      @unique
   username       String      @unique  // Required for all users
+  displayName    String?     // Optional display name
+  avatar         String?     // Optional avatar URL
   passwordHash   String
   role           String      @default("USER")  // Can be "SUPER_ADMIN", "ADMIN", "MODERATOR", or "USER" in descending hierarchy
   characters     Character[]

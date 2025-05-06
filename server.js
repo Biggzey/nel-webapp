@@ -123,6 +123,7 @@ try {
 
   // Add error-catching middleware for JSON parsing
   app.use(express.json({
+    limit: '10mb', // Increase payload size limit
     verify: (req, res, buf) => {
       try {
         JSON.parse(buf);
@@ -137,6 +138,11 @@ try {
         throw e;
       }
     }
+  }));
+
+  app.use(express.urlencoded({ 
+    extended: true,
+    limit: '10mb' // Increase payload size limit
   }));
 
   // Add error-catching middleware
@@ -739,83 +745,115 @@ try {
   // Get current user email and username
   app.get("/api/user", authMiddleware, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    res.json({ email: user.email, username: user.username });
+    res.json({ 
+      email: user.email, 
+      username: user.username, 
+      displayName: user.displayName,
+      avatar: user.avatar 
+    });
   });
 
-  // Update email
-  app.put("/api/user", authMiddleware, async (req, res) => {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email required" });
-    }
-
-    // Validate email format
-    if (!isValidEmail(email)) {
-      return res.status(400).json({ error: "Invalid email format" });
-    }
-
+  // Update user profile (display name and avatar)
+  app.put("/api/user/profile", authMiddleware, async (req, res) => {
+    const { displayName, avatar } = req.body;
     try {
-      // Check if email is already in use by another user
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          AND: [
-            { email },
-            { NOT: { id: req.user.id } }
-          ]
+      // Validate avatar size if present
+      if (avatar) {
+        const base64Size = Buffer.from(avatar.split(',')[1], 'base64').length;
+        const maxSize = 1024 * 1024; // 1MB
+        if (base64Size > maxSize) {
+          return res.status(413).json({ 
+            error: "Avatar image too large. Maximum size is 1MB. Try using a smaller image or reducing its dimensions.",
+            code: "IMAGE_TOO_LARGE"
+          });
         }
-      });
+      }
 
-      if (existingUser) {
-        return res.status(400).json({ error: "Email already in use" });
+      // Validate display name if present
+      if (displayName && displayName.length > 50) {
+        return res.status(400).json({
+          error: "Display name too long. Maximum length is 50 characters.",
+          code: "NAME_TOO_LONG"
+        });
       }
 
       const updated = await prisma.user.update({
         where: { id: req.user.id },
-        data: { email },
+        data: { 
+          displayName,
+          avatar
+        },
       });
-      res.json({ email: updated.email });
+
+      res.json({ 
+        success: true,
+        displayName: updated.displayName, 
+        avatar: updated.avatar,
+        message: "Profile updated successfully"
+      });
     } catch (err) {
-      console.error("Email update error:", err);
-      res.status(500).json({ error: "Failed to update email" });
+      console.error("Profile update error:", err);
+      res.status(500).json({ 
+        error: "Failed to update profile. Please try again.",
+        code: "UPDATE_FAILED",
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
     }
   });
 
-  // Change password
+  // Update password
   app.put("/api/user/password", authMiddleware, async (req, res) => {
     const { oldPassword, newPassword, confirmPassword } = req.body;
-    
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ error: "All password fields are required" });
-    }
-
-    // Check if passwords match
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ error: "New passwords do not match" });
-    }
-
-    // Validate password strength
-    if (!isValidPassword(newPassword)) {
-      return res.status(400).json({ 
-        error: "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number" 
-      });
-    }
 
     try {
-      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-      const valid = await bcrypt.compare(oldPassword, user.passwordHash);
-      if (!valid) {
-        return res.status(403).json({ error: "Current password is incorrect" });
+      // Validate password match
+      if (newPassword !== confirmPassword) {
+        return res.status(400).json({ 
+          error: "New passwords do not match",
+          code: "PASSWORD_MISMATCH"
+        });
       }
 
-      const hash = await bcrypt.hash(newPassword, 10);
+      // Validate password strength
+      if (!isValidPassword(newPassword)) {
+        return res.status(400).json({ 
+          error: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number",
+          code: "INVALID_PASSWORD"
+        });
+      }
+
+      // Get current user
+      const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+      
+      // Verify old password
+      const validPassword = await bcrypt.compare(oldPassword, user.passwordHash);
+      if (!validPassword) {
+        return res.status(401).json({ 
+          error: "Current password is incorrect",
+          code: "INVALID_CURRENT_PASSWORD"
+        });
+      }
+
+      // Hash new password
+      const newHash = await bcrypt.hash(newPassword, 10);
+      
+      // Update password
       await prisma.user.update({
         where: { id: req.user.id },
-        data: { passwordHash: hash },
+        data: { passwordHash: newHash }
       });
-      res.json({ success: true });
+
+      res.json({ 
+        success: true,
+        message: "Password updated successfully"
+      });
     } catch (err) {
-      console.error("Password change error:", err);
-      res.status(500).json({ error: "Failed to change password" });
+      console.error("Password update error:", err);
+      res.status(500).json({ 
+        error: "Failed to update password. Please try again.",
+        code: "UPDATE_FAILED",
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      });
     }
   });
 
