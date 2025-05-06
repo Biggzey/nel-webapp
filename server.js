@@ -1083,6 +1083,85 @@ try {
     }
   });
 
+  // Generate AI response
+  app.post("/api/chat/:characterId/generate", authMiddleware, async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.characterId);
+      const { model } = req.body;
+
+      // Verify character belongs to user
+      const character = await prisma.character.findFirst({
+        where: {
+          id: characterId,
+          userId: req.user.id
+        },
+        include: {
+          messages: {
+            orderBy: {
+              createdAt: 'asc'
+            }
+          }
+        }
+      });
+
+      if (!character) {
+        return res.status(404).json({ error: "Character not found" });
+      }
+
+      // Construct the system message using character's configuration
+      let systemMessage = character.systemPrompt || "You are a helpful AI assistant.";
+      
+      // Add personality if provided
+      if (character.personality) {
+        systemMessage += "\n\nPersonality:\n" + character.personality;
+      }
+      
+      // Add backstory if provided
+      if (character.backstory) {
+        systemMessage += "\n\nBackstory:\n" + character.backstory;
+      }
+      
+      // Add custom instructions if provided
+      if (character.customInstructions) {
+        systemMessage += "\n\nAdditional Instructions:\n" + character.customInstructions;
+      }
+
+      // Create messages array for OpenAI
+      const messages = [
+        { role: "system", content: systemMessage },
+        ...character.messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        }))
+      ];
+
+      // Get completion from OpenAI
+      const completion = await openai.chat.completions.create({ 
+        model, 
+        messages
+      });
+
+      // Save the assistant's response
+      const savedMessage = await prisma.chatMessage.create({
+        data: {
+          character: {
+            connect: {
+              id: characterId
+            }
+          },
+          role: "assistant",
+          content: completion.choices[0].message.content,
+          reactions: {}
+        }
+      });
+
+      res.json(savedMessage);
+    } catch (error) {
+      console.error("Error generating chat response:", error);
+      res.status(500).json({ error: "Failed to generate chat response" });
+    }
+  });
+
   // — CHARACTER ENDPOINTS —
 
   /**

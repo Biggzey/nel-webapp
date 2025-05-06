@@ -206,13 +206,33 @@ export function ThemeProvider({ children }) {
       } catch (error) {
         console.error("Error updating theme:", error);
       }
+    } else {
+      // When using custom color, keep assistant colors fixed
+      const root = document.documentElement;
+      root.style.setProperty('--chat-assistant-bg', '#f1f1f1');
+      root.style.setProperty('--chat-assistant-text', '#1a1a1a');
     }
   }, [dark, currentChatTheme, useCustomColor]);
 
   const handleSetChatColor = (color) => {
+    const root = document.documentElement;
     setChatColor(color);
     setUseCustomColor(true);
     localStorage.setItem("useCustomColor", "true");
+    
+    // Only update user chat bubble color
+    root.style.setProperty('--chat-user-bg', color);
+    // Set text color based on background color brightness
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    const textColor = brightness > 128 ? '#1a1a1a' : '#ffffff';
+    root.style.setProperty('--chat-user-text', textColor);
+    
+    // Keep assistant bubble colors fixed
+    root.style.setProperty('--chat-assistant-bg', '#f1f1f1');
+    root.style.setProperty('--chat-assistant-text', '#1a1a1a');
   };
 
   return (
