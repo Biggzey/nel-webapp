@@ -17,6 +17,10 @@
 .chat-message {
   max-width: 70%;
   word-wrap: break-word;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .user-message {

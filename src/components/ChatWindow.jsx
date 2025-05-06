@@ -321,10 +321,10 @@ export default function ChatWindow({ onMenuClick }) {
           </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={msg.id} className="group">
+            <div key={msg.id} className="group max-w-full">
               <div className={`chat-message ${
                 msg.role === 'user' ? 'user-message' : 'character-message'
-              }`}>
+              } break-words whitespace-pre-wrap`}>
                 {editingIndex === i ? (
                   <div className="flex items-end space-x-2">
                     <textarea
@@ -352,7 +352,7 @@ export default function ChatWindow({ onMenuClick }) {
                   </div>
                 ) : (
                   <>
-                    <div className="relative">
+                    <div className="relative max-w-full overflow-hidden">
                       {msg.content}
                       {msg.role === 'user' && (
                         <button
