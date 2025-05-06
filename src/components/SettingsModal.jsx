@@ -18,8 +18,19 @@ function Profile({ user, onSave }) {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Update form data when user prop changes
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      displayName: user?.displayName || '',
+      avatar: user?.avatar || null
+    }));
+  }, [user]);
+
   const navigate = useNavigate();
   const [toasts, setToasts] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const addToast = (toast) => {
     const id = nanoid();
@@ -213,36 +224,28 @@ function Profile({ user, onSave }) {
           }
         }
 
-        // Clear password fields
+        // Show success toast for password update
+        addToast({
+          type: 'success',
+          message: pwData.message || t('profile.passwordChanged'),
+          duration: 3000
+        });
+
+        // Clear password fields after successful update
         setFormData(prev => ({
           ...prev,
           oldPassword: '',
           newPassword: '',
           confirmPassword: ''
         }));
-
-        // Show success toast for password change
-        addToast({
-          type: 'success',
-          message: t('profile.passwordChanged'),
-          duration: 3000
-        });
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      
-      // Show error toast
+      console.error('Error in handleSave:', error);
       addToast({
         type: 'error',
-        message: error.message || 'An unexpected error occurred. Please try again.',
+        message: error.message,
         duration: 5000
       });
-
-      // If session expired, redirect to login
-      if (error.message.includes('session has expired')) {
-        logout();
-        navigate('/login');
-      }
     }
   };
 

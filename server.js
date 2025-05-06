@@ -744,13 +744,33 @@ try {
 
   // Get current user email and username
   app.get("/api/user", authMiddleware, async (req, res) => {
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    res.json({ 
-      email: user.email, 
-      username: user.username, 
-      displayName: user.displayName,
-      avatar: user.avatar 
-    });
+    try {
+      const user = await prisma.user.findUnique({ 
+        where: { id: req.user.id },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          displayName: true,
+          avatar: true,
+          role: true
+        }
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      console.log('Sending user data:', {
+        ...user,
+        avatar: user.avatar ? '[AVATAR_DATA]' : null
+      });
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      res.status(500).json({ error: "Failed to fetch user data" });
+    }
   });
 
   // Update user profile (display name and avatar)

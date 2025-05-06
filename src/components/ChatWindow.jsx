@@ -325,7 +325,7 @@ export default function ChatWindow({ onMenuClick }) {
               {/* Message header for user messages */}
               {msg.role === 'user' && (
                 <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2">
-                  {user?.displayName || user?.username}
+                  {user?.displayName || user?.username || 'You'}
                 </div>
               )}
               {/* Message header for assistant messages */}
