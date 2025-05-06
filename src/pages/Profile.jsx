@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 import ThemePicker from "../components/ThemePicker";
 import Toast from "../components/Toast";
 
 export default function Profile() {
   const { token } = useAuth();
   const nav = useNavigate();
+  const { t } = useLanguage();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -41,9 +43,9 @@ export default function Profile() {
         body: JSON.stringify({ email: newEmail }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || t('errors.serverError'));
       setEmail(data.email);
-      setToast({ message: "Email updated successfully!", type: "success" });
+      setToast({ message: t('profile.emailUpdated'), type: "success" });
     } catch (error) {
       setToast({ message: error.message, type: "error" });
     }
@@ -65,11 +67,11 @@ export default function Profile() {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || t('errors.serverError'));
       setOldPwd("");
       setNewPwd("");
       setConfirmPwd("");
-      setToast({ message: "Password changed successfully!", type: "success" });
+      setToast({ message: t('profile.passwordChanged'), type: "success" });
     } catch (error) {
       setToast({ message: error.message, type: "error" });
     }
@@ -81,16 +83,16 @@ export default function Profile() {
         onClick={() => nav("/")}
         className="mb-4 text-text-secondary-light dark:text-text-secondary-dark hover:underline"
       >
-        ← Back to Chats
+        ← {t('common.goBack')}
       </button>
 
       <h1 className="text-2xl mb-6 text-text-light dark:text-text-dark">
-        Your Profile
+        {t('profile.title')}
       </h1>
 
       {/* Username display */}
       <div className="mb-8 max-w-md">
-        <h2 className="text-xl text-text-light dark:text-text-dark">Username</h2>
+        <h2 className="text-xl text-text-light dark:text-text-dark">{t('common.username')}</h2>
         <p className="mt-2 text-text-secondary-light dark:text-text-secondary-dark">{username}</p>
       </div>
 
@@ -99,54 +101,54 @@ export default function Profile() {
 
       {/* Email update form */}
       <form onSubmit={handleEmailUpdate} className="mb-8 max-w-md">
-        <h2 className="text-xl mb-4 text-text-light dark:text-text-dark">Email</h2>
+        <h2 className="text-xl mb-4 text-text-light dark:text-text-dark">{t('common.email')}</h2>
         <div className="space-y-4">
           <input
             type="email"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             className="w-full p-2 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark"
-            placeholder="New email address"
+            placeholder={t('profile.newEmail')}
           />
           <button
             type="submit"
             className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition"
           >
-            Update Email
+            {t('profile.updateEmail')}
           </button>
         </div>
       </form>
 
       {/* Password change form */}
       <form onSubmit={handlePasswordChange} className="max-w-md">
-        <h2 className="text-xl mb-4 text-text-light dark:text-text-dark">Change Password</h2>
+        <h2 className="text-xl mb-4 text-text-light dark:text-text-dark">{t('profile.changePassword')}</h2>
         <div className="space-y-4">
           <input
             type="password"
             value={oldPwd}
             onChange={(e) => setOldPwd(e.target.value)}
             className="w-full p-2 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark"
-            placeholder="Current password"
+            placeholder={t('profile.currentPassword')}
           />
           <input
             type="password"
             value={newPwd}
             onChange={(e) => setNewPwd(e.target.value)}
             className="w-full p-2 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark"
-            placeholder="New password"
+            placeholder={t('profile.newPassword')}
           />
           <input
             type="password"
             value={confirmPwd}
             onChange={(e) => setConfirmPwd(e.target.value)}
             className="w-full p-2 border rounded bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark text-text-light dark:text-text-dark"
-            placeholder="Confirm new password"
+            placeholder={t('profile.confirmPassword')}
           />
           <button
             type="submit"
             className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition"
           >
-            Change Password
+            {t('profile.changePassword')}
           </button>
         </div>
       </form>
@@ -156,7 +158,7 @@ export default function Profile() {
         <Toast
           message={toast.message}
           type={toast.type}
-          duration={toast.duration}
+          duration={5000}
           onClose={() => setToast(null)}
         />
       )}

@@ -3,6 +3,8 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CharacterProvider, useCharacter } from "./context/CharacterContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { SettingsProvider } from "./context/SettingsContext";
+import { LanguageProvider } from "./context/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Toast from "./components/Toast";
 import Login from "./pages/Login";
@@ -12,7 +14,7 @@ import Sidebar from "./components/Sidebar";
 import CharacterPane from "./components/CharacterPane";
 import AdminPanel from "./pages/AdminPanel";
 import PersonalityModal from "./components/PersonalityModal";
-import ProfileModal from "./components/ProfileModal";
+import SettingsModal from "./components/SettingsModal";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -26,7 +28,7 @@ function AdminRoute({ children }) {
 
 function ProtectedContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { token } = useAuth();
   const {
     current,
@@ -53,7 +55,7 @@ function ProtectedContent() {
           border-r border-border-light dark:border-border-dark
         `}
         onLinkClick={handleCloseSidebar}
-        onSettingsClick={() => setIsProfileOpen(true)}
+        onSettingsClick={() => setIsSettingsOpen(true)}
       />
 
       {/* Backdrop for mobile when sidebar is open */}
@@ -96,9 +98,9 @@ function ProtectedContent() {
         onClose={handleCloseModal}
         onSave={handleSaveCharacter}
       />
-      <ProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
       />
     </div>
   );
@@ -168,7 +170,11 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <ThemeProvider>
-          <InnerApp />
+          <LanguageProvider>
+            <SettingsProvider>
+              <InnerApp />
+            </SettingsProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </AuthProvider>
     </ErrorBoundary>

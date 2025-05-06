@@ -37,8 +37,10 @@ const defaultChatThemes = {
 };
 
 const ThemeContext = createContext({
-  dark: false,
-  toggleDark: () => {},
+  dark: null, // null = system, true = dark, false = light
+  setTheme: () => {},
+  chatColor: "#7C3AED",
+  setChatColor: () => {},
   chatThemes: defaultChatThemes,
   currentChatTheme: "default",
   setChatTheme: () => {},
@@ -46,14 +48,18 @@ const ThemeContext = createContext({
 
 export function ThemeProvider({ children }) {
   const { token } = useAuth();
+  
+  // Theme state: null = system, true = dark, false = light
   const [dark, setDark] = useState(() => {
-    try {
-      const saved = localStorage.getItem("dark");
-      const isDark = saved === "true";
-      return isDark;
-    } catch {
-      return false;
-    }
+    const saved = localStorage.getItem("theme");
+    if (saved === "system") return null;
+    if (saved === "dark") return true;
+    if (saved === "light") return false;
+    return null; // Default to system
+  });
+
+  const [chatColor, setChatColor] = useState(() => {
+    return localStorage.getItem("chatColor") || "#7C3AED";
   });
 
   // Initialize chat theme from API
@@ -79,13 +85,22 @@ export function ThemeProvider({ children }) {
     }
   }, [token]);
 
-  // Toggle dark mode
-  const toggleDark = () => {
-    setDark(prevDark => {
-      const newDark = !prevDark;
-      localStorage.setItem("dark", String(newDark));
-      return newDark;
-    });
+  // Handle theme changes
+  const setTheme = (theme) => {
+    switch (theme) {
+      case 'system':
+        setDark(null);
+        localStorage.setItem("theme", "system");
+        break;
+      case 'dark':
+        setDark(true);
+        localStorage.setItem("theme", "dark");
+        break;
+      case 'light':
+        setDark(false);
+        localStorage.setItem("theme", "light");
+        break;
+    }
   };
 
   // Set chat theme
@@ -122,17 +137,47 @@ export function ThemeProvider({ children }) {
     }
   };
 
-  // Effect to handle dark mode and theme changes
+  // Effect to handle dark mode changes
   useEffect(() => {
-    try {
-      const root = document.documentElement;
+    const root = document.documentElement;
+    
+    if (dark === null) {
+      // System theme
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e) => {
+        if (e.matches) {
+          root.classList.add("dark");
+        } else {
+          root.classList.remove("dark");
+        }
+      };
       
+      // Set initial value
+      handleChange(mediaQuery);
+      
+      // Listen for changes
+      mediaQuery.addListener?.(handleChange);
+      return () => mediaQuery.removeListener?.(handleChange);
+    } else {
+      // Manual theme
       if (dark) {
         root.classList.add("dark");
       } else {
         root.classList.remove("dark");
       }
+    }
+  }, [dark]);
 
+  // Effect to handle chat color changes
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--chat-user-bg', chatColor);
+    localStorage.setItem("chatColor", chatColor);
+  }, [chatColor]);
+
+  // Effect to handle theme changes
+  useEffect(() => {
+    try {
       // Apply chat theme styles
       const themeStyles = defaultChatThemes[currentChatTheme];
       if (themeStyles) {
@@ -148,23 +193,12 @@ export function ThemeProvider({ children }) {
     }
   }, [dark, currentChatTheme]);
 
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => {
-      if (localStorage.getItem("dark") === null) {
-        setDark(e.matches);
-      }
-    };
-    
-    mediaQuery.addListener?.(handleChange);
-    return () => mediaQuery.removeListener?.(handleChange);
-  }, []);
-
   return (
     <ThemeContext.Provider value={{ 
       dark, 
-      toggleDark, 
+      setTheme,
+      chatColor,
+      setChatColor,
       chatThemes: defaultChatThemes,
       currentChatTheme,
       setChatTheme
