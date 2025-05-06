@@ -757,6 +757,13 @@ try {
   app.put("/api/user/profile", authMiddleware, async (req, res) => {
     const { displayName, avatar } = req.body;
     try {
+      console.log('Profile update request:', {
+        userId: req.user.id,
+        hasDisplayName: !!displayName,
+        hasAvatar: !!avatar,
+        displayNameLength: displayName?.length
+      });
+
       // Validate avatar size if present
       if (avatar) {
         const base64Size = Buffer.from(avatar.split(',')[1], 'base64').length;
@@ -777,12 +784,40 @@ try {
         });
       }
 
+      // Get current user data
+      const currentUser = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!currentUser) {
+        return res.status(404).json({
+          error: "User not found",
+          code: "USER_NOT_FOUND"
+        });
+      }
+
+      // Only update fields that were provided
+      const updateData = {};
+      if (displayName !== undefined) updateData.displayName = displayName;
+      if (avatar !== undefined) updateData.avatar = avatar;
+
+      console.log('Updating user profile:', {
+        userId: req.user.id,
+        updateData: {
+          ...updateData,
+          avatar: updateData.avatar ? '[AVATAR_DATA]' : undefined
+        }
+      });
+
       const updated = await prisma.user.update({
         where: { id: req.user.id },
-        data: { 
-          displayName,
-          avatar
-        },
+        data: updateData
+      });
+
+      console.log('Profile updated successfully:', {
+        userId: updated.id,
+        displayName: updated.displayName,
+        hasAvatar: !!updated.avatar
       });
 
       res.json({ 
@@ -792,7 +827,11 @@ try {
         message: "Profile updated successfully"
       });
     } catch (err) {
-      console.error("Profile update error:", err);
+      console.error("Profile update error:", {
+        error: err.message,
+        stack: err.stack,
+        code: err.code
+      });
       res.status(500).json({ 
         error: "Failed to update profile. Please try again.",
         code: "UPDATE_FAILED",

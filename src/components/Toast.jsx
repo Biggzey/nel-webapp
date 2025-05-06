@@ -26,8 +26,8 @@ const TOAST_TYPES = {
 // ToastContainer component to manage multiple toasts
 export function ToastContainer({ toasts, onClose }) {
   return (
-    <div className="fixed bottom-4 right-4 z-50 space-y-2">
-      {toasts.map((toast, index) => (
+    <div className="fixed bottom-4 right-4 z-50 space-y-2 min-w-[300px] max-w-[400px]">
+      {toasts.map((toast) => (
         <Toast
           key={toast.id}
           message={toast.message}
@@ -54,10 +54,12 @@ export default function Toast({ message, type = 'info', duration = 3000, onClose
     <div className="animate-fade-in-up">
       <div
         data-testid="toast"
-        className={`flex items-center space-x-2 px-4 py-3 rounded-lg shadow-lg ${toastStyle.bgColor} ${toastStyle.textColor}`}
+        className={`flex items-center justify-between px-4 py-3 rounded-lg shadow-lg ${toastStyle.bgColor} ${toastStyle.textColor}`}
       >
-        <i className={`fas ${toastStyle.icon}`} />
-        <p>{message}</p>
+        <div className="flex items-center space-x-2">
+          <i className={`fas ${toastStyle.icon}`} />
+          <p className="text-sm">{message}</p>
+        </div>
         {onClose && (
           <button
             onClick={onClose}

@@ -18,12 +18,19 @@ function Profile({ user, onSave }) {
     newPassword: '',
     confirmPassword: ''
   });
-  const { navigate } = useNavigate();
+  const navigate = useNavigate();
   const [toasts, setToasts] = useState([]);
 
   const addToast = (toast) => {
     const id = nanoid();
     setToasts(prev => [...prev, { ...toast, id }]);
+    
+    // Remove toast after duration
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
   };
 
   const removeToast = (id) => {
@@ -119,20 +126,6 @@ function Profile({ user, onSave }) {
         })
       });
 
-      // Log the response for debugging
-      console.log('Profile update response:', {
-        status: profileRes.status,
-        statusText: profileRes.statusText,
-        headers: Object.fromEntries(profileRes.headers.entries())
-      });
-
-      // Handle different HTTP status codes
-      if (profileRes.status === 404) {
-        throw new Error('Server endpoint not found. Please try again later or contact support if the issue persists.');
-      } else if (profileRes.status === 401) {
-        throw new Error('Your session has expired. Please log in again.');
-      }
-
       let data;
       try {
         data = await profileRes.json();
@@ -140,6 +133,14 @@ function Profile({ user, onSave }) {
         console.error('Failed to parse server response:', parseError);
         throw new Error('Failed to process server response. Please try again.');
       }
+
+      // Log the response for debugging
+      console.log('Profile update response:', {
+        status: profileRes.status,
+        statusText: profileRes.statusText,
+        data,
+        headers: Object.fromEntries(profileRes.headers.entries())
+      });
 
       if (!profileRes.ok) {
         // Show specific error messages based on error code
@@ -161,7 +162,7 @@ function Profile({ user, onSave }) {
 
       // If we got here, the profile update was successful
       // Update parent component with the response data
-      onSave(data);
+      await onSave(data);
 
       // Show success toast for profile update
       addToast({
@@ -345,8 +346,10 @@ function Profile({ user, onSave }) {
         </button>
       </div>
 
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
+      {/* Toast notifications - position them in the bottom right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ToastContainer toasts={toasts} onClose={removeToast} />
+      </div>
     </div>
   );
 }
