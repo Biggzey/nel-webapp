@@ -60,7 +60,9 @@ export default function Signup() {
     }
 
     // Validate all fields are filled
-    if (!formData.email || !formData.username || !formData.password || !formData.confirmPassword) {
+    const emptyFields = Object.entries(formData).filter(([_, value]) => !value);
+    if (emptyFields.length > 0) {
+      console.log('Empty fields:', emptyFields.map(([field]) => field));
       setErr("All fields are required");
       return;
     }
@@ -91,18 +93,32 @@ export default function Signup() {
 
     try {
       setIsSubmitting(true);
-      const success = await signup(
+      console.log('Submitting signup form:', { 
+        email: formData.email, 
+        username: formData.username,
+        hasPassword: !!formData.password,
+        hasConfirmPassword: !!formData.confirmPassword
+      });
+
+      await signup(
         formData.email,
         formData.username,
         formData.password,
         formData.confirmPassword
       );
-      if (success) {
-        nav("/login");
-      } else {
-        setErr("Failed to create account");
-      }
+
+      // Clear form data
+      setFormData({
+        email: "",
+        username: "",
+        password: "",
+        confirmPassword: ""
+      });
+
+      // Navigate to login
+      nav("/login");
     } catch (error) {
+      console.error('Signup error:', error);
       setErr(error.message || "Failed to create account");
       // Add a delay before allowing another attempt
       await new Promise(resolve => setTimeout(resolve, 2000));

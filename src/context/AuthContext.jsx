@@ -108,30 +108,36 @@ export function AuthProvider({ children }) {
 
   // Call this to sign up. Throws on error.
   async function signup(email, username, password, confirmPassword) {
-    if (!email || !username || !password || !confirmPassword) {
-      throw new Error("All fields are required");
+    console.log('Signup attempt:', { email, username, hasPassword: !!password, hasConfirmPassword: !!confirmPassword });
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          email, 
+          username, 
+          password,
+          confirmPassword
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Signup failed:', data);
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+      }
+
+      setToken(data.token);
+      navigate("/", { replace: true });
+      return true;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
     }
-
-    const response = await fetch(`${API_BASE_URL}/api/signup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ 
-        email, 
-        username, 
-        password,
-        confirmPassword
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
-    }
-
-    setToken(data.token);
-    navigate("/", { replace: true });
   }
 
   async function login(identifier, password) {
