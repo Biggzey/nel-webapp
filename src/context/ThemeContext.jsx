@@ -64,6 +64,9 @@ export function ThemeProvider({ children }) {
 
   // Initialize chat theme from API
   const [currentChatTheme, setCurrentChatTheme] = useState("default");
+  const [useCustomColor, setUseCustomColor] = useState(() => {
+    return localStorage.getItem("useCustomColor") === "true";
+  });
 
   // Load user preferences on mount
   useEffect(() => {
@@ -130,6 +133,8 @@ export function ThemeProvider({ children }) {
         const data = await res.json();
         console.log('Theme update successful:', data);
         setCurrentChatTheme(themeName);
+        setUseCustomColor(false);
+        localStorage.setItem("useCustomColor", "false");
       } catch (error) {
         console.error("Error updating theme preference:", error);
         throw error;
@@ -171,34 +176,51 @@ export function ThemeProvider({ children }) {
   // Effect to handle chat color changes
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--chat-user-bg', chatColor);
+    if (useCustomColor) {
+      root.style.setProperty('--chat-user-bg', chatColor);
+      // Set text color based on background color brightness
+      const r = parseInt(chatColor.slice(1, 3), 16);
+      const g = parseInt(chatColor.slice(3, 5), 16);
+      const b = parseInt(chatColor.slice(5, 7), 16);
+      const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+      const textColor = brightness > 128 ? '#1a1a1a' : '#ffffff';
+      root.style.setProperty('--chat-user-text', textColor);
+    }
     localStorage.setItem("chatColor", chatColor);
-  }, [chatColor]);
+  }, [chatColor, useCustomColor]);
 
   // Effect to handle theme changes
   useEffect(() => {
-    try {
-      // Apply chat theme styles
-      const themeStyles = defaultChatThemes[currentChatTheme];
-      if (themeStyles) {
-        // Set CSS variables for chat bubbles
-        root.style.setProperty('--chat-user-bg', themeStyles['--chat-user-bg']);
-        root.style.setProperty('--chat-user-text', themeStyles['--chat-user-text']);
-        root.style.setProperty('--chat-assistant-bg', themeStyles['--chat-assistant-bg']);
-        root.style.setProperty('--chat-assistant-text', themeStyles['--chat-assistant-text']);
+    if (!useCustomColor) {
+      try {
+        const root = document.documentElement;
+        // Apply chat theme styles
+        const themeStyles = defaultChatThemes[currentChatTheme];
+        if (themeStyles) {
+          // Set CSS variables for chat bubbles
+          root.style.setProperty('--chat-user-bg', themeStyles['--chat-user-bg']);
+          root.style.setProperty('--chat-user-text', themeStyles['--chat-user-text']);
+          root.style.setProperty('--chat-assistant-bg', themeStyles['--chat-assistant-bg']);
+          root.style.setProperty('--chat-assistant-text', themeStyles['--chat-assistant-text']);
+        }
+      } catch (error) {
+        console.error("Error updating theme:", error);
       }
-
-    } catch (error) {
-      console.error("Error updating theme:", error);
     }
-  }, [dark, currentChatTheme]);
+  }, [dark, currentChatTheme, useCustomColor]);
+
+  const handleSetChatColor = (color) => {
+    setChatColor(color);
+    setUseCustomColor(true);
+    localStorage.setItem("useCustomColor", "true");
+  };
 
   return (
     <ThemeContext.Provider value={{ 
       dark, 
       setTheme,
       chatColor,
-      setChatColor,
+      setChatColor: handleSetChatColor,
       chatThemes: defaultChatThemes,
       currentChatTheme,
       setChatTheme

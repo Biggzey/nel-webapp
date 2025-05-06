@@ -324,7 +324,7 @@ export default function ChatWindow({ onMenuClick }) {
             <div key={msg.id} className="group max-w-full">
               <div className={`chat-message ${
                 msg.role === 'user' ? 'user-message' : 'character-message'
-              } break-words whitespace-pre-wrap`}>
+              }`}>
                 {editingIndex === i ? (
                   <div className="flex items-end space-x-2">
                     <textarea
@@ -352,46 +352,46 @@ export default function ChatWindow({ onMenuClick }) {
                   </div>
                 ) : (
                   <>
-                    <div className="relative max-w-full overflow-hidden">
-                      {msg.content}
-                      {msg.role === 'user' && (
-                        <button
-                          onClick={() => {
-                            setEditingIndex(i);
-                            setEditText(msg.content);
-                          }}
-                          className="absolute -right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title={t('common.edit')}
-                        >
-                          <i className="fas fa-pencil-alt text-gray-500 hover:text-gray-700" />
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2 mt-1">
+                    {msg.content}
+                    {msg.role === 'user' && (
                       <button
-                        onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                        className="text-xs text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <i className="far fa-smile" />
-                      </button>
-                      {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
-                        <span key={emoji} className="text-xs text-gray-500">
-                          {emoji} {count}
-                        </span>
-                      ))}
-                    </div>
-                    {pickerIndex === i && (
-                      <ReactionPicker
-                        onSelect={(emoji) => {
-                          handleReaction(msg.id, emoji);
-                          setPickerIndex(null);
+                        onClick={() => {
+                          setEditingIndex(i);
+                          setEditText(msg.content);
                         }}
-                        onClose={() => setPickerIndex(null)}
-                      />
+                        className="absolute -right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={t('common.edit')}
+                      >
+                        <i className="fas fa-pencil-alt text-gray-500 hover:text-gray-700" />
+                      </button>
                     )}
                   </>
                 )}
               </div>
+              {!editingIndex && (
+                <div className="flex items-center space-x-2 mt-1 ml-2">
+                  <button
+                    onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                    className="text-xs text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <i className="far fa-smile" />
+                  </button>
+                  {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
+                    <span key={emoji} className="text-xs text-gray-500">
+                      {emoji} {count}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {pickerIndex === i && (
+                <ReactionPicker
+                  onSelect={(emoji) => {
+                    handleReaction(msg.id, emoji);
+                    setPickerIndex(null);
+                  }}
+                  onClose={() => setPickerIndex(null)}
+                />
+              )}
             </div>
           ))
         )}
