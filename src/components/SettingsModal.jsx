@@ -126,12 +126,11 @@ function Profile({ user, onSave }) {
   };
 
   const handleSave = async (e) => {
-    if (e) {
-      e.preventDefault(); // Prevent any default behavior
-      e.stopPropagation(); // Stop event propagation
-    }
-    
-    console.log('Save button clicked');
+    // Prevent default behavior and stop propagation
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    console.log('Save button clicked, preventing default behavior');
     
     if (isSaving) {
       console.log('Already saving, ignoring click');
@@ -272,8 +271,15 @@ function Profile({ user, onSave }) {
     }
   };
 
+  // Prevent form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  };
+
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -372,7 +378,7 @@ function Profile({ user, onSave }) {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </form>
   );
 }
 
