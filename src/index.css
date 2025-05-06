@@ -27,12 +27,14 @@
   @apply bg-chat-user text-chat-user;
   margin-left: auto;
   border-radius: 1rem 0.25rem 1rem 1rem;
+  padding: 0.75rem 1rem;
 }
 
 .character-message {
   @apply bg-chat-assistant text-chat-assistant;
   margin-right: auto;
   border-radius: 0.25rem 1rem 1rem 1rem;
+  padding: 0.75rem 1rem;
 }
 
 /* Scrollbar styling for the messages pane */
