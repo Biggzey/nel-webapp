@@ -23,7 +23,7 @@ export default {
           light: "#ffffff",    // Keeping the same text color for good contrast
           dark: "#ffffff",      // Dark mode text
           secondary: {
-            light: "#64748b",   // Keeping the same secondary text
+            light: "#f0f0f0",   // Keeping the same secondary text
             dark: "#9ca3af"     // Dark mode secondary text
           }
         },
