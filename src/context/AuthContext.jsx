@@ -11,7 +11,23 @@ export function AuthProvider({ children }) {
 
   // Initialize token from localStorage (or null)
   const [token, setToken] = useState(() => {
-    return localStorage.getItem("token");
+    // Validate stored token on init
+    try {
+      const storedToken = localStorage.getItem("token");
+      if (!storedToken) return null;
+      
+      // Check if token is expired
+      const payload = JSON.parse(atob(storedToken.split('.')[1]));
+      if (Date.now() >= payload.exp * 1000) {
+        localStorage.removeItem("token");
+        return null;
+      }
+      return storedToken;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      localStorage.removeItem("token");
+      return null;
+    }
   });
 
   // Initialize user role from localStorage (or null)
@@ -19,12 +35,30 @@ export function AuthProvider({ children }) {
 
   // Global fetch interceptor for handling auth errors
   const authenticatedFetch = async (url, options = {}) => {
-    if (token) {
-      options.headers = {
-        ...options.headers,
-        Authorization: `Bearer ${token}`
-      };
+    if (!token) {
+      console.log('No token available, redirecting to login');
+      logout();
+      return null;
     }
+
+    // Validate token before making request
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (Date.now() >= payload.exp * 1000) {
+        console.log('Token expired, logging out');
+        logout();
+        return null;
+      }
+    } catch (error) {
+      console.error('Token validation error:', error);
+      logout();
+      return null;
+    }
+
+    options.headers = {
+      ...options.headers,
+      Authorization: `Bearer ${token}`
+    };
 
     try {
       const response = await fetch(url, options);
@@ -64,7 +98,6 @@ export function AuthProvider({ children }) {
         })
         .catch(err => {
           console.error('Error fetching user role:', err);
-          // Clear invalid session
           logout();
         });
     } else {
@@ -74,22 +107,30 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   // Call this to sign up. Throws on error.
-  async function signup(email, username, password) {
+  async function signup(email, username, password, confirmPassword) {
+    if (!email || !username || !password || !confirmPassword) {
+      throw new Error("All fields are required");
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email, username, password }),
+      body: JSON.stringify({ 
+        email, 
+        username, 
+        password,
+        confirmPassword
+      }),
     });
 
+    const data = await response.json();
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
       throw new Error(data.error || `HTTP error! status: ${response.status}`);
     }
 
-    const { token: newToken } = await response.json();
-    setToken(newToken);
+    setToken(data.token);
     navigate("/", { replace: true });
   }
 

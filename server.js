@@ -1126,12 +1126,22 @@ try {
   // Create a new character
   app.post("/api/characters", authMiddleware, async (req, res) => {
     try {
+      // First verify the user still exists
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user) {
+        return res.status(401).json({ error: "User no longer exists" });
+      }
+
       const character = await prisma.character.create({
         data: {
           ...req.body,
           userId: req.user.id
         }
       });
+
       res.json(character);
     } catch (error) {
       console.error("Error creating character:", error);
@@ -1296,29 +1306,35 @@ try {
   });
 
   // Get user preferences
-  app.get('/api/preferences', authMiddleware, async (req, res) => {
+  app.get("/api/preferences", authMiddleware, async (req, res) => {
     try {
-      const userId = req.user.id;
-      
-      let preferences = await prisma.userPreference.findUnique({
-        where: { userId }
+      // First verify the user still exists
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: { preferences: true }
       });
 
-      // Create default preferences if none exist
-      if (!preferences) {
-        preferences = await prisma.userPreference.create({
-          data: {
-            userId,
-            selectedCharId: 1, // Default to first character
-            chatTheme: 'default'
-          }
-        });
+      if (!user) {
+        return res.status(401).json({ error: "User no longer exists" });
       }
 
-      res.json(preferences);
+      // If preferences don't exist, create default ones
+      if (!user.preferences) {
+        const preferences = await prisma.userPreference.create({
+          data: {
+            userId: req.user.id,
+            theme: "light",
+            notifications: true,
+            // Add other default preferences as needed
+          }
+        });
+        return res.json(preferences);
+      }
+
+      res.json(user.preferences);
     } catch (error) {
-      console.error('Error fetching preferences:', error);
-      res.status(500).json({ error: 'Failed to fetch preferences' });
+      console.error("Error fetching preferences:", error);
+      res.status(500).json({ error: "Failed to fetch preferences" });
     }
   });
 
