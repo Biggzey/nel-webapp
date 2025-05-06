@@ -119,6 +119,7 @@ function Profile({ user, onSave }) {
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     try {
       console.log('Saving profile with data:', {
         displayName: formData.displayName,
@@ -246,6 +247,8 @@ function Profile({ user, onSave }) {
         message: error.message,
         duration: 5000
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -339,9 +342,10 @@ function Profile({ user, onSave }) {
 
         <button
           onClick={handleSave}
-          className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors"
+          disabled={isSaving}
+          className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          {t('settings.saveChanges')}
+          {isSaving ? t('settings.saving') : t('settings.saveChanges')}
         </button>
       </div>
 
@@ -513,6 +517,11 @@ export default function SettingsModal({ isOpen, onClose }) {
     }
   };
 
+  // Prevent closing when clicking inside the modal
+  const handleModalClick = (e) => {
+    e.stopPropagation();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -521,7 +530,10 @@ export default function SettingsModal({ isOpen, onClose }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl bg-background-light dark:bg-background-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl">
+      <div 
+        className="relative w-full max-w-4xl bg-background-light dark:bg-background-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
+        onClick={handleModalClick}
+      >
         {/* Sidebar with container styling */}
         <div className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2">
           {tabs.map(tab => (

@@ -324,7 +324,7 @@ export default function ChatWindow({ onMenuClick }) {
             <div key={msg.id} className="group max-w-full">
               {/* Message header for user messages */}
               {msg.role === 'user' && (
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 text-right mr-2">
                   {user?.displayName || user?.username || 'You'}
                 </div>
               )}
