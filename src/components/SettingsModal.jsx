@@ -37,6 +37,13 @@ function Profile({ user, onSave }) {
     const newToast = { ...toast, id };
     console.log('Adding toast:', newToast);
     setToasts(prev => [...prev, newToast]);
+    
+    // Remove toast after duration
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
   };
 
   const removeToast = (id) => {
@@ -118,7 +125,8 @@ function Profile({ user, onSave }) {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e.preventDefault(); // Prevent any form submission
     setIsSaving(true);
     try {
       console.log('Saving profile with data:', {
@@ -253,7 +261,7 @@ function Profile({ user, onSave }) {
   };
 
   return (
-    <div className="space-y-6">
+    <form onSubmit={handleSave} className="space-y-6">
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -341,7 +349,7 @@ function Profile({ user, onSave }) {
         </div>
 
         <button
-          onClick={handleSave}
+          type="submit"
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -351,7 +359,7 @@ function Profile({ user, onSave }) {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </form>
   );
 }
 
@@ -522,6 +530,11 @@ export default function SettingsModal({ isOpen, onClose }) {
     e.stopPropagation();
   };
 
+  // Prevent form submission from bubbling up
+  const handleFormSubmit = (e) => {
+    e.stopPropagation();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -533,12 +546,14 @@ export default function SettingsModal({ isOpen, onClose }) {
       <div 
         className="relative w-full max-w-4xl bg-background-light dark:bg-background-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
         onClick={handleModalClick}
+        onSubmit={handleFormSubmit}
       >
         {/* Sidebar with container styling */}
         <div className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2">
           {tabs.map(tab => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                 activeTab === tab.id
@@ -562,6 +577,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 
         {/* Close button */}
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-text-light/60 dark:text-text-dark/60 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
         >
