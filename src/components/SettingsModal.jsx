@@ -31,7 +31,6 @@ function Profile({ user, onSave }) {
   const navigate = useNavigate();
   const [toasts, setToasts] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
-  const formRef = useRef(null);
 
   const addToast = (toast) => {
     const id = nanoid();
@@ -130,7 +129,6 @@ function Profile({ user, onSave }) {
   };
 
   const handleSave = async (e) => {
-    // Prevent default behavior and stop propagation
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -277,21 +275,8 @@ function Profile({ user, onSave }) {
     }
   };
 
-  // Prevent form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleSave(e);
-    return false;
-  };
-
   return (
-    <form 
-      ref={formRef}
-      onSubmit={handleSubmit} 
-      className="space-y-6" 
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -384,7 +369,8 @@ function Profile({ user, onSave }) {
         </div>
 
         <button
-          type="submit"
+          type="button"
+          onClick={handleSave}
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -394,7 +380,7 @@ function Profile({ user, onSave }) {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </form>
+    </div>
   );
 }
 
@@ -402,18 +388,7 @@ function Preferences() {
   const { dark, setTheme, chatColor, setChatColor } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
-  const [tempColor, setTempColor] = useState(chatColor);
-  const [tempTheme, setTempTheme] = useState(dark);
-  const [tempLanguage, setTempLanguage] = useState(language);
   const [toasts, setToasts] = useState([]);
-  const formRef = useRef(null);
-
-  // Reset temp values when modal opens
-  useEffect(() => {
-    setTempColor(chatColor);
-    setTempTheme(dark);
-    setTempLanguage(language);
-  }, [chatColor, dark, language]);
 
   const addToast = (toast) => {
     const id = nanoid();
@@ -433,11 +408,6 @@ function Preferences() {
     try {
       setIsSaving(true);
       
-      // Apply all temporary changes
-      setChatColor(tempColor);
-      setTheme(tempTheme);
-      setLanguage(tempLanguage);
-      
       // Show success toast
       addToast({
         type: 'success',
@@ -456,21 +426,8 @@ function Preferences() {
     }
   };
 
-  // Prevent form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleSave(e);
-    return false;
-  };
-
   return (
-    <form 
-      ref={formRef}
-      onSubmit={handleSubmit} 
-      className="space-y-6" 
-      onClick={(e) => e.stopPropagation()}
-    >
+    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
       
       {/* Theme selector */}
@@ -482,10 +439,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTempTheme(null);
+              setTheme('system');
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              tempTheme === null 
+              dark === null 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -498,10 +455,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTempTheme(false);
+              setTheme('light');
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              tempTheme === false 
+              dark === false 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -514,10 +471,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTempTheme(true);
+              setTheme('dark');
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              tempTheme === true 
+              dark === true 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -532,10 +489,10 @@ function Preferences() {
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-2">{t('settings.language')}</label>
         <select
-          value={tempLanguage}
+          value={language}
           onChange={(e) => {
             e.stopPropagation();
-            setTempLanguage(e.target.value);
+            setLanguage(e.target.value);
           }}
           onClick={(e) => e.stopPropagation()}
           className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
@@ -551,10 +508,10 @@ function Preferences() {
         <div className="flex items-center space-x-4">
           <input
             type="color"
-            value={tempColor}
+            value={chatColor}
             onChange={(e) => {
               e.stopPropagation();
-              setTempColor(e.target.value);
+              setChatColor(e.target.value);
             }}
             onClick={(e) => e.stopPropagation()}
             className="w-16 h-16 rounded-lg cursor-pointer"
@@ -562,10 +519,10 @@ function Preferences() {
           <div className="flex-1">
             <input
               type="text"
-              value={tempColor}
+              value={chatColor}
               onChange={(e) => {
                 e.stopPropagation();
-                setTempColor(e.target.value);
+                setChatColor(e.target.value);
               }}
               onClick={(e) => e.stopPropagation()}
               className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
@@ -579,7 +536,8 @@ function Preferences() {
       {/* Save button */}
       <div className="pt-4 border-t border-container-border-light/10 dark:border-container-border-dark/10">
         <button
-          type="submit"
+          type="button"
+          onClick={handleSave}
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -589,7 +547,7 @@ function Preferences() {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </form>
+    </div>
   );
 }
 
