@@ -390,6 +390,16 @@ export default function ChatWindow({ onMenuClick }) {
                         <i className="far fa-smile text-gray-500 hover:text-gray-700" />
                       </button>
                     )}
+                    {pickerIndex === i && (
+                      <ReactionPicker
+                        onSelect={(emoji) => {
+                          handleReaction(msg.id, emoji);
+                          setPickerIndex(null);
+                        }}
+                        onClose={() => setPickerIndex(null)}
+                        isUserMessage={msg.role === 'user'}
+                      />
+                    )}
                   </>
                 )}
               </div>
@@ -401,16 +411,6 @@ export default function ChatWindow({ onMenuClick }) {
                     </span>
                   ))}
                 </div>
-              )}
-              {pickerIndex === i && (
-                <ReactionPicker
-                  onSelect={(emoji) => {
-                    handleReaction(msg.id, emoji);
-                    setPickerIndex(null);
-                  }}
-                  onClose={() => setPickerIndex(null)}
-                  isUserMessage={msg.role === 'user'}
-                />
               )}
             </div>
           ))
