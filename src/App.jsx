@@ -66,9 +66,6 @@ function ProtectedContent() {
         />
       )}
 
-      {/* Show CharacterPane only when not on admin route */}
-      {!isAdminRoute && <CharacterPane />}
-
       {/* Main content area - wider when CharacterPane is hidden */}
       <div className="flex-1 w-0 min-w-0">
         <Routes>
@@ -90,6 +87,9 @@ function ProtectedContent() {
           />
         </Routes>
       </div>
+
+      {/* Show CharacterPane only when not on admin route, now on the right */}
+      {!isAdminRoute && <CharacterPane />}
 
       {/* Modals */}
       <PersonalityModal

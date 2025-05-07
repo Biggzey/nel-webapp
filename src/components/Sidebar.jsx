@@ -85,7 +85,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           {characters.map((c, i) => (
             <div
               key={c.id}
-              className="group flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light/50 dark:hover:bg-background-container-hover-dark/50"
+              className="group flex items-center justify-between px-3 py-2 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100"
             >
               <button
                 onClick={() => {

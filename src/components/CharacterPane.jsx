@@ -15,8 +15,8 @@ export default function CharacterPane() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-72 bg-background-light dark:bg-background-dark p-4 border-r border-border-light dark:border-border-dark">
-      <div className="flex items-center justify-between mb-2">
+    <aside className="hidden md:flex flex-col w-72 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4">
+      <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3">
         <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
           {current?.name}
         </h2>
@@ -32,7 +32,7 @@ export default function CharacterPane() {
       {/* Character Info Section - Now using grid for dynamic sizing */}
       <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden">
         {/* Metadata section that will push the image down */}
-        <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+        <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
           {current?.age && (
             <div className="flex items-center space-x-2">
               <i className="fas fa-birthday-cake w-5" />

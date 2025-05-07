@@ -349,11 +349,11 @@ export default function ChatWindow({ onMenuClick }) {
                   />
                 )}
                 {msg.role === 'assistant' && (
-                  <div className="flex flex-col max-w-[70%] w-fit items-start order-2">
+                  <div className="flex flex-col max-w-max w-fit items-start order-2">
                     {/* Agent name and label */}
                     <div className="flex items-center mb-1 space-x-2">
                       <span className="text-xs font-semibold text-gray-300">{current?.name || 'Agent'}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#23242a] text-gray-400 font-bold tracking-wide uppercase">Placeholder</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#23242a] text-gray-400 font-bold tracking-wide uppercase">Nel.ai</span>
                     </div>
                     <div className={`chat-message relative px-5 py-3 rounded-2xl shadow-md w-fit max-w-full break-normal bg-[#23242a] text-gray-100 rounded-bl-md mr-2`}>
                       {/* Reactions for agent message, top right overlapping bubble */}
@@ -423,18 +423,18 @@ export default function ChatWindow({ onMenuClick }) {
                 )}
                 {/* User side: bubble left, avatar right */}
                 {msg.role === 'user' && (
-                  <div className="flex flex-col max-w-[70%] w-fit items-start order-1 min-w-0">
+                  <div className="flex flex-col max-w-[70%] min-w-0 items-end order-1 group relative">
                     {/* User display name */}
                     <div className="flex items-center mb-1 space-x-2 justify-end">
                       <span className="text-xs font-semibold text-gray-300">{user?.displayName || user?.username || 'You'}</span>
                     </div>
-                    <div className={`chat-message relative px-5 py-3 rounded-2xl shadow-md w-fit max-w-full break-normal bg-[#23242a] text-gray-100 rounded-br-md ml-2`}>
+                    <div className="chat-message user-message bg-chat-user text-chat-user ml-2 relative">
                       {editingIndex === i ? (
-                        <div className="flex items-end space-x-2">
+                        <div className="flex items-end space-x-2 min-w-0">
                           <textarea
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none min-w-0"
                             rows={1}
                             autoFocus
                           />
@@ -457,16 +457,16 @@ export default function ChatWindow({ onMenuClick }) {
                       ) : (
                         <>{msg.content}</>
                       )}
-                      {/* Pencil icon for user messages */}
+                      {/* Pencil icon for user messages, bottom-left, only on hover, original style */}
                       {msg.role === 'user' && !editingIndex && (
                         <button
                           onClick={() => {
                             setEditingIndex(i);
                             setEditText(msg.content);
                           }}
-                          className="absolute -left-6 top-1 p-1 text-base text-gray-500 hover:text-gray-300 bg-transparent mb-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute opacity-0 group-hover:opacity-100 transition-opacity left-[-18px] bottom-0 text-base text-gray-500 hover:text-gray-300 p-0 m-0 bg-transparent border-none shadow-none rounded-none"
                           title={t('common.edit')}
-                          style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
+                          style={{lineHeight: 1}}
                         >
                           <i className="fas fa-pencil-alt text-sm" />
                         </button>
