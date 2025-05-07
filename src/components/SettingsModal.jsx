@@ -403,13 +403,17 @@ function Preferences() {
   const { language, setLanguage, t } = useLanguage();
   const [isSaving, setIsSaving] = useState(false);
   const [tempColor, setTempColor] = useState(chatColor);
+  const [tempTheme, setTempTheme] = useState(dark);
+  const [tempLanguage, setTempLanguage] = useState(language);
   const [toasts, setToasts] = useState([]);
   const formRef = useRef(null);
 
-  // Reset temp color when modal opens
+  // Reset temp values when modal opens
   useEffect(() => {
     setTempColor(chatColor);
-  }, [chatColor]);
+    setTempTheme(dark);
+    setTempLanguage(language);
+  }, [chatColor, dark, language]);
 
   const addToast = (toast) => {
     const id = nanoid();
@@ -428,7 +432,11 @@ function Preferences() {
     
     try {
       setIsSaving(true);
+      
+      // Apply all temporary changes
       setChatColor(tempColor);
+      setTheme(tempTheme);
+      setLanguage(tempLanguage);
       
       // Show success toast
       addToast({
@@ -474,10 +482,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTheme('system');
+              setTempTheme(null);
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              dark === null 
+              tempTheme === null 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -490,10 +498,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTheme('light');
+              setTempTheme(false);
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              dark === false 
+              tempTheme === false 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -506,10 +514,10 @@ function Preferences() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              setTheme('dark');
+              setTempTheme(true);
             }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
-              dark === true 
+              tempTheme === true 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
                 : 'border-container-border-light dark:border-container-border-dark hover:border-primary/40'
             }`}
@@ -524,10 +532,10 @@ function Preferences() {
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-2">{t('settings.language')}</label>
         <select
-          value={language}
+          value={tempLanguage}
           onChange={(e) => {
             e.stopPropagation();
-            setLanguage(e.target.value);
+            setTempLanguage(e.target.value);
           }}
           onClick={(e) => e.stopPropagation()}
           className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
