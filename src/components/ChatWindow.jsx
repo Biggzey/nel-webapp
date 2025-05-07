@@ -336,37 +336,41 @@ export default function ChatWindow({ onMenuClick }) {
           messages.map((msg, i) => (
             <div key={msg.id} className={`group max-w-full ${msg.role === 'user' ? 'flex justify-end items-end' : 'flex justify-start items-end'}`}>
               {msg.role === 'user' ? (
-                <div className="relative flex justify-end items-end w-full">
-                  <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col items-center">
-                    <button
-                      onClick={() => {
-                        setEditingIndex(i);
-                        setEditText(msg.content);
-                      }}
-                      className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
-                      title={t('common.edit')}
-                    >
-                      <i className="fas fa-pencil-alt" />
-                    </button>
-                    <button
-                      onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                      className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
-                      title={t('chat.addReaction')}
-                    >
-                      <i className="far fa-smile" />
-                    </button>
-                    {pickerIndex === i && (
-                      <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
-                        <ReactionPicker
-                          onSelect={(emoji) => {
-                            handleReaction(msg.id, emoji);
-                            setPickerIndex(null);
-                          }}
-                          onClose={() => setPickerIndex(null)}
-                          isUserMessage={true}
-                        />
-                      </div>
-                    )}
+                <div className="flex flex-row items-end">
+                  <div className="flex flex-col items-center relative justify-end">
+                    <div className="flex flex-col items-center relative justify-center self-end mt-6">
+                      <button
+                        onClick={() => {
+                          setEditingIndex(i);
+                          setEditText(msg.content);
+                        }}
+                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
+                        title={t('common.edit')}
+                        style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
+                      >
+                        <i className="fas fa-pencil-alt" />
+                      </button>
+                      <button
+                        onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                        className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
+                        title={t('chat.addReaction')}
+                        style={{ marginTop: 0, paddingTop: 0 }}
+                      >
+                        <i className="far fa-smile" />
+                      </button>
+                      {pickerIndex === i && (
+                        <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
+                          <ReactionPicker
+                            onSelect={(emoji) => {
+                              handleReaction(msg.id, emoji);
+                              setPickerIndex(null);
+                            }}
+                            onClose={() => setPickerIndex(null)}
+                            isUserMessage={true}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className={`chat-message user-message relative ml-1`}>
                     {editingIndex === i ? (
