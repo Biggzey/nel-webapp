@@ -387,44 +387,6 @@ function Profile({ user, onSave }) {
 function Preferences() {
   const { dark, setTheme, chatColor, setChatColor } = useTheme();
   const { language, setLanguage, t } = useLanguage();
-  const [isSaving, setIsSaving] = useState(false);
-  const [toasts, setToasts] = useState([]);
-
-  const addToast = (toast) => {
-    const id = nanoid();
-    setToasts(prev => [...prev, { ...toast, id }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
-
-  const handleSave = async (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    try {
-      setIsSaving(true);
-      
-      // Show success toast
-      addToast({
-        type: 'success',
-        message: t('settings.preferencesUpdated'),
-        duration: 3000
-      });
-    } catch (error) {
-      console.error('Error saving preferences:', error);
-      addToast({
-        type: 'error',
-        message: error.message || t('errors.serverError'),
-        duration: 5000
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
@@ -532,21 +494,6 @@ function Preferences() {
           </div>
         </div>
       </div>
-
-      {/* Save button */}
-      <div className="pt-4 border-t border-container-border-light/10 dark:border-container-border-dark/10">
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        >
-          {isSaving ? t('settings.saving') : t('settings.saveChanges')}
-        </button>
-      </div>
-
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
