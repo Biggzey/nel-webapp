@@ -251,8 +251,8 @@ export default function ChatWindow({ onMenuClick }) {
     if (!window.confirm(t('chat.confirmClear'))) return;
 
     try {
-      const res = await fetch(`/api/chat/${current.id}/clear`, {
-        method: "POST",
+      const res = await fetch(`/api/chat/${current.id}`, {
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
 
