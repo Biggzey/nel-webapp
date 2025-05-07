@@ -32,41 +32,41 @@ export default function CharacterPane() {
       {/* Character Info Section - Now using grid for dynamic sizing */}
       <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden">
         {/* Metadata section that will push the image down */}
-        <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
+        <div className="space-y-2 text-sm bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
           {current?.age && (
             <div className="flex items-center space-x-2">
-              <i className="fas fa-birthday-cake w-5" />
-              <span>{current.age} {t('character.metadata.yearsOld')}</span>
+              <i className="fas fa-birthday-cake w-5 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{current.age} {t('character.metadata.yearsOld')}</span>
             </div>
           )}
           {current?.gender && (
             <div className="flex items-center space-x-2">
-              <i className="fas fa-venus-mars w-5" />
-              <span>{current.gender}</span>
+              <i className="fas fa-venus-mars w-5 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{current.gender}</span>
             </div>
           )}
           {current?.race && (
             <div className="flex items-center space-x-2">
-              <i className="fas fa-users w-5" />
-              <span>{current.race}</span>
+              <i className="fas fa-users w-5 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{current.race}</span>
             </div>
           )}
           {current?.occupation && (
             <div className="flex items-center space-x-2">
-              <i className="fas fa-briefcase w-5" />
-              <span>{current.occupation}</span>
+              <i className="fas fa-briefcase w-5 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{current.occupation}</span>
             </div>
           )}
           {current?.likes && (
             <div className="flex items-start space-x-2">
-              <i className="fas fa-heart w-5 mt-1" />
-              <span>{formatList(current.likes)}</span>
+              <i className="fas fa-heart w-5 mt-1 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{formatList(current.likes)}</span>
             </div>
           )}
           {current?.dislikes && (
             <div className="flex items-start space-x-2">
-              <i className="fas fa-thumbs-down w-5 mt-1" />
-              <span>{formatList(current.dislikes)}</span>
+              <i className="fas fa-thumbs-down w-5 mt-1 text-text-light dark:text-text-dark" />
+              <span className="text-text-light dark:text-text-dark">{formatList(current.dislikes)}</span>
             </div>
           )}
         </div>

@@ -303,27 +303,9 @@ export default function ChatWindow({ onMenuClick }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-[#18191c] font-sans">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-transparent">
-        <button
-          onClick={onMenuClick}
-          className="md:hidden text-gray-400 hover:text-gray-200"
-        >
-          <i className="fas fa-bars" />
-        </button>
-        <div className="flex-1" />
-        <button
-          onClick={clearChat}
-          className="text-gray-400 hover:text-gray-200"
-          title={t('chat.clearChat')}
-        >
-          <i className="fas fa-trash" />
-        </button>
-      </div>
-
+    <div className="flex flex-col h-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 messages-container bg-[#18191c]">
+      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">
@@ -490,7 +472,7 @@ export default function ChatWindow({ onMenuClick }) {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-transparent bg-[#18191c]">
+      <div className="p-4 border-t border-transparent bg-chatwindow-light dark:bg-chatwindow-dark">
         <div className="flex items-end space-x-2 rounded-2xl bg-[#23242a] px-4 py-3 shadow-lg">
           <textarea
             ref={textareaRef}
@@ -498,7 +480,7 @@ export default function ChatWindow({ onMenuClick }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('chat.typeMessage')}
-            className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded-2xl bg-[#18191c] text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded-2xl bg-chatwindow-light dark:bg-chatwindow-dark text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             rows={1}
           />
           <button

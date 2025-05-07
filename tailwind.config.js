@@ -17,7 +17,7 @@ export default {
             dark: "#2a2a2a"     // Dark mode elevated surfaces
           },
           container: {
-            light: "#e2e8f0",   // Muted soft gray for light mode container background
+            light: "#282d33",   // Much darker container background for light mode
             dark: "#1a1a1a",    // Dark mode container background
             hover: {
               light: "#f8fafc", // Light mode hover state
@@ -88,9 +88,16 @@ export default {
             bg: "var(--chat-assistant-bg)",
             text: "var(--chat-assistant-text)"
           }
-        }
+        },
+
+        chatwindow: {
+          light: '#282d33',
+          dark: '#18191c',
+        },
       },
       backgroundColor: {
+        'chatwindow-light': '#282d33',
+        'chatwindow-dark': '#18191c',
         'chat-user': 'var(--chat-user-bg)',
         'chat-assistant': 'var(--chat-assistant-bg)',
       },

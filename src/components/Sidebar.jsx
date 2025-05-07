@@ -24,6 +24,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     toggleBookmark,
     setCurrent,
   } = useCharacter();
+  const [openMenuIndex, setOpenMenuIndex] = useState(null);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -80,42 +81,88 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         {/* Character list directly on background */}
         <div className="w-full flex-1 space-y-2 mb-6 px-2">
           {/* Time indicator */}
-          <div className="text-xs text-gray-500 dark:text-gray-400 px-2 mb-4">{t('sidebar.characters')}</div>
+          <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">{t('sidebar.characters')}</div>
           
-          {characters.map((c, i) => (
-            <div
-              key={c.id}
-              className="group flex items-center justify-between px-3 py-2 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100"
-            >
-              <button
-                onClick={() => {
-                  setSelectedIndex(i);
-                  onLinkClick();
-                }}
-                className={`flex-1 text-left flex items-center space-x-3 ${
-                  i === selectedIndex
-                    ? "text-text-light dark:text-text-dark"
-                    : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
-                }`}
+          {characters.map((c, i) => {
+            const isNelliel = c.name === "Nelliel";
+            return (
+              <div
+                key={c.id}
+                className="group flex items-center justify-between px-3 py-2 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
               >
-                <img
-                  src={c.avatar}
-                  alt=""
-                  className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10"
-                />
-                <span className="font-medium">{c.name}</span>
-              </button>
-              {i !== 0 && (
                 <button
-                  onClick={() => handleDeleteCharacter(i)}
-                  className="ml-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-red-400 hover:text-red-600"
-                  title={t('common.delete')}
+                  onClick={() => {
+                    setSelectedIndex(i);
+                    onLinkClick();
+                  }}
+                  className={`flex-1 text-left flex items-center space-x-3 ${
+                    i === selectedIndex
+                      ? "text-text-light dark:text-text-dark"
+                      : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
+                  }`}
                 >
-                  <i className="fas fa-trash" />
+                  <img
+                    src={c.avatar}
+                    alt=""
+                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10"
+                  />
+                  <span className="font-medium">{c.name}</span>
                 </button>
-              )}
-            </div>
-          ))}
+                {/* Ellipsis/context menu for all characters */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuIndex(openMenuIndex === i ? null : i);
+                  }}
+                  className="ml-2 p-1 text-gray-400 hover:text-primary focus:outline-none"
+                  title={t('common.more')}
+                >
+                  <i className="fas fa-ellipsis-v" />
+                </button>
+                {/* Context menu */}
+                {openMenuIndex === i && (
+                  <div className="absolute right-0 top-10 z-50 min-w-[160px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        setSelectedIndex(i);
+                        setOpenMenuIndex(null);
+                        // Clear conversation for this character
+                        // Navigate to main chat if not already there
+                        if (window.location.pathname !== "/") navigate("/");
+                        // Use the same clearChat logic as in ChatWindow
+                        if (window.confirm(t('chat.confirmClear'))) {
+                          try {
+                            await fetch(`/api/chat/${c.id}`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                            });
+                          } catch (err) {
+                            alert(t('errors.serverError'));
+                          }
+                        }
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+                    >
+                      <i className="fas fa-trash mr-2" /> {t('chat.clearChat')}
+                    </button>
+                    {!isNelliel && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setOpenMenuIndex(null);
+                          handleDeleteCharacter(i);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark text-red-500 transition-colors"
+                      >
+                        <i className="fas fa-user-times mr-2" /> {t('common.delete')}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Bottom controls in container */}
