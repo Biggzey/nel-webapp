@@ -218,13 +218,15 @@ export default function ChatWindow({ onMenuClick }) {
 
   async function handleReaction(messageId, emoji) {
     try {
-      const res = await fetch(`/api/chat/${current.id}/message/${messageId}/reaction`, {
-        method: "POST",
+      const res = await fetch(`/api/chat/message/${messageId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ emoji })
+        body: JSON.stringify({ 
+          reactions: { [emoji]: 1 } 
+        })
       });
 
       if (!res.ok) {
