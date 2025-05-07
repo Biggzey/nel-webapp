@@ -8,10 +8,9 @@ export default function ReactionPicker({ onSelect, onClose }) {
     <div
       className="absolute flex space-x-1 bg-[#f0f2f5] dark:bg-[#1e1e1e] border border-gray-300 dark:border-gray-600 rounded shadow-lg p-1"
       style={{ 
-        bottom: "100%", 
-        left: "50%", 
-        transform: "translateX(-50%)",
-        marginBottom: "0.5rem",
+        top: "100%", 
+        right: "0",
+        marginTop: "0.5rem",
         zIndex: 20 
       }}
       data-testid="reaction-picker"
