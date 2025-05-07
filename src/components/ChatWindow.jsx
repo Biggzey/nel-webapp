@@ -218,6 +218,17 @@ export default function ChatWindow({ onMenuClick }) {
 
   async function handleReaction(messageId, emoji) {
     try {
+      // Find the message
+      const msg = messages.find(m => m.id === messageId);
+      let newReactions = {};
+      if (msg && msg.reactions && msg.reactions[emoji]) {
+        // If the reaction is already present, remove it (toggle off)
+        newReactions = { ...msg.reactions };
+        delete newReactions[emoji];
+      } else {
+        // Otherwise, set only the selected reaction
+        newReactions = { [emoji]: 1 };
+      }
       const res = await fetch(`/api/chat/message/${messageId}`, {
         method: "PUT",
         headers: {
@@ -225,7 +236,7 @@ export default function ChatWindow({ onMenuClick }) {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ 
-          reactions: { [emoji]: 1 } 
+          reactions: newReactions
         })
       });
 
@@ -404,7 +415,7 @@ export default function ChatWindow({ onMenuClick }) {
                 )}
               </div>
               {!editingIndex && (
-                <div className="flex items-center space-x-2 mt-1 ml-2">
+                <div className={`flex items-center space-x-2 mt-1 ml-2 ${msg.role === 'user' ? 'justify-end mr-2' : 'justify-start ml-2'}`} style={{ display: 'flex' }}>
                   {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
                     <span key={emoji} className="text-xs text-gray-500">
                       {emoji} {count}
