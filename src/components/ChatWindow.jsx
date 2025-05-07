@@ -334,32 +334,32 @@ export default function ChatWindow({ onMenuClick }) {
           </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={msg.id} className={`group max-w-full ${msg.role === 'user' ? 'flex justify-end items-end' : 'flex justify-start items-end'}`}>
+            <div key={msg.id} className={`max-w-full flex items-end group ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
                   <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center self-end mt-6">
+                    <div className="flex flex-col items-center relative justify-center self-end mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => {
                           setEditingIndex(i);
                           setEditText(msg.content);
                         }}
-                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
+                        className="p-1 text-base text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
                         title={t('common.edit')}
                         style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
                       >
-                        <i className="fas fa-pencil-alt" />
+                        <i className="fas fa-pencil-alt text-sm" />
                       </button>
                       <button
                         onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                        className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
+                        className="p-1 text-base text-gray-500 hover:text-gray-700 bg-transparent"
                         title={t('chat.addReaction')}
                         style={{ marginTop: 0, paddingTop: 0 }}
                       >
                         <i className="far fa-smile" />
                       </button>
                       {pickerIndex === i && (
-                        <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
+                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}>
                           <ReactionPicker
                             onSelect={(emoji) => {
                               handleReaction(msg.id, emoji);
