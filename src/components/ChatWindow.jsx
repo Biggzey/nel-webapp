@@ -338,13 +338,13 @@ export default function ChatWindow({ onMenuClick }) {
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
                   <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center gap-y-1">
+                    <div className="flex flex-col items-center relative justify-center" style={{ height: '48px' }}>
                       <button
                         onClick={() => {
                           setEditingIndex(i);
                           setEditText(msg.content);
                         }}
-                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
+                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-1"
                         title={t('common.edit')}
                       >
                         <i className="fas fa-pencil-alt" />
