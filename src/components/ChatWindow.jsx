@@ -337,40 +337,18 @@ export default function ChatWindow({ onMenuClick }) {
             <div key={msg.id} className={`max-w-full flex items-end group ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
-                  <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center self-end mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={() => {
-                          setEditingIndex(i);
-                          setEditText(msg.content);
-                        }}
-                        className="p-1 text-base text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
-                        title={t('common.edit')}
-                        style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
-                      >
-                        <i className="fas fa-pencil-alt text-sm" />
-                      </button>
-                      <button
-                        onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                        className="p-1 text-base text-gray-500 hover:text-gray-700 bg-transparent"
-                        title={t('chat.addReaction')}
-                        style={{ marginTop: 0, paddingTop: 0 }}
-                      >
-                        <i className="far fa-smile" />
-                      </button>
-                      {pickerIndex === i && (
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}>
-                          <ReactionPicker
-                            onSelect={(emoji) => {
-                              handleReaction(msg.id, emoji);
-                              setPickerIndex(null);
-                            }}
-                            onClose={() => setPickerIndex(null)}
-                            isUserMessage={true}
-                          />
-                        </div>
-                      )}
-                    </div>
+                  <div className="flex flex-col items-center relative justify-center self-end mt-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => {
+                        setEditingIndex(i);
+                        setEditText(msg.content);
+                      }}
+                      className="p-1 text-base text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
+                      title={t('common.edit')}
+                      style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
+                    >
+                      <i className="fas fa-pencil-alt text-sm" />
+                    </button>
                   </div>
                   <div className={`chat-message user-message relative ml-1`}>
                     {editingIndex === i ? (
@@ -404,66 +382,71 @@ export default function ChatWindow({ onMenuClick }) {
                   </div>
                 </div>
               ) : (
-                <div className={`chat-message character-message relative`}>
-                  {editingIndex === i ? (
-                    <div className="flex items-end space-x-2">
-                      <textarea
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                        rows={1}
-                        autoFocus
-                      />
-                      <button
-                        onClick={() => handleEdit(i)}
-                        className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
-                      >
-                        {t('common.save')}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingIndex(null);
-                          setEditText("");
-                        }}
-                        className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                      >
-                        {t('common.cancel')}
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      {msg.content}
-                      {/* For agent messages, keep reaction picker button at bottom right */}
-                      {!editingIndex && (
-                        <button
-                          onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                          className="absolute bottom-0 -right-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          title={t('chat.addReaction')}
-                        >
-                          <i className="far fa-smile text-gray-500 hover:text-gray-700" />
-                        </button>
-                      )}
-                      {pickerIndex === i && (
-                        <ReactionPicker
-                          onSelect={(emoji) => {
-                            handleReaction(msg.id, emoji);
-                            setPickerIndex(null);
-                          }}
-                          onClose={() => setPickerIndex(null)}
-                          isUserMessage={false}
+                <div className="flex flex-row items-end">
+                  <div className={`chat-message character-message relative ml-1`}>
+                    {/* Reactions for agent message, top right overlapping bubble */}
+                    {!editingIndex && Object.keys(msg.reactions || {}).length > 0 && (
+                      <div className="absolute -right-4 -top-3 flex items-center space-x-2">
+                        {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
+                          <span key={emoji} className="text-xs text-gray-500">
+                            {emoji} {count}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {editingIndex === i ? (
+                      <div className="flex items-end space-x-2">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                          rows={1}
+                          autoFocus
                         />
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-              {!editingIndex && (
-                <div className={`flex items-center space-x-2 mt-1 ml-2 ${msg.role === 'user' ? 'justify-end mr-2' : 'justify-start ml-2'}`} style={{ display: 'flex' }}>
-                  {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
-                    <span key={emoji} className="text-xs text-gray-500">
-                      {emoji} {count}
-                    </span>
-                  ))}
+                        <button
+                          onClick={() => handleEdit(i)}
+                          className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                        >
+                          {t('common.save')}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingIndex(null);
+                            setEditText("");
+                          }}
+                          className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                        >
+                          {t('common.cancel')}
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {msg.content}
+                        {/* Reaction picker button for agent message, bottom right */}
+                        {!editingIndex && (
+                          <button
+                            onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                            className="absolute bottom-0 -right-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            title={t('chat.addReaction')}
+                          >
+                            <i className="far fa-smile text-gray-500 hover:text-gray-700" />
+                          </button>
+                        )}
+                        {pickerIndex === i && (
+                          <div style={{ position: 'absolute', top: '50%', right: '-2.5rem', transform: 'translateY(-50%)', zIndex: 30 }}>
+                            <ReactionPicker
+                              onSelect={(emoji) => {
+                                handleReaction(msg.id, emoji);
+                                setPickerIndex(null);
+                              }}
+                              onClose={() => setPickerIndex(null)}
+                              isUserMessage={false}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
