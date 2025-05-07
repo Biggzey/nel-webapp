@@ -52,6 +52,9 @@ function Profile({ user, onSave }) {
   };
 
   const handleAvatarChange = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     const file = e.target.files[0];
     if (!file) return;
     
@@ -279,7 +282,7 @@ function Profile({ user, onSave }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -305,6 +308,7 @@ function Profile({ user, onSave }) {
               accept="image/*"
               className="hidden"
               onChange={handleAvatarChange}
+              onClick={(e) => e.stopPropagation()}
             />
           </label>
         </div>
@@ -324,6 +328,7 @@ function Profile({ user, onSave }) {
             className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder={t('profile.enterDisplayName')}
             maxLength={50}
+            onClick={(e) => e.stopPropagation()}
           />
           <div className="mt-1 text-xs text-text-light/60 dark:text-text-dark/60 text-right">{formData.displayName.length}/50</div>
         </div>
@@ -340,6 +345,7 @@ function Profile({ user, onSave }) {
               onChange={(e) => setFormData(prev => ({ ...prev, oldPassword: e.target.value }))}
               className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
 
@@ -351,6 +357,7 @@ function Profile({ user, onSave }) {
               onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
               className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
 
@@ -362,6 +369,7 @@ function Profile({ user, onSave }) {
               onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
               className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         </div>
@@ -403,7 +411,10 @@ function Preferences() {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     try {
       setIsSaving(true);
       setChatColor(tempColor);
@@ -427,7 +438,7 @@ function Preferences() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
       
       {/* Theme selector */}
@@ -435,7 +446,11 @@ function Preferences() {
         <label className="block text-sm font-medium mb-3">{t('settings.theme')}</label>
         <div className="grid grid-cols-3 gap-3">
           <button
-            onClick={() => setTheme('system')}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setTheme('system');
+            }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
               dark === null 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
@@ -446,7 +461,11 @@ function Preferences() {
             <span className="text-sm font-medium">{t('settings.system')}</span>
           </button>
           <button
-            onClick={() => setTheme('light')}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setTheme('light');
+            }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
               dark === false 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
@@ -457,7 +476,11 @@ function Preferences() {
             <span className="text-sm font-medium">{t('settings.light')}</span>
           </button>
           <button
-            onClick={() => setTheme('dark')}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setTheme('dark');
+            }}
             className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all ${
               dark === true 
                 ? 'border-primary bg-primary/5 dark:bg-primary/10' 
@@ -475,7 +498,11 @@ function Preferences() {
         <label className="block text-sm font-medium mb-2">{t('settings.language')}</label>
         <select
           value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+          onChange={(e) => {
+            e.stopPropagation();
+            setLanguage(e.target.value);
+          }}
+          onClick={(e) => e.stopPropagation()}
           className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
         >
           <option value="en">English</option>
@@ -490,14 +517,22 @@ function Preferences() {
           <input
             type="color"
             value={tempColor}
-            onChange={(e) => setTempColor(e.target.value)}
+            onChange={(e) => {
+              e.stopPropagation();
+              setTempColor(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
             className="w-16 h-16 rounded-lg cursor-pointer"
           />
           <div className="flex-1">
             <input
               type="text"
               value={tempColor}
-              onChange={(e) => setTempColor(e.target.value)}
+              onChange={(e) => {
+                e.stopPropagation();
+                setTempColor(e.target.value);
+              }}
+              onClick={(e) => e.stopPropagation()}
               className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
               placeholder="#000000"
               pattern="^#[0-9A-Fa-f]{6}$"
@@ -554,6 +589,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 
   // Prevent closing when clicking inside the modal
   const handleModalClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
   };
 
@@ -577,7 +613,10 @@ export default function SettingsModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={handleBackdropClick}>
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
+      onClick={handleBackdropClick}
+    >
       {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
@@ -588,12 +627,19 @@ export default function SettingsModal({ isOpen, onClose }) {
         onClick={handleModalClick}
       >
         {/* Sidebar with container styling */}
-        <div className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2">
+        <div 
+          className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2"
+          onClick={handleModalClick}
+        >
           {tabs.map(tab => (
             <button
               key={tab.id}
               type="button"
-              onClick={() => setActiveTab(tab.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab(tab.id);
+              }}
               className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
                 activeTab === tab.id
                   ? 'bg-primary text-white'
@@ -607,7 +653,10 @@ export default function SettingsModal({ isOpen, onClose }) {
         </div>
 
         {/* Content area with container styling */}
-        <div className="flex-1 bg-background-container-light dark:bg-background-container-dark">
+        <div 
+          className="flex-1 bg-background-container-light dark:bg-background-container-dark"
+          onClick={handleModalClick}
+        >
           <div className="p-6 overflow-y-auto max-h-[80vh]">
             {activeTab === 'profile' && (
               <Profile 
@@ -623,6 +672,7 @@ export default function SettingsModal({ isOpen, onClose }) {
         <button
           type="button"
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onClose();
           }}
