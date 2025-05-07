@@ -336,7 +336,7 @@ export default function ChatWindow({ onMenuClick }) {
               )}
               <div className={`chat-message ${
                 msg.role === 'user' ? 'user-message' : 'character-message'
-              }`}>
+              } relative`}>
                 {editingIndex === i ? (
                   <div className="flex items-end space-x-2">
                     <textarea
@@ -377,17 +377,20 @@ export default function ChatWindow({ onMenuClick }) {
                         <i className="fas fa-pencil-alt text-gray-500 hover:text-gray-700" />
                       </button>
                     )}
+                    {!editingIndex && (
+                      <button
+                        onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                        className="absolute -right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title={t('chat.addReaction')}
+                      >
+                        <i className="far fa-smile text-gray-500 hover:text-gray-700" />
+                      </button>
+                    )}
                   </>
                 )}
               </div>
               {!editingIndex && (
                 <div className="flex items-center space-x-2 mt-1 ml-2">
-                  <button
-                    onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                    className="text-xs text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <i className="far fa-smile" />
-                  </button>
                   {Object.entries(msg.reactions || {}).map(([emoji, count]) => (
                     <span key={emoji} className="text-xs text-gray-500">
                       {emoji} {count}
