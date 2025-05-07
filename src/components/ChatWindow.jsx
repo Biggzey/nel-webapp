@@ -338,7 +338,7 @@ export default function ChatWindow({ onMenuClick }) {
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
                   <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center" style={{ height: '38px' }}>
+                    <div className="flex flex-col items-center relative justify-center" style={{ height: '48px' }}>
                       <button
                         onClick={() => {
                           setEditingIndex(i);
@@ -357,7 +357,7 @@ export default function ChatWindow({ onMenuClick }) {
                         <i className="far fa-smile" />
                       </button>
                       {pickerIndex === i && (
-                        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
+                        <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
                           <ReactionPicker
                             onSelect={(emoji) => {
                               handleReaction(msg.id, emoji);
