@@ -41,7 +41,8 @@ const translations = {
       confirmClear: 'Are you sure you want to clear this conversation? This cannot be undone.',
       chatCleared: 'Chat history cleared successfully',
       noCharacterSelected: 'No character selected. Please select a character first.',
-      messageTooLong: 'Message is too long. Please keep it under 2000 characters.'
+      messageTooLong: 'Message is too long. Please keep it under 2000 characters.',
+      addReaction: 'Add reaction'
     },
     character: {
       new: 'New Character',
@@ -117,6 +118,17 @@ const translations = {
       invalidCredentials: 'Invalid email or password',
       serverError: 'Server error occurred',
       unexpectedError: 'We\'re sorry, but something unexpected happened. Please try refreshing the page.'
+    },
+    admin: {
+      title: 'Admin Panel',
+      users: 'Users',
+      characters: 'Characters',
+      settings: 'Settings',
+      stats: 'Statistics',
+      userManagement: 'User Management',
+      characterManagement: 'Character Management',
+      systemSettings: 'System Settings',
+      viewStats: 'View Statistics'
     }
   },
   es: {
@@ -158,7 +170,8 @@ const translations = {
       confirmClear: '¿Estás seguro de que quieres borrar esta conversación? Esta acción no se puede deshacer.',
       chatCleared: 'Historial de chat borrado exitosamente',
       noCharacterSelected: 'No hay personaje seleccionado. Por favor, selecciona un personaje primero.',
-      messageTooLong: 'El mensaje es demasiado largo. Por favor, mantenlo por debajo de 2000 caracteres.'
+      messageTooLong: 'El mensaje es demasiado largo. Por favor, mantenlo por debajo de 2000 caracteres.',
+      addReaction: 'Añadir reacción'
     },
     character: {
       new: 'Nuevo Personaje',
@@ -234,6 +247,17 @@ const translations = {
       invalidCredentials: 'Correo o contraseña inválidos',
       serverError: 'Ocurrió un error en el servidor',
       unexpectedError: 'Lo sentimos, pero algo inesperado sucedió. Por favor, intenta refrescar la página.'
+    },
+    admin: {
+      title: 'Panel de Administración',
+      users: 'Usuarios',
+      characters: 'Personajes',
+      settings: 'Configuración',
+      stats: 'Estadísticas',
+      userManagement: 'Gestión de Usuarios',
+      characterManagement: 'Gestión de Personajes',
+      systemSettings: 'Configuración del Sistema',
+      viewStats: 'Ver Estadísticas'
     }
   }
 };
