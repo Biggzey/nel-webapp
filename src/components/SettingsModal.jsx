@@ -276,107 +276,110 @@ function Profile({ user, onSave }) {
   };
 
   return (
-    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
+    <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
-      {/* Profile picture */}
-      <div className="flex flex-col items-center space-y-4">
-        <div className="relative group">
-          <div className="w-32 h-32 rounded-full bg-primary overflow-hidden">
-            {formData.avatar ? (
-              <img 
-                src={formData.avatar} 
-                alt={t('profile.profilePicture')} 
-                className="w-full h-full object-cover"
+      {/* Profile picture and display name in a row */}
+      <div className="flex items-start space-x-6">
+        {/* Profile picture */}
+        <div className="flex flex-col items-center space-y-2">
+          <div className="relative group">
+            <div className="w-24 h-24 rounded-full bg-primary overflow-hidden">
+              {formData.avatar ? (
+                <img 
+                  src={formData.avatar} 
+                  alt={t('profile.profilePicture')} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-4xl font-semibold">
+                  {user?.username?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer rounded-full transition-opacity">
+              <i className="fas fa-camera text-xl" />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+                onClick={(e) => e.stopPropagation()}
               />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white text-5xl font-semibold">
-                {user?.username?.charAt(0).toUpperCase()}
-              </div>
-            )}
+            </label>
           </div>
-          <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer rounded-full transition-opacity">
-            <i className="fas fa-camera text-2xl" />
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-              onClick={(e) => e.stopPropagation()}
-            />
-          </label>
+          <p className="text-xs text-text-light/60 dark:text-text-dark/60">
+            {t('profile.uploadPicture')}
+          </p>
         </div>
-        <p className="text-sm text-text-light/60 dark:text-text-dark/60">
-          {t('profile.uploadPicture')}
-        </p>
-      </div>
 
-      {/* Form fields */}
-      <div className="space-y-4">
-        <div>
+        {/* Display name */}
+        <div className="flex-1">
           <label className="block text-sm font-medium mb-1">{t('profile.displayName')}</label>
           <input
             type="text"
             value={formData.displayName}
             onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
-            className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full p-2 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder={t('profile.enterDisplayName')}
             maxLength={50}
             onClick={(e) => e.stopPropagation()}
           />
           <div className="mt-1 text-xs text-text-light/60 dark:text-text-dark/60 text-right">{formData.displayName.length}/50</div>
         </div>
+      </div>
 
-        {/* Password Change Section */}
-        <div className="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium">{t('profile.changePassword')}</h3>
-          
+      {/* Password Change Section */}
+      <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-base font-medium">{t('profile.changePassword')}</h3>
+        
+        <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-sm font-medium mb-1">{t('profile.currentPassword')}</label>
+            <label className="block text-xs font-medium mb-1">{t('profile.currentPassword')}</label>
             <input
               type="password"
               value={formData.oldPassword}
               onChange={(e) => setFormData(prev => ({ ...prev, oldPassword: e.target.value }))}
-              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-2 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">{t('profile.newPassword')}</label>
+            <label className="block text-xs font-medium mb-1">{t('profile.newPassword')}</label>
             <input
               type="password"
               value={formData.newPassword}
               onChange={(e) => setFormData(prev => ({ ...prev, newPassword: e.target.value }))}
-              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-2 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">{t('profile.confirmPassword')}</label>
+            <label className="block text-xs font-medium mb-1">{t('profile.confirmPassword')}</label>
             <input
               type="password"
               value={formData.confirmPassword}
               onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-2 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-        >
-          {isSaving ? t('settings.saving') : t('settings.saveChanges')}
-        </button>
       </div>
+
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={isSaving}
+        className="w-full p-2 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+      >
+        {isSaving ? t('settings.saving') : t('settings.saveChanges')}
+      </button>
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
