@@ -27,7 +27,8 @@
 }
 
 .user-message {
-  @apply bg-chat-user text-chat-user;
+  background-color: var(--chat-user-bg);
+  color: var(--chat-user-text);
   margin-left: auto;
   border-radius: 1rem 0.25rem 1rem 1rem;
 }

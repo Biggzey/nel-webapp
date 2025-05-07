@@ -187,7 +187,7 @@ export default function ChatWindow({ onMenuClick }) {
     if (!msg) return;
 
     try {
-      const res = await fetch(`/api/chat/${current.id}/message/${msg.id}`, {
+      const res = await fetch(`/api/chat/message/${msg.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
