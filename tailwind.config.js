@@ -17,7 +17,7 @@ export default {
             dark: "#2a2a2a"     // Dark mode elevated surfaces
           },
           container: {
-            light: "#e2e8f0",   // Muted soft gray for light mode container background
+            light: "#DEE4E7",   // Softer, more muted light mode container background
             dark: "#1a1a1a",    // Dark mode container background
             hover: {
               light: "#f8fafc", // Light mode hover state
