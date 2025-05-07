@@ -566,12 +566,12 @@ export default function SettingsModal({ isOpen, onClose }) {
       {/* Modal */}
       <div 
         ref={modalRef}
-        className="relative w-full max-w-4xl bg-background-light dark:bg-background-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
+        className="relative w-full max-w-4xl bg-background-container-light dark:bg-background-container-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
         onClick={handleModalClick}
       >
         {/* Sidebar with container styling */}
         <div 
-          className="w-48 bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark p-2"
+          className="w-48 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-r border-container-border-light dark:border-container-border-dark p-2"
           onClick={handleModalClick}
         >
           {tabs.map(tab => (
@@ -597,7 +597,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 
         {/* Content area with container styling */}
         <div 
-          className="flex-1 bg-background-container-light dark:bg-background-container-dark"
+          className="flex-1 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end"
           onClick={handleModalClick}
         >
           <div className="p-6 overflow-y-auto max-h-[80vh]">

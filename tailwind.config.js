@@ -10,7 +10,7 @@ export default {
         
         // Background colors
         background: {
-          light: "#DEE4E7",    // Light clean background
+          light: "#f8fafc",    // Light clean background
           dark: "#0f0f0f",     // Dark mode background
           secondary: {
             light: "#e6f3f7",   // Slightly darker pale cyan for secondary
@@ -26,9 +26,9 @@ export default {
           },
           gradient: {
             light: {
-              start: "#f8fafc",
-              mid: "#e2e8f0",
-              end: "#f1f5f9"
+              start: "#808080",
+              mid: "#a0a0a0",
+              end: "#c0c0c0"
             },
             dark: {
               start: "#0f0f0f",
