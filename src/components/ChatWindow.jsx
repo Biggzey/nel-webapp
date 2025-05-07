@@ -334,17 +334,37 @@ export default function ChatWindow({ onMenuClick }) {
           </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={msg.id} className="group max-w-full">
-              {/* Message header for user messages */}
-              {msg.role === 'user' && (
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 text-right mr-2">
-                  {user?.displayName || user?.username || 'You'}
-                </div>
-              )}
-              {/* Message header for assistant messages */}
-              {msg.role === 'assistant' && (
-                <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 ml-2">
-                  {current?.name}
+            <div key={msg.id} className={`group max-w-full flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-end`}>
+              {/* For user messages, show edit and reaction icons to the left of the bubble */}
+              {msg.role === 'user' && !editingIndex && (
+                <div className="flex flex-col items-center mr-2 space-y-1">
+                  <button
+                    onClick={() => {
+                      setEditingIndex(i);
+                      setEditText(msg.content);
+                    }}
+                    className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
+                    title={t('common.edit')}
+                  >
+                    <i className="fas fa-pencil-alt" />
+                  </button>
+                  <button
+                    onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
+                    className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
+                    title={t('chat.addReaction')}
+                  >
+                    <i className="far fa-smile" />
+                  </button>
+                  {pickerIndex === i && (
+                    <ReactionPicker
+                      onSelect={(emoji) => {
+                        handleReaction(msg.id, emoji);
+                        setPickerIndex(null);
+                      }}
+                      onClose={() => setPickerIndex(null)}
+                      isUserMessage={true}
+                    />
+                  )}
                 </div>
               )}
               <div className={`chat-message ${
@@ -377,52 +397,25 @@ export default function ChatWindow({ onMenuClick }) {
                   </div>
                 ) : (
                   <>
-                    {/* Edit/Trash icons for user messages, top left inside bubble */}
-                    {msg.role === 'user' && (
-                      <div className="absolute top-1 left-1 flex space-x-1 z-10">
-                        <button
-                          onClick={() => {
-                            setEditingIndex(i);
-                            setEditText(msg.content);
-                          }}
-                          className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
-                          title={t('common.edit')}
-                        >
-                          <i className="fas fa-pencil-alt" />
-                        </button>
-                        {/* Uncomment below if you want a delete/trash icon as well */}
-                        {/*
-                        <button
-                          onClick={() => handleDelete(i)}
-                          className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
-                          title={t('common.delete')}
-                        >
-                          <i className="fas fa-trash" />
-                        </button>
-                        */}
-                      </div>
-                    )}
                     {msg.content}
-                    {/* Reaction button remains at the bottom left/right as before */}
-                    {!editingIndex && (
+                    {/* For agent messages, keep reaction picker button at bottom right */}
+                    {msg.role !== 'user' && !editingIndex && (
                       <button
                         onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                        className={`absolute bottom-0 opacity-0 group-hover:opacity-100 transition-opacity ${
-                          msg.role === 'user' ? '-left-6' : '-right-6'
-                        }`}
+                        className="absolute bottom-0 -right-6 opacity-0 group-hover:opacity-100 transition-opacity"
                         title={t('chat.addReaction')}
                       >
                         <i className="far fa-smile text-gray-500 hover:text-gray-700" />
                       </button>
                     )}
-                    {pickerIndex === i && (
+                    {msg.role !== 'user' && pickerIndex === i && (
                       <ReactionPicker
                         onSelect={(emoji) => {
                           handleReaction(msg.id, emoji);
                           setPickerIndex(null);
                         }}
                         onClose={() => setPickerIndex(null)}
-                        isUserMessage={msg.role === 'user'}
+                        isUserMessage={false}
                       />
                     )}
                   </>
