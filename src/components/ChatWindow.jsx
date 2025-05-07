@@ -338,7 +338,7 @@ export default function ChatWindow({ onMenuClick }) {
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
                   <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center mt-2">
+                    <div className="flex flex-col items-center relative justify-center self-end mt-6">
                       <button
                         onClick={() => {
                           setEditingIndex(i);
