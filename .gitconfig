@@ -1,0 +1,4 @@
+git config --global alias.a "add ."
+git config --global alias.c "commit -m"
+git config --global alias.s "status -sb"
+git config --global alias.lg "log --oneline --graph --decorate --all"
