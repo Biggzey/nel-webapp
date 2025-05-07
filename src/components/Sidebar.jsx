@@ -133,11 +133,21 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         // Use the same clearChat logic as in ChatWindow
                         if (window.confirm(t('chat.confirmClear'))) {
                           try {
-                            await fetch(`/api/chat/${c.id}`, {
+                            const res = await fetch(`/api/chat/${c.id}`, {
                               method: "DELETE",
                               headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                             });
+                            
+                            if (!res.ok) {
+                              const errorData = await res.json().catch(() => ({}));
+                              throw new Error(errorData.error || t('errors.serverError'));
+                            }
+
+                            // Force a reload of the chat window by triggering a state change
+                            setCurrent({ ...current, id: c.id });
+                            
                           } catch (err) {
+                            console.error('Error clearing chat:', err);
                             alert(t('errors.serverError'));
                           }
                         }
