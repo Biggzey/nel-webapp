@@ -31,6 +31,7 @@ function Profile({ user, onSave }) {
   const navigate = useNavigate();
   const [toasts, setToasts] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const formRef = useRef(null);
 
   const addToast = (toast) => {
     const id = nanoid();
@@ -130,8 +131,10 @@ function Profile({ user, onSave }) {
 
   const handleSave = async (e) => {
     // Prevent default behavior and stop propagation
-    e?.preventDefault();
-    e?.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
     console.log('Save button clicked, preventing default behavior');
     
@@ -278,11 +281,17 @@ function Profile({ user, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    handleSave(e);
     return false;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" onClick={(e) => e.stopPropagation()}>
+    <form 
+      ref={formRef}
+      onSubmit={handleSubmit} 
+      className="space-y-6" 
+      onClick={(e) => e.stopPropagation()}
+    >
       <h2 className="text-2xl font-semibold">{t('settings.profile')}</h2>
       
       {/* Profile picture */}
@@ -375,8 +384,7 @@ function Profile({ user, onSave }) {
         </div>
 
         <button
-          type="button"
-          onClick={handleSave}
+          type="submit"
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -396,6 +404,7 @@ function Preferences() {
   const [isSaving, setIsSaving] = useState(false);
   const [tempColor, setTempColor] = useState(chatColor);
   const [toasts, setToasts] = useState([]);
+  const formRef = useRef(null);
 
   // Reset temp color when modal opens
   useEffect(() => {
@@ -412,8 +421,10 @@ function Preferences() {
   };
 
   const handleSave = async (e) => {
-    e?.preventDefault();
-    e?.stopPropagation();
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     try {
       setIsSaving(true);
@@ -437,8 +448,21 @@ function Preferences() {
     }
   };
 
+  // Prevent form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleSave(e);
+    return false;
+  };
+
   return (
-    <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
+    <form 
+      ref={formRef}
+      onSubmit={handleSubmit} 
+      className="space-y-6" 
+      onClick={(e) => e.stopPropagation()}
+    >
       <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
       
       {/* Theme selector */}
@@ -446,6 +470,7 @@ function Preferences() {
         <label className="block text-sm font-medium mb-3">{t('settings.theme')}</label>
         <div className="grid grid-cols-3 gap-3">
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -461,6 +486,7 @@ function Preferences() {
             <span className="text-sm font-medium">{t('settings.system')}</span>
           </button>
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -476,6 +502,7 @@ function Preferences() {
             <span className="text-sm font-medium">{t('settings.light')}</span>
           </button>
           <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -544,7 +571,7 @@ function Preferences() {
       {/* Save button */}
       <div className="pt-4 border-t border-container-border-light/10 dark:border-container-border-dark/10">
         <button
-          onClick={handleSave}
+          type="submit"
           disabled={isSaving}
           className="w-full p-3 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
@@ -554,7 +581,7 @@ function Preferences() {
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
-    </div>
+    </form>
   );
 }
 
