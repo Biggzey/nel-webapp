@@ -337,33 +337,36 @@ export default function ChatWindow({ onMenuClick }) {
             <div key={msg.id} className={`group max-w-full ${msg.role === 'user' ? 'flex justify-end items-end' : 'flex justify-start items-end'}`}>
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
-                  <div className="flex flex-col items-center space-y-0.5">
+                  <div className="flex flex-col items-center relative justify-end">
                     <button
                       onClick={() => {
                         setEditingIndex(i);
                         setEditText(msg.content);
                       }}
-                      className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
+                      className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mt-2"
                       title={t('common.edit')}
+                      style={{ marginBottom: '2px' }}
                     >
                       <i className="fas fa-pencil-alt" />
                     </button>
                     <button
                       onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
-                      className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
+                      className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent mt-1"
                       title={t('chat.addReaction')}
                     >
                       <i className="far fa-smile" />
                     </button>
                     {pickerIndex === i && (
-                      <ReactionPicker
-                        onSelect={(emoji) => {
-                          handleReaction(msg.id, emoji);
-                          setPickerIndex(null);
-                        }}
-                        onClose={() => setPickerIndex(null)}
-                        isUserMessage={true}
-                      />
+                      <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '0.25rem', zIndex: 30 }}>
+                        <ReactionPicker
+                          onSelect={(emoji) => {
+                            handleReaction(msg.id, emoji);
+                            setPickerIndex(null);
+                          }}
+                          onClose={() => setPickerIndex(null)}
+                          isUserMessage={true}
+                        />
+                      </div>
                     )}
                   </div>
                   <div className={`chat-message user-message relative ml-1`}>
