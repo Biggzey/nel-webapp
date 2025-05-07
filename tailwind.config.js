@@ -10,14 +10,14 @@ export default {
         
         // Background colors
         background: {
-          light: "#f8fafc",    // Light clean background
+          light: "#DEE4E7",    // Light clean background
           dark: "#0f0f0f",     // Dark mode background
           secondary: {
             light: "#e6f3f7",   // Slightly darker pale cyan for secondary
             dark: "#2a2a2a"     // Dark mode elevated surfaces
           },
           container: {
-            light: "#DEE4E7",   // Softer, more muted light mode container background
+            light: "#e2e8f0",   // Muted soft gray for light mode container background
             dark: "#1a1a1a",    // Dark mode container background
             hover: {
               light: "#f8fafc", // Light mode hover state
