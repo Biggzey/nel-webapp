@@ -299,7 +299,7 @@ export default function ChatWindow({ onMenuClick }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden overflow-x-hidden">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-300 dark:border-gray-700">
         <button
@@ -319,7 +319,7 @@ export default function ChatWindow({ onMenuClick }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container overflow-x-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">
@@ -377,19 +377,33 @@ export default function ChatWindow({ onMenuClick }) {
                   </div>
                 ) : (
                   <>
-                    {msg.content}
+                    {/* Edit/Trash icons for user messages, top left inside bubble */}
                     {msg.role === 'user' && (
-                      <button
-                        onClick={() => {
-                          setEditingIndex(i);
-                          setEditText(msg.content);
-                        }}
-                        className="absolute -right-6 top-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title={t('common.edit')}
-                      >
-                        <i className="fas fa-pencil-alt text-gray-500 hover:text-gray-700" />
-                      </button>
+                      <div className="absolute top-1 left-1 flex space-x-1 z-10">
+                        <button
+                          onClick={() => {
+                            setEditingIndex(i);
+                            setEditText(msg.content);
+                          }}
+                          className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
+                          title={t('common.edit')}
+                        >
+                          <i className="fas fa-pencil-alt" />
+                        </button>
+                        {/* Uncomment below if you want a delete/trash icon as well */}
+                        {/*
+                        <button
+                          onClick={() => handleDelete(i)}
+                          className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent"
+                          title={t('common.delete')}
+                        >
+                          <i className="fas fa-trash" />
+                        </button>
+                        */}
+                      </div>
                     )}
+                    {msg.content}
+                    {/* Reaction button remains at the bottom left/right as before */}
                     {!editingIndex && (
                       <button
                         onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
