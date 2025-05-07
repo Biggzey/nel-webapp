@@ -338,14 +338,15 @@ export default function ChatWindow({ onMenuClick }) {
               {msg.role === 'user' ? (
                 <div className="flex flex-row items-end">
                   <div className="flex flex-col items-center relative justify-end">
-                    <div className="flex flex-col items-center relative justify-center" style={{ height: '48px' }}>
+                    <div className="flex flex-col items-center relative justify-center">
                       <button
                         onClick={() => {
                           setEditingIndex(i);
                           setEditText(msg.content);
                         }}
-                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-1"
+                        className="p-1 text-xs text-gray-500 hover:text-gray-700 bg-transparent mb-0.5"
                         title={t('common.edit')}
+                        style={{ marginTop: 0, paddingTop: 0, marginBottom: '2px', paddingBottom: 0 }}
                       >
                         <i className="fas fa-pencil-alt" />
                       </button>
@@ -353,6 +354,7 @@ export default function ChatWindow({ onMenuClick }) {
                         onClick={() => setPickerIndex(pickerIndex === i ? null : i)}
                         className="p-1 text-xl text-gray-500 hover:text-gray-700 bg-transparent"
                         title={t('chat.addReaction')}
+                        style={{ marginTop: 0, paddingTop: 0 }}
                       >
                         <i className="far fa-smile" />
                       </button>
