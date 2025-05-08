@@ -28,18 +28,13 @@ function AdminRoute({ children }) {
 }
 
 function ProtectedContent() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
-  const { current, handleSaveCharacter } = useCharacter();
+  const { current, handleSaveCharacter, isModalOpen, handleCloseModal } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [toasts, setToasts] = useState([]);
   const [chatReloadKey, setChatReloadKey] = useState(0);
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
 
   const handleClearChat = (character) => {
     setConfirmClear(character);
@@ -90,15 +85,10 @@ function ProtectedContent() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        onSettingsClick={() => setIsSettingsOpen(true)}
-        onClearChat={handleClearChat}
-      />
-      <main className="flex-1 flex flex-col">
-        <ChatWindow chatReloadKey={chatReloadKey} />
-        <CharacterPane />
-      </main>
+    <div className="flex h-screen w-screen overflow-hidden">
+      <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
+      <ChatWindow className="flex-1" chatReloadKey={chatReloadKey} />
+      <CharacterPane className="w-[22rem]" />
 
       <PersonalityModal
         isOpen={isModalOpen}

@@ -271,9 +271,9 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
+      <div className="flex-1 w-full overflow-y-auto px-6 py-8 space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">

@@ -2,7 +2,7 @@ import React from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 
-export default function CharacterPane() {
+export default function CharacterPane({ className = "" }) {
   const { current, handleOpenModal } = useCharacter();
   const { t } = useLanguage();
 
@@ -15,7 +15,7 @@ export default function CharacterPane() {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-72 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4">
+    <aside className={`hidden md:flex flex-col ${className} bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4`}>
       <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3">
         <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
           {current?.name}

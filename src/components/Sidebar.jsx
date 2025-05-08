@@ -1,5 +1,5 @@
 // src/components/Sidebar.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useCharacter } from "../context/CharacterContext";
@@ -7,6 +7,7 @@ import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
 import { ToastContainer } from "./Toast";
+import PersonalityModal from "./PersonalityModal";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat }) {
   const navigate = useNavigate();
@@ -29,8 +30,22 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCurrent,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const menuRef = useRef(null);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
+
+  // Click-away handler for context menu
+  useEffect(() => {
+    if (openMenuIndex === null) return;
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuIndex(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openMenuIndex]);
 
   // Add file upload handler
   function handleAvatarUpload(e) {
@@ -67,6 +82,21 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const handleClearChat = (character) => {
     setOpenMenuIndex(null);
     onClearChat(character);
+  };
+
+  const handleDeleteCharacterWithConfirm = (character, idx) => {
+    setOpenMenuIndex(null);
+    setConfirmDelete({ character, idx });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    await handleDeleteCharacter(confirmDelete.idx);
+    setConfirmDelete(null);
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDelete(null);
   };
 
   return (
@@ -146,7 +176,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 </button>
                 {/* Context menu */}
                 {openMenuIndex === i && (
-                  <div className="absolute right-0 top-10 z-50 min-w-[160px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
+                  <div ref={menuRef} className="absolute right-0 top-10 z-50 min-w-[160px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -160,8 +190,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       <button
                         onClick={async (e) => {
                           e.stopPropagation();
-                          setOpenMenuIndex(null);
-                          handleDeleteCharacter(i);
+                          handleDeleteCharacterWithConfirm(c, i);
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark text-red-500 transition-colors"
                       >
@@ -227,6 +256,33 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
+
+      {/* Confirmation Modal for Delete Character */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">
+              {t('character.confirmDelete', { name: confirmDelete.character.name }) !== 'character.confirmDelete'
+                ? t('character.confirmDelete', { name: confirmDelete.character.name })
+                : `Are you sure you want to delete ${confirmDelete.character.name}? This cannot be undone.`}
+            </h3>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={handleCancelDelete}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
