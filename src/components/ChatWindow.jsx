@@ -33,6 +33,9 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
   // Add isTyping state
   const [isTyping, setIsTyping] = useState(false);
 
+  const { addToast } = Toast.useToast();
+  const [regeneratingIndex, setRegeneratingIndex] = useState(null);
+
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
     if (!current?.id) return;
@@ -270,7 +273,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
       const i = messages.length - 1 - lastIdx;
       const msg = messages[i];
       if (!msg) return;
-      // Simulate regenerate button logic
+      setRegeneratingIndex(i);
       try {
         const res = await fetch(`/api/chat/message/${msg.id}/regenerate`, {
           method: 'POST',
@@ -286,9 +289,11 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
         }
         const newMsg = await res.json();
         setMessages(prev => prev.map((m, idx) => idx === i ? newMsg : m));
-        // Optionally show a toast here if you want
+        setRegeneratingIndex(null);
+        addToast({ type: 'success', message: 'AI response regenerated!', duration: 4000 });
       } catch (error) {
-        // Optionally show a toast here if you want
+        setRegeneratingIndex(null);
+        addToast({ type: 'error', message: error.message, duration: 5000 });
         console.error('Regenerate error:', error);
       }
     }
@@ -344,12 +349,18 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                       {msg.role === 'assistant' && !editingIndex && (
                         <RegenerateButton
                           message={msg}
-                          onRegenerate={(newMsg) => {
+                          onRegenerate={async (newMsg) => {
+                            setRegeneratingIndex(i);
+                            setTimeout(() => setRegeneratingIndex(null), 2000); // fallback in case
                             setMessages(prev => prev.map((m, idx) => idx === i ? newMsg : m));
+                            addToast({ type: 'success', message: 'AI response regenerated!', duration: 4000 });
                           }}
                         />
                       )}
-                      {editingIndex === i ? (
+                      {/* Typing animation during regeneration */}
+                      {regeneratingIndex === i ? (
+                        <TypingIndicator />
+                      ) : editingIndex === i ? (
                         <div className="flex items-end space-x-2">
                           <textarea
                             value={editText}
