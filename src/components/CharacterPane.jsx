@@ -77,11 +77,12 @@ export default function CharacterPane({ className = "" }) {
         )}
 
         {/* Full Image - will always take remaining space */}
-        <div className="mt-4 min-h-0">
+        <div className="mt-4 min-h-0 flex-1 flex items-center justify-center">
           <img
             src={current?.fullImage || current?.avatar}
             alt={`${current?.name} full`}
-            className="w-full h-full object-cover rounded"
+            className="w-full h-auto max-h-full object-contain rounded"
+            style={{ display: 'block' }}
           />
         </div>
       </div>
