@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import ReactionPicker from "./ReactionPicker";
 import TypingIndicator from "./TypingIndicator";
 import Toast from "./Toast";
+import RegenerateButton from './RegenerateButton';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
@@ -312,6 +313,15 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
                             </span>
                           ))}
                         </div>
+                      )}
+                      {/* Regenerate button for agent message, above reaction picker */}
+                      {msg.role === 'assistant' && !editingIndex && (
+                        <RegenerateButton
+                          message={msg}
+                          onRegenerate={(newMsg) => {
+                            setMessages(prev => prev.map((m, idx) => idx === i ? newMsg : m));
+                          }}
+                        />
                       )}
                       {editingIndex === i ? (
                         <div className="flex items-end space-x-2">
