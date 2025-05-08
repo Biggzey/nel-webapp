@@ -1,5 +1,5 @@
 // src/components/ChatWindow.jsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -13,7 +13,7 @@ import RegenerateButton from './RegenerateButton';
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
 const DEFAULT_AGENT_AVATAR = "/agent-avatar.png";
 
-export default function ChatWindow({ onMenuClick, chatReloadKey }) {
+const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, chatInputRef }, ref) {
   const { current } = useCharacter();
   const { token, logout, user } = useAuth();
   const { t } = useLanguage();
@@ -261,6 +261,39 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
     }
   }
 
+  // Expose regenerateLastAssistantMessage via ref
+  useImperativeHandle(ref, () => ({
+    regenerateLastAssistantMessage: async () => {
+      // Find the last assistant message
+      const lastIdx = [...messages].reverse().findIndex(m => m.role === 'assistant');
+      if (lastIdx === -1) return;
+      const i = messages.length - 1 - lastIdx;
+      const msg = messages[i];
+      if (!msg) return;
+      // Simulate regenerate button logic
+      try {
+        const res = await fetch(`/api/chat/message/${msg.id}/regenerate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({})
+        });
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || 'Failed to regenerate response');
+        }
+        const newMsg = await res.json();
+        setMessages(prev => prev.map((m, idx) => idx === i ? newMsg : m));
+        // Optionally show a toast here if you want
+      } catch (error) {
+        // Optionally show a toast here if you want
+        console.error('Regenerate error:', error);
+      }
+    }
+  }));
+
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
       {/* Messages */}
@@ -462,4 +495,6 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
       </div>
     </div>
   );
-}
+});
+
+export default ChatWindow;

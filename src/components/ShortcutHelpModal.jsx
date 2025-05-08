@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const shortcuts = [
   { combo: <><kbd className="kbd">Enter</kbd></>, desc: 'Send message (when input focused)' },
   { combo: <><kbd className="kbd">Shift</kbd> + <kbd className="kbd">Enter</kbd></>, desc: 'New line in chat input' },
   { combo: <><kbd className="kbd">Alt</kbd> + <kbd className="kbd">/</kbd></>, desc: 'Show keyboard shortcut help' },
+  { combo: <><kbd className="kbd">Alt</kbd> + <kbd className="kbd">S</kbd></>, desc: 'Focus chat search' },
   { combo: <><kbd className="kbd">Alt</kbd> + <kbd className="kbd">B</kbd></>, desc: 'Toggle sidebar' },
   { combo: <><kbd className="kbd">Alt</kbd> + <kbd className="kbd">C</kbd></>, desc: 'Toggle character pane' },
   { combo: <><kbd className="kbd">Alt</kbd> + <kbd className="kbd">R</kbd></>, desc: 'Regenerate last AI response' },
@@ -13,10 +14,25 @@ const shortcuts = [
 ];
 
 export default function ShortcutHelpModal({ isOpen, onClose }) {
+  const modalRef = useRef();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleEsc(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
+  function handleBackdropClick(e) {
+    if (e.target === e.currentTarget) onClose();
+  }
+
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-8 max-w-lg w-full mx-4 border-2 border-container-border-light dark:border-container-border-dark shadow-xl relative animate-fade-in-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={handleBackdropClick}>
+      <div ref={modalRef} className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-8 max-w-lg w-full mx-4 border-2 border-container-border-light dark:border-container-border-dark shadow-xl relative animate-fade-in-up">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-400 hover:text-primary text-2xl focus:outline-none"

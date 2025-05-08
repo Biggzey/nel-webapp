@@ -32,7 +32,7 @@ function AdminRoute({ children }) {
 function ProtectedContent({ addToast }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
-  const { current, handleSaveCharacter, isModalOpen, handleCloseModal } = useCharacter();
+  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
@@ -51,7 +51,18 @@ function ProtectedContent({ addToast }) {
   const handleOpenSettings = () => setIsSettingsOpen(true);
   const handleToggleSidebar = () => setSidebarVisible((v) => !v);
   const handleToggleCharacterPane = () => setCharacterPaneVisible((v) => !v);
-  const handleRegenerate = () => {/* TODO: implement global regenerate */};
+  const handleRegenerate = () => {
+    if (chatWindowRef.current && chatWindowRef.current.regenerateLastAssistantMessage) {
+      chatWindowRef.current.regenerateLastAssistantMessage();
+    }
+  };
+  const handleNavigateCharacter = (direction) => {
+    if (!characters || characters.length === 0) return;
+    let newIndex = selectedIndex + direction;
+    if (newIndex < 0) newIndex = characters.length - 1;
+    if (newIndex >= characters.length) newIndex = 0;
+    setSelectedIndex(newIndex);
+  };
   const handleFocusSearch = () => {/* TODO: implement chat search focus */};
   const handleShowShortcutHelp = () => setShowShortcutHelp(true);
 
@@ -97,6 +108,7 @@ function ProtectedContent({ addToast }) {
         onToggleSidebar={handleToggleSidebar}
         onToggleCharacterPane={handleToggleCharacterPane}
         onRegenerate={handleRegenerate}
+        onNavigateCharacter={handleNavigateCharacter}
         onFocusSearch={handleFocusSearch}
         onShowShortcutHelp={handleShowShortcutHelp}
       />

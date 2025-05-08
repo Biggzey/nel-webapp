@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch, onShowShortcutHelp }) {
+export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onNavigateCharacter, onFocusSearch, onShowShortcutHelp }) {
   useEffect(() => {
     function handleKeyDown(e) {
       const active = document.activeElement;
@@ -22,6 +22,12 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
       if (e.altKey && e.key === '/') {
         e.preventDefault();
         onShowShortcutHelp && onShowShortcutHelp();
+        return;
+      }
+      // Alt+S
+      if (e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        onFocusSearch && onFocusSearch();
         return;
       }
       // Alt+,
@@ -48,11 +54,16 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
         onRegenerate && onRegenerate();
         return;
       }
-      // Alt+ArrowUp/ArrowDown
-      if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      // Alt+ArrowUp
+      if (e.altKey && e.key === 'ArrowUp') {
         e.preventDefault();
-        // Could trigger chat/character navigation
-        // Implement as needed
+        onNavigateCharacter && onNavigateCharacter(-1);
+        return;
+      }
+      // Alt+ArrowDown
+      if (e.altKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        onNavigateCharacter && onNavigateCharacter(1);
         return;
       }
       // Esc: close modals, unfocus input, etc.
@@ -63,6 +74,6 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch, onShowShortcutHelp]);
+  }, [chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onNavigateCharacter, onFocusSearch, onShowShortcutHelp]);
   return null;
 } 
