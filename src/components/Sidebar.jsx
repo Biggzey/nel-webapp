@@ -5,12 +5,16 @@ import { useAuth } from "../context/AuthContext";
 import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
+import { useChat } from "../hooks/useChat";
+import Toast from "./Toast";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick }) {
   const navigate = useNavigate();
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [toast, setToast] = useState(null);
+  const { clearChat } = useChat();
   const {
     characters,
     selectedIndex,
@@ -23,7 +27,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     handleDeleteCharacter,
     toggleBookmark,
     setCurrent,
-    clearChat,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
 
@@ -131,8 +134,18 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         // Clear conversation for this character
                         // Navigate to main chat if not already there
                         if (window.location.pathname !== "/") navigate("/");
-                        // Use the shared clearChat function
-                        await clearChat(c.id);
+                        
+                        await clearChat(
+                          c.id,
+                          // Success callback
+                          (toastData) => {
+                            setToast(toastData);
+                            // Force a reload of the chat window by triggering a state change
+                            setCurrent({ ...current, id: c.id });
+                          },
+                          // Error callback
+                          (toastData) => setToast(toastData)
+                        );
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                     >
@@ -206,6 +219,16 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
+
+      {/* Toast notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={toast.duration}
+          onClose={() => setToast(null)}
+        />
+      )}
     </aside>
   );
 }

@@ -170,7 +170,6 @@ export default function ChatWindow({ onMenuClick }) {
       const aiMsg = await aiRes.json();
       setMessages(prev => [...prev, aiMsg]);
       setIsTyping(false);
-
     } catch (error) {
       console.error('Error in chat:', error);
       setToast({
@@ -201,10 +200,15 @@ export default function ChatWindow({ onMenuClick }) {
         throw new Error(errorData.error || t('errors.serverError'));
       }
 
-      const updated = await res.json();
-      setMessages(prev => prev.map((m, i) => i === index ? updated : m));
+      const updatedMsg = await res.json();
+      setMessages(prev => [
+        ...prev.slice(0, index),
+        updatedMsg,
+        ...prev.slice(index + 1)
+      ]);
       setEditingIndex(null);
       setEditText("");
+
     } catch (error) {
       console.error('Error editing message:', error);
       setToast({
@@ -217,19 +221,26 @@ export default function ChatWindow({ onMenuClick }) {
 
   async function handleReaction(messageId, emoji) {
     try {
+      // Find the message
       const msg = messages.find(m => m.id === messageId);
-      if (!msg) return;
-
-      const reactions = { ...msg.reactions };
-      reactions[emoji] = (reactions[emoji] || 0) + 1;
-
+      let newReactions = {};
+      if (msg && msg.reactions && msg.reactions[emoji]) {
+        // If the reaction is already present, remove it (toggle off)
+        newReactions = { ...msg.reactions };
+        delete newReactions[emoji];
+      } else {
+        // Otherwise, set only the selected reaction
+        newReactions = { [emoji]: 1 };
+      }
       const res = await fetch(`/api/chat/message/${messageId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ reactions })
+        body: JSON.stringify({ 
+          reactions: newReactions
+        })
       });
 
       if (!res.ok) {
@@ -237,8 +248,11 @@ export default function ChatWindow({ onMenuClick }) {
         throw new Error(errorData.error || t('errors.serverError'));
       }
 
-      const updated = await res.json();
-      setMessages(prev => prev.map(m => m.id === messageId ? updated : m));
+      const updatedMsg = await res.json();
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? updatedMsg : msg
+      ));
+
     } catch (error) {
       console.error('Error adding reaction:', error);
       setToast({
@@ -246,12 +260,6 @@ export default function ChatWindow({ onMenuClick }) {
         message: error.message,
         duration: 5000
       });
-    }
-  }
-
-  async function handleClearChat() {
-    if (await clearChat(current.id)) {
-      setMessages([]);
     }
   }
 
