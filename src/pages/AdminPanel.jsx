@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 
 export default function AdminPanel() {
   const { token, isSuperAdmin, userRole, isModerator } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,8 +91,18 @@ export default function AdminPanel() {
       }
 
       setUsers(users.filter(u => u.id !== userId));
+      addToast({
+        type: 'success',
+        message: 'User deleted successfully',
+        duration: 10000
+      });
     } catch (err) {
       console.error('Error deleting user:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to delete user',
+        duration: 10000
+      });
     } finally {
       setActionInProgress(false);
     }
@@ -139,6 +151,11 @@ export default function AdminPanel() {
       setCustomPassword('');
     } catch (err) {
       console.error('Error resetting password:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to reset password',
+        duration: 10000
+      });
     } finally {
       setActionInProgress(false);
     }
@@ -161,8 +178,18 @@ export default function AdminPanel() {
       }
 
       await loadUsers(); // Reload users to get updated status
+      addToast({
+        type: 'success',
+        message: `User blocked successfully. Blocked until ${new Date(user.blockedUntil).toLocaleString()}`,
+        duration: 10000
+      });
     } catch (err) {
       console.error('Error blocking user:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to block user',
+        duration: 10000
+      });
     } finally {
       setActionInProgress(false);
     }
@@ -183,8 +210,18 @@ export default function AdminPanel() {
       }
 
       await loadUsers(); // Reload users to get updated status
+      addToast({
+        type: 'success',
+        message: 'User unblocked successfully',
+        duration: 10000
+      });
     } catch (err) {
       console.error('Error unblocking user:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to unblock user',
+        duration: 10000
+      });
     } finally {
       setActionInProgress(false);
     }
@@ -217,8 +254,18 @@ export default function AdminPanel() {
 
       // Reload users to ensure we have the latest data
       await loadUsers();
+      addToast({
+        type: 'success',
+        message: 'User role updated successfully',
+        duration: 10000
+      });
     } catch (err) {
       console.error('Error updating user role:', err);
+      addToast({
+        type: 'error',
+        message: 'Failed to update user role',
+        duration: 10000
+      });
     } finally {
       setActionInProgress(false);
     }
