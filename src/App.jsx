@@ -17,6 +17,7 @@ import PersonalityModal from "./components/PersonalityModal";
 import SettingsModal from "./components/SettingsModal";
 import { useChat } from "./hooks/useChat";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
+import ShortcutHelpModal from "./components/ShortcutHelpModal";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -39,6 +40,7 @@ function ProtectedContent({ addToast }) {
   const [characterPaneVisible, setCharacterPaneVisible] = useState(true);
   const chatInputRef = useRef(null);
   const chatWindowRef = useRef(null);
+  const [showShortcutHelp, setShowShortcutHelp] = useState(false);
 
   // Handler stubs for global shortcuts
   const handleSendMessage = () => {
@@ -51,6 +53,7 @@ function ProtectedContent({ addToast }) {
   const handleToggleCharacterPane = () => setCharacterPaneVisible((v) => !v);
   const handleRegenerate = () => {/* TODO: implement global regenerate */};
   const handleFocusSearch = () => {/* TODO: implement chat search focus */};
+  const handleShowShortcutHelp = () => setShowShortcutHelp(true);
 
   const handleClearChat = (character) => {
     setConfirmClear(character);
@@ -95,7 +98,9 @@ function ProtectedContent({ addToast }) {
         onToggleCharacterPane={handleToggleCharacterPane}
         onRegenerate={handleRegenerate}
         onFocusSearch={handleFocusSearch}
+        onShowShortcutHelp={handleShowShortcutHelp}
       />
+      <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
       {sidebarVisible && (
         <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
       )}

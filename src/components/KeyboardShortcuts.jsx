@@ -1,16 +1,15 @@
 import { useEffect } from 'react';
 
-export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch }) {
+export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch, onShowShortcutHelp }) {
   useEffect(() => {
     function handleKeyDown(e) {
-      // If a modal or input is focused, skip some shortcuts
       const active = document.activeElement;
       const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
 
       // --- Chat input shortcuts ---
       if (chatInputRef && chatInputRef.current && document.activeElement === chatInputRef.current) {
         // Enter to send, Shift+Enter for newline
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
           e.preventDefault();
           onSendMessage && onSendMessage();
           return;
@@ -18,55 +17,41 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
         // Shift+Enter: allow default (newline)
       }
 
-      // --- Global shortcuts ---
-      // Ctrl+K or /
-      if ((e.ctrlKey && e.key.toLowerCase() === 'k') || (e.key === '/' && !isInput)) {
+      // --- Global shortcuts (Alt-based) ---
+      // Alt+/
+      if (e.altKey && e.key === '/') {
         e.preventDefault();
-        onFocusSearch && onFocusSearch();
+        onShowShortcutHelp && onShowShortcutHelp();
         return;
       }
-      // Ctrl+,
-      if (e.ctrlKey && e.key === ',') {
+      // Alt+,
+      if (e.altKey && e.key === ',') {
         e.preventDefault();
         onOpenSettings && onOpenSettings();
         return;
       }
-      // Ctrl+Shift+N
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'n') {
-        e.preventDefault();
-        // Could trigger new chat/character
-        // Implement as needed
-        return;
-      }
-      // Ctrl+ArrowUp/ArrowDown
-      if (e.ctrlKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-        e.preventDefault();
-        // Could trigger chat/character navigation
-        // Implement as needed
-        return;
-      }
-      // Ctrl+R
-      if (e.ctrlKey && e.key.toLowerCase() === 'r') {
-        e.preventDefault();
-        onRegenerate && onRegenerate();
-        return;
-      }
-      // Ctrl+Shift+C
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        onToggleCharacterPane && onToggleCharacterPane();
-        return;
-      }
-      // Ctrl+B (optional: toggle sidebar)
-      if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+      // Alt+B
+      if (e.altKey && e.key.toLowerCase() === 'b') {
         e.preventDefault();
         onToggleSidebar && onToggleSidebar();
         return;
       }
-      // Ctrl+/ or ? (show shortcut help)
-      if ((e.ctrlKey && e.key === '/') || (e.key === '?' && !isInput)) {
+      // Alt+C
+      if (e.altKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
-        // Could open a shortcut help modal
+        onToggleCharacterPane && onToggleCharacterPane();
+        return;
+      }
+      // Alt+R
+      if (e.altKey && e.key.toLowerCase() === 'r') {
+        e.preventDefault();
+        onRegenerate && onRegenerate();
+        return;
+      }
+      // Alt+ArrowUp/ArrowDown
+      if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        e.preventDefault();
+        // Could trigger chat/character navigation
         // Implement as needed
         return;
       }
@@ -78,6 +63,6 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch]);
+  }, [chatInputRef, onSendMessage, onOpenSettings, onToggleSidebar, onToggleCharacterPane, onRegenerate, onFocusSearch, onShowShortcutHelp]);
   return null;
 } 

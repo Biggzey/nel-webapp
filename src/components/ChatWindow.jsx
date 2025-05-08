@@ -446,7 +446,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t('chat.typeMessage')}
+            placeholder={t('chat.typeMessage') + ' (Alt+/ for shortcuts)'}
             className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded-2xl bg-chatwindow-light dark:bg-chatwindow-dark text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             rows={1}
           />
