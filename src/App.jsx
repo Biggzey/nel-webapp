@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CharacterProvider, useCharacter } from "./context/CharacterContext";
@@ -16,6 +16,7 @@ import AdminPanel from "./pages/AdminPanel";
 import PersonalityModal from "./components/PersonalityModal";
 import SettingsModal from "./components/SettingsModal";
 import { useChat } from "./hooks/useChat";
+import KeyboardShortcuts from "./components/KeyboardShortcuts";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -34,6 +35,22 @@ function ProtectedContent({ addToast }) {
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [characterPaneVisible, setCharacterPaneVisible] = useState(true);
+  const chatInputRef = useRef(null);
+  const chatWindowRef = useRef(null);
+
+  // Handler stubs for global shortcuts
+  const handleSendMessage = () => {
+    if (chatWindowRef.current && chatWindowRef.current.handleSend) {
+      chatWindowRef.current.handleSend();
+    }
+  };
+  const handleOpenSettings = () => setIsSettingsOpen(true);
+  const handleToggleSidebar = () => setSidebarVisible((v) => !v);
+  const handleToggleCharacterPane = () => setCharacterPaneVisible((v) => !v);
+  const handleRegenerate = () => {/* TODO: implement global regenerate */};
+  const handleFocusSearch = () => {/* TODO: implement chat search focus */};
 
   const handleClearChat = (character) => {
     setConfirmClear(character);
@@ -70,13 +87,24 @@ function ProtectedContent({ addToast }) {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
-      <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
+      <KeyboardShortcuts
+        chatInputRef={chatInputRef}
+        onSendMessage={handleSendMessage}
+        onOpenSettings={handleOpenSettings}
+        onToggleSidebar={handleToggleSidebar}
+        onToggleCharacterPane={handleToggleCharacterPane}
+        onRegenerate={handleRegenerate}
+        onFocusSearch={handleFocusSearch}
+      />
+      {sidebarVisible && (
+        <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
+      )}
       <Routes>
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            <ChatWindow className="flex-1" chatReloadKey={chatReloadKey} />
-            <CharacterPane className="w-[22rem]" />
+            <ChatWindow ref={chatWindowRef} chatInputRef={chatInputRef} className="flex-1" chatReloadKey={chatReloadKey} />
+            {characterPaneVisible && <CharacterPane className="w-[22rem]" />}
           </>
         } />
       </Routes>

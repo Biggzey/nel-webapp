@@ -261,13 +261,6 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
     }
   }
 
-  function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  }
-
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
       {/* Messages */}
@@ -380,7 +373,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
                 )}
                 {/* User side: bubble left, avatar right */}
                 {msg.role === 'user' && (
-                  <div className="flex flex-col max-w-[70%] min-w-0 items-end order-1 group relative">
+                  <div className="flex flex-col max-w-[80%] min-w-0 items-end order-1 group relative">
                     {/* User display name */}
                     <div className="flex items-center mb-1 space-x-2 justify-end">
                       <span className="text-xs font-semibold text-gray-300">{user?.displayName || user?.username || 'You'}</span>
@@ -453,7 +446,6 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
             ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
             placeholder={t('chat.typeMessage')}
             className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded-2xl bg-chatwindow-light dark:bg-chatwindow-dark text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none"
             rows={1}
