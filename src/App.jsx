@@ -6,7 +6,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
-import Toast from "./components/Toast";
+import Toast, { ToastContainer } from "./components/Toast";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ChatWindow from "./components/ChatWindow";
@@ -16,7 +16,6 @@ import AdminPanel from "./pages/AdminPanel";
 import PersonalityModal from "./components/PersonalityModal";
 import SettingsModal from "./components/SettingsModal";
 import { useChat } from "./hooks/useChat";
-import { ToastContainer } from "./components/ToastContainer";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
