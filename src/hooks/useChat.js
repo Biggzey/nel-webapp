@@ -6,11 +6,6 @@ export function useChat() {
   const { t } = useLanguage();
 
   const clearChat = async (characterId, onSuccess, onError) => {
-    // Show confirmation dialog
-    if (!window.confirm(t('chat.confirmClear'))) {
-      return;
-    }
-
     try {
       const res = await fetch(`/api/chat/${characterId}`, {
         method: "DELETE",
@@ -32,9 +27,6 @@ export function useChat() {
         message: t('chat.chatCleared'),
         duration: 3000
       });
-
-      // Force reload the page to ensure chat is cleared
-      window.location.reload();
 
     } catch (error) {
       console.error('Error clearing chat:', error);
