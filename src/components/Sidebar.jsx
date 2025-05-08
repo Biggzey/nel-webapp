@@ -8,7 +8,7 @@ import ProfileDropdown from "./ProfileDropdown";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick }) {
   const navigate = useNavigate();
-  const { isModerator } = useAuth();
+  const { isModerator, token } = useAuth();
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const {
@@ -133,22 +133,30 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         // Use the same clearChat logic as in ChatWindow
                         if (window.confirm(t('chat.confirmClear'))) {
                           try {
+                            console.log('Clearing chat for character:', c.id); // Debug log
                             const res = await fetch(`/api/chat/${c.id}`, {
                               method: "DELETE",
-                              headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                              headers: { 
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`
+                              }
                             });
                             
                             if (!res.ok) {
                               const errorData = await res.json().catch(() => ({}));
+                              console.error('Clear chat error:', errorData); // Debug log
                               throw new Error(errorData.error || t('errors.serverError'));
                             }
 
                             // Force a reload of the chat window by triggering a state change
                             setCurrent({ ...current, id: c.id });
                             
+                            // Show success toast or message
+                            alert(t('chat.chatCleared'));
+                            
                           } catch (err) {
                             console.error('Error clearing chat:', err);
-                            alert(t('errors.serverError'));
+                            alert(err.message || t('errors.serverError'));
                           }
                         }
                       }}
