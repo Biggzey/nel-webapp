@@ -13,6 +13,7 @@ export default function RegenerateButton({ message, onRegenerate }) {
       const res = await fetch(`/api/chat/message/${message.id}/regenerate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
