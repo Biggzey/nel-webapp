@@ -36,6 +36,8 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
   const { addToast } = useToast();
   const [regeneratingIndex, setRegeneratingIndex] = useState(null);
 
+  const messageRefs = useRef([]);
+
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
     if (!current?.id) return;
@@ -264,7 +266,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
     }
   }
 
-  // Expose regenerateLastAssistantMessage via ref
+  // Expose regenerateLastAssistantMessage and scrollToMessage via ref
   useImperativeHandle(ref, () => ({
     regenerateLastAssistantMessage: async () => {
       // Find the last assistant message
@@ -296,6 +298,11 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
         addToast({ type: 'error', message: error.message, duration: 5000 });
         console.error('Regenerate error:', error);
       }
+    },
+    scrollToMessage: (index) => {
+      if (messageRefs.current[index]) {
+        messageRefs.current[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   }));
 
@@ -317,7 +324,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
           </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={msg.id} className="w-full flex">
+            <div key={msg.id} ref={el => messageRefs.current[i] = el} className="w-full flex">
               <div className={`flex items-end group max-w-[70%] min-w-0 ${msg.role === 'user' ? 'justify-end ml-auto flex-row' : 'justify-start mr-auto flex-row'}`}>
                 {/* Agent side: avatar left, bubble right */}
                 {msg.role === 'assistant' && (

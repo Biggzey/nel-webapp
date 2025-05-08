@@ -18,6 +18,7 @@ import SettingsModal from "./components/SettingsModal";
 import { useChat } from "./hooks/useChat";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ShortcutHelpModal from "./components/ShortcutHelpModal";
+import ChatSearch from "./components/ChatSearch";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -41,6 +42,7 @@ function ProtectedContent({ addToast }) {
   const chatInputRef = useRef(null);
   const chatWindowRef = useRef(null);
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
+  const [showChatSearch, setShowChatSearch] = useState(false);
 
   // Handler stubs for global shortcuts
   const handleSendMessage = () => {
@@ -99,6 +101,13 @@ function ProtectedContent({ addToast }) {
     }
   };
 
+  // Handler to scroll to a message in ChatWindow
+  const handleJumpToMessage = (msgIndex) => {
+    if (chatWindowRef.current && chatWindowRef.current.scrollToMessage) {
+      chatWindowRef.current.scrollToMessage(msgIndex);
+    }
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <KeyboardShortcuts
@@ -109,7 +118,7 @@ function ProtectedContent({ addToast }) {
         onToggleCharacterPane={handleToggleCharacterPane}
         onRegenerate={handleRegenerate}
         onNavigateCharacter={handleNavigateCharacter}
-        onFocusSearch={handleFocusSearch}
+        onFocusSearch={() => setShowChatSearch(true)}
         onShowShortcutHelp={handleShowShortcutHelp}
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
@@ -125,6 +134,12 @@ function ProtectedContent({ addToast }) {
           </>
         } />
       </Routes>
+      <ChatSearch
+        messages={chatWindowRef.current?.messages || []}
+        open={showChatSearch}
+        onClose={() => setShowChatSearch(false)}
+        onJumpToMessage={handleJumpToMessage}
+      />
       <PersonalityModal
         isOpen={isModalOpen}
         initialData={current}
