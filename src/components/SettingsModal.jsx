@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSettings } from '../context/SettingsContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ToastContainer } from './Toast';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 
@@ -29,27 +28,6 @@ function Profile({ user, onSave }) {
   }, [user]);
 
   const navigate = useNavigate();
-  const [toasts, setToasts] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
-
-  const addToast = (toast) => {
-    const id = nanoid();
-    const newToast = { ...toast, id };
-    console.log('Adding toast:', newToast);
-    setToasts(prev => [...prev, newToast]);
-    
-    // Remove toast after duration
-    if (toast.duration) {
-      setTimeout(() => {
-        removeToast(id);
-      }, toast.duration);
-    }
-  };
-
-  const removeToast = (id) => {
-    console.log('Removing toast:', id);
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
 
   const handleAvatarChange = (e) => {
     e.preventDefault();
@@ -61,11 +39,7 @@ function Profile({ user, onSave }) {
     // Validate file size before processing
     const maxSizeMB = 5; // 5MB max for original file
     if (file.size > maxSizeMB * 1024 * 1024) {
-      addToast({
-        type: 'error',
-        message: `Image file too large. Maximum size is ${maxSizeMB}MB. Please choose a smaller image.`,
-        duration: 5000
-      });
+      console.error('Image file too large. Maximum size is 5MB. Please choose a smaller image.');
       return;
     }
 
@@ -109,20 +83,11 @@ function Profile({ user, onSave }) {
         const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
         
         setFormData(prev => ({ ...prev, avatar: resizedDataUrl }));
-        addToast({
-          type: 'success',
-          message: 'Image uploaded and resized successfully',
-          duration: 3000
-        });
       };
     };
     
     reader.onerror = () => {
-      addToast({
-        type: 'error',
-        message: 'Failed to read image file. Please try again with a different image.',
-        duration: 5000
-      });
+      console.error('Failed to read image file. Please try again with a different image.');
     };
     
     reader.readAsDataURL(file);
@@ -136,12 +101,6 @@ function Profile({ user, onSave }) {
 
     console.log('Save button clicked, preventing default behavior');
     
-    if (isSaving) {
-      console.log('Already saving, ignoring click');
-      return;
-    }
-
-    setIsSaving(true);
     try {
       console.log('Starting profile save with data:', {
         displayName: formData.displayName,
@@ -194,22 +153,10 @@ function Profile({ user, onSave }) {
         await onSave(data);
       }
 
-      // Show success toast for profile update
-      addToast({
-        type: 'success',
-        message: data.message || t('settings.profileUpdated'),
-        duration: 3000
-      });
-
       // If password fields are filled, update password
       if (formData.oldPassword && formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
-          addToast({
-            type: 'error',
-            message: t('profile.passwordMismatch'),
-            duration: 5000
-          });
-          return;
+          throw new Error('New passwords do not match.');
         }
 
         const passwordRes = await fetch('/api/user/password', {
@@ -248,30 +195,10 @@ function Profile({ user, onSave }) {
         }
 
         // Show success toast for password update
-        addToast({
-          type: 'success',
-          message: pwData.message || t('profile.passwordChanged'),
-          duration: 3000
-        });
-
-        // Clear password fields after successful update
-        setFormData(prev => ({
-          ...prev,
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        }));
+        console.log('Password update response:', pwData);
       }
     } catch (error) {
       console.error('Error in handleSave:', error);
-      addToast({
-        type: 'error',
-        message: error.message,
-        duration: 5000
-      });
-    } finally {
-      console.log('Save operation completed');
-      setIsSaving(false);
     }
   };
 
@@ -375,20 +302,16 @@ function Profile({ user, onSave }) {
       <button
         type="button"
         onClick={handleSave}
-        disabled={isSaving}
         className="w-full p-2 rounded-lg bg-primary text-white font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
       >
-        {isSaving ? t('settings.saving') : t('settings.saveChanges')}
+        {t('settings.saveChanges')}
       </button>
-
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
 
 function Preferences() {
-  const { dark, setTheme, chatColor, setChatColor } = useTheme();
+  const { dark, setTheme, chatColor, setChatColor, model, setModel } = useTheme();
   const { language, setLanguage, t } = useLanguage();
 
   return (
@@ -450,21 +373,39 @@ function Preferences() {
         </div>
       </div>
 
-      {/* Language selector */}
-      <div className="space-y-2">
-        <label className="block text-sm font-medium mb-2">{t('settings.language')}</label>
-        <select
-          value={language}
-          onChange={(e) => {
-            e.stopPropagation();
-            setLanguage(e.target.value);
-          }}
-          onClick={(e) => e.stopPropagation()}
-          className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="en">English</option>
-          <option value="es">Español</option>
-        </select>
+      {/* Language and Model selectors in a row */}
+      <div className="flex space-x-4">
+        <div className="space-y-2" style={{ minWidth: '8rem' }}>
+          <label className="block text-sm font-medium mb-2">{t('settings.language')}</label>
+          <select
+            value={language}
+            onChange={(e) => {
+              e.stopPropagation();
+              setLanguage(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-40 p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="en">English</option>
+            <option value="es">Español</option>
+          </select>
+        </div>
+        <div className="flex-1 space-y-2 min-w-[12rem] max-w-md">
+          <label className="block text-sm font-medium mb-2">Model</label>
+          <select
+            value={model || 'openai'}
+            onChange={(e) => {
+              e.stopPropagation();
+              setModel(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="openai">OpenAI API</option>
+            <option value="custom">Custom Model (coming soon)</option>
+            <option value="other">Other (coming soon)</option>
+          </select>
+        </div>
       </div>
 
       {/* Chat color picker */}

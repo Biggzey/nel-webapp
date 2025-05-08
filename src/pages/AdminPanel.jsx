@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Toast from '../components/Toast';
 
 export default function AdminPanel() {
   const { token, isSuperAdmin, userRole, isModerator } = useAuth();
@@ -9,7 +8,6 @@ export default function AdminPanel() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [toast, setToast] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwordResetUser, setPasswordResetUser] = useState(null);
   const [customPassword, setCustomPassword] = useState('');
@@ -91,18 +89,8 @@ export default function AdminPanel() {
       }
 
       setUsers(users.filter(u => u.id !== userId));
-      setToast({
-        type: 'success',
-        message: 'User deleted successfully',
-        duration: 3000
-      });
     } catch (err) {
       console.error('Error deleting user:', err);
-      setToast({
-        type: 'error',
-        message: err.message,
-        duration: 5000
-      });
     } finally {
       setActionInProgress(false);
     }
@@ -140,7 +128,7 @@ export default function AdminPanel() {
         hasTemporaryPassword: !!data.temporaryPassword
       });
 
-      setToast({
+      addToast({
         type: 'success',
         message: password 
           ? 'Password has been reset successfully'
@@ -151,11 +139,6 @@ export default function AdminPanel() {
       setCustomPassword('');
     } catch (err) {
       console.error('Error resetting password:', err);
-      setToast({
-        type: 'error',
-        message: err.message,
-        duration: 5000
-      });
     } finally {
       setActionInProgress(false);
     }
@@ -178,18 +161,8 @@ export default function AdminPanel() {
       }
 
       await loadUsers(); // Reload users to get updated status
-      setToast({
-        type: 'success',
-        message: 'User blocked successfully',
-        duration: 3000
-      });
     } catch (err) {
       console.error('Error blocking user:', err);
-      setToast({
-        type: 'error',
-        message: err.message,
-        duration: 5000
-      });
     } finally {
       setActionInProgress(false);
     }
@@ -210,18 +183,8 @@ export default function AdminPanel() {
       }
 
       await loadUsers(); // Reload users to get updated status
-      setToast({
-        type: 'success',
-        message: 'User unblocked successfully',
-        duration: 3000
-      });
     } catch (err) {
       console.error('Error unblocking user:', err);
-      setToast({
-        type: 'error',
-        message: err.message,
-        duration: 5000
-      });
     } finally {
       setActionInProgress(false);
     }
@@ -252,21 +215,10 @@ export default function AdminPanel() {
         user.id === userId ? { ...user, role: data.user.role } : user
       ));
 
-      setToast({
-        type: 'success',
-        message: `User role updated to ${data.user.role}`,
-        duration: 3000
-      });
-
       // Reload users to ensure we have the latest data
       await loadUsers();
     } catch (err) {
       console.error('Error updating user role:', err);
-      setToast({
-        type: 'error',
-        message: err.message,
-        duration: 5000
-      });
     } finally {
       setActionInProgress(false);
     }
@@ -519,16 +471,6 @@ export default function AdminPanel() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
       )}
     </div>
   );

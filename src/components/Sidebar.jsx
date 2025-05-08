@@ -6,7 +6,6 @@ import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
-import { ToastContainer } from "./Toast";
 import PersonalityModal from "./PersonalityModal";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat }) {
@@ -14,7 +13,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [toasts, setToasts] = useState([]);
   const { clearChat } = useChat();
   const {
     characters,
@@ -62,22 +60,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     };
     reader.readAsDataURL(file);
   }
-
-  // Add toast management functions
-  const addToast = (toast) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { ...toast, id }]);
-    
-    if (toast.duration) {
-      setTimeout(() => {
-        removeToast(id);
-      }, toast.duration);
-    }
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
-  };
 
   const handleClearChat = (character) => {
     setOpenMenuIndex(null);
@@ -253,9 +235,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
-
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
 
       {/* Confirmation Modal for Delete Character */}
       {confirmDelete && (

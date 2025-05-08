@@ -4,7 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
 import ThemePicker from "../components/ThemePicker";
-import Toast from "../components/Toast";
 
 export default function Profile() {
   const { token } = useAuth();
@@ -16,7 +15,6 @@ export default function Profile() {
   const [oldPwd, setOldPwd] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
-  const [toast, setToast] = useState(null);
 
   // Load current user data
   useEffect(() => {
@@ -45,9 +43,9 @@ export default function Profile() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t('errors.serverError'));
       setEmail(data.email);
-      setToast({ message: t('profile.emailUpdated'), type: "success" });
+      addToast({ message: t('profile.emailUpdated'), type: "success" });
     } catch (error) {
-      setToast({ message: error.message, type: "error" });
+      addToast({ message: error.message, type: "error" });
     }
   }
 
@@ -71,9 +69,9 @@ export default function Profile() {
       setOldPwd("");
       setNewPwd("");
       setConfirmPwd("");
-      setToast({ message: t('profile.passwordChanged'), type: "success" });
+      addToast({ message: t('profile.passwordChanged'), type: "success" });
     } catch (error) {
-      setToast({ message: error.message, type: "error" });
+      addToast({ message: error.message, type: "error" });
     }
   }
 
@@ -152,16 +150,6 @@ export default function Profile() {
           </button>
         </div>
       </form>
-
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={5000}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }

@@ -27,13 +27,12 @@ function AdminRoute({ children }) {
   return token && isModerator ? children : <Navigate to="/" replace />;
 }
 
-function ProtectedContent() {
+function ProtectedContent({ addToast }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
   const { current, handleSaveCharacter, isModalOpen, handleCloseModal } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
-  const [toasts, setToasts] = useState([]);
   const [chatReloadKey, setChatReloadKey] = useState(0);
 
   const handleClearChat = (character) => {
@@ -67,21 +66,6 @@ function ProtectedContent() {
       });
       setConfirmClear(null);
     }
-  };
-
-  const addToast = (toast) => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { ...toast, id }]);
-    
-    if (toast.duration) {
-      setTimeout(() => {
-        removeToast(id);
-      }, toast.duration);
-    }
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
   return (
@@ -123,15 +107,13 @@ function ProtectedContent() {
           </div>
         </div>
       )}
-
-      {/* Toast notifications */}
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }
 
 function InnerApp() {
   const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
 
   // Add global error handler
   useEffect(() => {
@@ -154,6 +136,20 @@ function InnerApp() {
     };
   }, []);
 
+  // Toast handlers
+  const addToast = (toast) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { ...toast, id }]);
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
+  };
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
+
   return (
     <ErrorBoundary>
       <div className="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
@@ -168,14 +164,15 @@ function InnerApp() {
             element={
               <PrivateRoute>
                 <CharacterProvider>
-                  <ProtectedContent />
+                  <ProtectedContent addToast={addToast} />
                 </CharacterProvider>
               </PrivateRoute>
             }
           />
         </Routes>
-
-        {/* Toast notifications */}
+        {/* Toast notifications (global, overlays everything) */}
+        <ToastContainer toasts={toasts} onClose={removeToast} />
+        {/* Single error toast for global errors */}
         {toast && (
           <Toast
             message={toast.message}

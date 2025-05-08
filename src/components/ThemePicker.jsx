@@ -1,11 +1,9 @@
 // src/components/ThemePicker.jsx
 import React, { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
-import Toast from "./Toast";
 
 export default function ThemePicker() {
   const { chatThemes, currentChatTheme, setChatTheme } = useTheme();
-  const [toast, setToast] = useState(null);
 
   if (!chatThemes || typeof chatThemes !== "object") {
     return (
@@ -18,17 +16,8 @@ export default function ThemePicker() {
   const handleThemeChange = async (themeName) => {
     try {
       await setChatTheme(themeName);
-      setToast({
-        message: `Chat theme updated to ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}!`,
-        type: "success",
-        duration: 3000
-      });
     } catch (error) {
-      setToast({
-        message: error.message || "Failed to update theme",
-        type: "error",
-        duration: 5000
-      });
+      // Handle error (e.g., show a notification to the user)
     }
   };
 
@@ -53,13 +42,6 @@ export default function ThemePicker() {
       <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
         Click a color to change your chat theme
       </p>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }

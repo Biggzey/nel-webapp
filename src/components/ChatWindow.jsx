@@ -32,9 +32,6 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
   // Add isTyping state
   const [isTyping, setIsTyping] = useState(false);
 
-  // Add toast state
-  const [toast, setToast] = useState(null);
-
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
     if (!current?.id) return;
@@ -85,7 +82,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
       setMessages(data);
     } catch (error) {
       console.error('Error loading messages:', error);
-      setToast({
+      addToast({
         type: 'error',
         message: error.message,
         duration: 5000
@@ -101,7 +98,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
     
     // Check if we have a valid character ID
     if (!current?.id) {
-      setToast({
+      addToast({
         type: 'error',
         message: t('chat.noCharacterSelected'),
         duration: 5000
@@ -111,7 +108,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
     
     // Validate input length
     if (trimmed.length > 2000) {
-      setToast({
+      addToast({
         type: 'warning',
         message: t('chat.messageTooLong'),
         duration: 5000
@@ -172,7 +169,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
       setIsTyping(false);
     } catch (error) {
       console.error('Error in chat:', error);
-      setToast({
+      addToast({
         type: 'error',
         message: error.message,
         duration: 5000
@@ -211,7 +208,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
 
     } catch (error) {
       console.error('Error editing message:', error);
-      setToast({
+      addToast({
         type: 'error',
         message: error.message,
         duration: 5000
@@ -255,7 +252,7 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
 
     } catch (error) {
       console.error('Error adding reaction:', error);
-      setToast({
+      addToast({
         type: 'error',
         message: error.message,
         duration: 5000
@@ -461,16 +458,6 @@ export default function ChatWindow({ onMenuClick, chatReloadKey }) {
           </button>
         </div>
       </div>
-
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
-      )}
     </div>
   );
 }
