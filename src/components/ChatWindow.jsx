@@ -38,6 +38,9 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
 
   const messageRefs = useRef([]);
 
+  // Add highlightedIndex state
+  const [highlightedIndex, setHighlightedIndex] = useState(null);
+
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
     if (!current?.id) return;
@@ -266,7 +269,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
     }
   }
 
-  // Expose regenerateLastAssistantMessage and scrollToMessage via ref
+  // Expose regenerateLastAssistantMessage, scrollToMessage, and messages via ref
   useImperativeHandle(ref, () => ({
     regenerateLastAssistantMessage: async () => {
       // Find the last assistant message
@@ -302,8 +305,11 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
     scrollToMessage: (index) => {
       if (messageRefs.current[index]) {
         messageRefs.current[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedIndex(index);
+        setTimeout(() => setHighlightedIndex(null), 2000);
       }
-    }
+    },
+    messages, // expose messages for search
   }));
 
   return (
@@ -324,7 +330,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
           </div>
         ) : (
           messages.map((msg, i) => (
-            <div key={msg.id} ref={el => messageRefs.current[i] = el} className="w-full flex">
+            <div key={msg.id} ref={el => messageRefs.current[i] = el} className={`w-full flex ${highlightedIndex === i ? 'ring-4 ring-primary/60 transition-all duration-500' : ''}`}>
               <div className={`flex items-end group max-w-[70%] min-w-0 ${msg.role === 'user' ? 'justify-end ml-auto flex-row' : 'justify-start mr-auto flex-row'}`}>
                 {/* Agent side: avatar left, bubble right */}
                 {msg.role === 'assistant' && (
