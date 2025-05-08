@@ -44,5 +44,8 @@
     "passwordMismatch": "Passwords do not match",
     "invalidCredentials": "Invalid email or password",
     "serverError": "Server error occurred"
+  },
+  "character": {
+    "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone."
   }
 } 
