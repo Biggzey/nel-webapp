@@ -159,6 +159,16 @@ function InnerApp() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
+          {/* Admin route */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPanel />
+              </AdminRoute>
+            }
+          />
+
           {/* Protected routes */}
           <Route
             path="/*"
