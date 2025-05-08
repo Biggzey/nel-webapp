@@ -12,7 +12,7 @@ import Toast from "./Toast";
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
 const DEFAULT_AGENT_AVATAR = "/agent-avatar.png";
 
-export default function ChatWindow({ onMenuClick }) {
+export default function ChatWindow({ onMenuClick, chatReloadKey }) {
   const { current } = useCharacter();
   const { token, logout, user } = useAuth();
   const { t } = useLanguage();
@@ -35,11 +35,11 @@ export default function ChatWindow({ onMenuClick }) {
   // Add toast state
   const [toast, setToast] = useState(null);
 
-  // Load messages on mount and when character changes
+  // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
     if (!current?.id) return;
     loadMessages();
-  }, [current?.id, token]);
+  }, [current?.id, token, chatReloadKey]);
 
   // Scroll to bottom when messages change
   useEffect(() => {

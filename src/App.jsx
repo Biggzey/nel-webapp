@@ -35,6 +35,7 @@ function ProtectedContent() {
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [toasts, setToasts] = useState([]);
+  const [chatReloadKey, setChatReloadKey] = useState(0);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -48,19 +49,13 @@ function ProtectedContent() {
     if (!confirmClear) return;
 
     try {
-      const success = await clearChat(
+      await clearChat(
         confirmClear.id,
         // Success callback
         (toastData) => {
           addToast(toastData);
-          // Trigger a reload of messages by changing the character ID
           setConfirmClear(null);
-          // Force a re-render of the chat window by temporarily setting current to null
-          const tempCurrent = current;
-          handleSaveCharacter({ ...tempCurrent, id: null });
-          setTimeout(() => {
-            handleSaveCharacter(tempCurrent);
-          }, 0);
+          setChatReloadKey((k) => k + 1);
         },
         // Error callback
         (toastData) => {
@@ -101,7 +96,7 @@ function ProtectedContent() {
         onClearChat={handleClearChat}
       />
       <main className="flex-1 flex flex-col">
-        <ChatWindow />
+        <ChatWindow chatReloadKey={chatReloadKey} />
         <CharacterPane />
       </main>
 
