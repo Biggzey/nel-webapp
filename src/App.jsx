@@ -71,9 +71,15 @@ function ProtectedContent({ addToast }) {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
-      <ChatWindow className="flex-1" chatReloadKey={chatReloadKey} />
-      <CharacterPane className="w-[22rem]" />
-
+      <Routes>
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/*" element={
+          <>
+            <ChatWindow className="flex-1" chatReloadKey={chatReloadKey} />
+            <CharacterPane className="w-[22rem]" />
+          </>
+        } />
+      </Routes>
       <PersonalityModal
         isOpen={isModalOpen}
         initialData={current}
@@ -85,7 +91,6 @@ function ProtectedContent({ addToast }) {
         onClose={() => setIsSettingsOpen(false)}
         addToast={addToast}
       />
-
       {/* Confirmation Modal */}
       {confirmClear && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -158,17 +163,6 @@ function InnerApp() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-
-          {/* Admin route */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            }
-          />
-
           {/* Protected routes */}
           <Route
             path="/*"
