@@ -6,7 +6,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import ReactionPicker from "./ReactionPicker";
 import TypingIndicator from "./TypingIndicator";
-import Toast from "./Toast";
+import { useToast } from "./Toast";
 import RegenerateButton from './RegenerateButton';
 
 // Add a default avatar for user and agent if not present
@@ -33,7 +33,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
   // Add isTyping state
   const [isTyping, setIsTyping] = useState(false);
 
-  const { addToast } = Toast.useToast();
+  const { addToast } = useToast();
   const [regeneratingIndex, setRegeneratingIndex] = useState(null);
 
   // Load messages on mount, when character changes, or when chatReloadKey changes
