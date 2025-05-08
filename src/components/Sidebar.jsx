@@ -23,6 +23,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     handleDeleteCharacter,
     toggleBookmark,
     setCurrent,
+    clearChat,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
 
@@ -130,39 +131,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         // Clear conversation for this character
                         // Navigate to main chat if not already there
                         if (window.location.pathname !== "/") navigate("/");
-                        // Use the same clearChat logic as in ChatWindow
-                        if (window.confirm("Are you sure you want to clear this chat?")) {
-                          try {
-                            console.log('Clearing chat for character:', c.id); // Debug log
-                            const res = await fetch(`/api/chat/${c.id}`, {
-                              method: "DELETE",
-                              headers: { 
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`
-                              }
-                            });
-                            
-                            if (!res.ok) {
-                              const errorData = await res.json().catch(() => ({}));
-                              console.error('Clear chat error:', errorData); // Debug log
-                              throw new Error(errorData.error || "Server error occurred");
-                            }
-
-                            // Force a reload of the chat window by triggering a state change
-                            setCurrent({ ...current, id: c.id });
-                            
-                            // Show success message
-                            alert("Chat cleared successfully");
-                            
-                          } catch (err) {
-                            console.error('Error clearing chat:', err);
-                            alert(err.message || "Server error occurred");
-                          }
-                        }
+                        // Use the shared clearChat function
+                        await clearChat(c.id);
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                     >
-                      <i className="fas fa-trash mr-2" /> Clear Chat
+                      <i className="fas fa-trash mr-2" /> {t('chat.clearChat')}
                     </button>
                     {!isNelliel && (
                       <button

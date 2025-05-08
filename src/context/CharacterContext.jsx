@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const defaultCharacters = [
   {
@@ -19,12 +20,14 @@ const CharacterContext = createContext();
 export function CharacterProvider({ children }) {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   
   // Load characters from database
   const [characters, setCharacters] = useState([...defaultCharacters]);
   const [selectedIndex, _setSelectedIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [toast, setToast] = useState(null);
 
   // Load characters and preferences on mount
   useEffect(() => {
@@ -335,6 +338,38 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  async function clearChat(characterId) {
+    if (!window.confirm(t('chat.confirmClear'))) return;
+
+    try {
+      const res = await fetch(`/api/chat/${characterId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || t('errors.serverError'));
+      }
+
+      setToast({
+        type: 'success',
+        message: t('chat.chatCleared'),
+        duration: 3000
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+      setToast({
+        type: 'error',
+        message: error.message,
+        duration: 5000
+      });
+      return false;
+    }
+  }
+
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -347,6 +382,7 @@ export function CharacterProvider({ children }) {
         current,
         isModalOpen,
         bookmarks,
+        toast,
         setSelectedIndex,
         handleNewCharacter,
         handleOpenModal,
@@ -355,9 +391,11 @@ export function CharacterProvider({ children }) {
         handleDeleteCharacter,
         resetCurrentCharacter,
         toggleBookmark,
+        clearChat,
       }}
     >
       {children}
+      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
     </CharacterContext.Provider>
   );
 }
