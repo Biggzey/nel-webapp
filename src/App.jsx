@@ -48,20 +48,33 @@ function ProtectedContent() {
     if (!confirmClear) return;
 
     try {
-      await clearChat(
+      const success = await clearChat(
         confirmClear.id,
         // Success callback
         (toastData) => {
           addToast(toastData);
-          // Force reload to ensure chat is cleared
-          window.location.reload();
+          // Trigger a reload of messages by changing the character ID
+          setConfirmClear(null);
+          // Force a re-render of the chat window by temporarily setting current to null
+          const tempCurrent = current;
+          handleSaveCharacter({ ...tempCurrent, id: null });
+          setTimeout(() => {
+            handleSaveCharacter(tempCurrent);
+          }, 0);
         },
         // Error callback
         (toastData) => {
           addToast(toastData);
+          setConfirmClear(null);
         }
       );
-    } finally {
+    } catch (error) {
+      console.error('Error clearing chat:', error);
+      addToast({
+        type: 'error',
+        message: t('errors.serverError'),
+        duration: 5000
+      });
       setConfirmClear(null);
     }
   };

@@ -28,6 +28,8 @@ export function useChat() {
         duration: 3000
       });
 
+      return true; // Return success flag
+
     } catch (error) {
       console.error('Error clearing chat:', error);
       // Call error callback with toast data
@@ -36,6 +38,7 @@ export function useChat() {
         message: error.message || t('errors.serverError'),
         duration: 5000
       });
+      return false; // Return failure flag
     }
   };
 
