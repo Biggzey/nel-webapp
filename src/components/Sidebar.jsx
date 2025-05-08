@@ -6,14 +6,14 @@ import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
-import Toast from "./Toast";
+import { ToastContainer } from "./Toast";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick }) {
   const navigate = useNavigate();
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [toast, setToast] = useState(null);
+  const [toasts, setToasts] = useState([]);
   const { clearChat } = useChat();
   const {
     characters,
@@ -47,6 +47,22 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     };
     reader.readAsDataURL(file);
   }
+
+  // Add toast management functions
+  const addToast = (toast) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { ...toast, id }]);
+    
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   return (
     <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
@@ -139,12 +155,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                           c.id,
                           // Success callback
                           (toastData) => {
-                            setToast(toastData);
+                            addToast(toastData);
                             // Force a reload of the chat window by triggering a state change
                             setCurrent({ ...current, id: c.id });
                           },
                           // Error callback
-                          (toastData) => setToast(toastData)
+                          (toastData) => addToast(toastData)
                         );
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
@@ -220,15 +236,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
 
-      {/* Toast notification */}
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          duration={toast.duration}
-          onClose={() => setToast(null)}
-        />
-      )}
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </aside>
   );
 }

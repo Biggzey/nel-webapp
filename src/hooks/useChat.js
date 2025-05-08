@@ -33,6 +33,9 @@ export function useChat() {
         duration: 3000
       });
 
+      // Force reload the page to ensure chat is cleared
+      window.location.reload();
+
     } catch (error) {
       console.error('Error clearing chat:', error);
       // Call error callback with toast data
