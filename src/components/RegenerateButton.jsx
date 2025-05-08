@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useToast } from './Toast';
+import { useAuth } from '../context/AuthContext';
 
 export default function RegenerateButton({ message, onRegenerate }) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
+  const { token } = useAuth();
 
   const handleRegenerate = async () => {
     setLoading(true);
@@ -12,7 +14,10 @@ export default function RegenerateButton({ message, onRegenerate }) {
       // Call backend to regenerate the AI response for this message
       const res = await fetch(`/api/chat/message/${message.id}/regenerate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({})
       });
       if (!res.ok) {
