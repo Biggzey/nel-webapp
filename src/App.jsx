@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CharacterProvider, useCharacter } from "./context/CharacterContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SettingsProvider } from "./context/SettingsContext";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import Toast from "./components/Toast";
 import Login from "./pages/Login";
@@ -15,6 +15,8 @@ import CharacterPane from "./components/CharacterPane";
 import AdminPanel from "./pages/AdminPanel";
 import PersonalityModal from "./components/PersonalityModal";
 import SettingsModal from "./components/SettingsModal";
+import { useChat } from "./hooks/useChat";
+import { ToastContainer } from "./components/ToastContainer";
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -27,71 +29,70 @@ function AdminRoute({ children }) {
 }
 
 function ProtectedContent() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { token } = useAuth();
-  const {
-    current,
-    isModalOpen,
-    handleCloseModal,
-    handleSaveCharacter,
-  } = useCharacter();
-  const location = useLocation();
-  const isAdminRoute = location.pathname === '/admin';
+  const [confirmClear, setConfirmClear] = useState(null);
+  const { current, handleSaveCharacter } = useCharacter();
+  const { clearChat } = useChat();
+  const { t } = useLanguage();
+  const [toasts, setToasts] = useState([]);
 
-  const handleOpenSidebar = () => setSidebarOpen(true);
-  const handleCloseSidebar = () => setSidebarOpen(false);
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleClearChat = (character) => {
+    setConfirmClear(character);
+  };
+
+  const handleConfirmClear = async () => {
+    if (!confirmClear) return;
+
+    try {
+      await clearChat(
+        confirmClear.id,
+        // Success callback
+        (toastData) => {
+          addToast(toastData);
+          // Force reload to ensure chat is cleared
+          window.location.reload();
+        },
+        // Error callback
+        (toastData) => {
+          addToast(toastData);
+        }
+      );
+    } finally {
+      setConfirmClear(null);
+    }
+  };
+
+  const addToast = (toast) => {
+    const id = Date.now();
+    setToasts(prev => [...prev, { ...toast, id }]);
+    
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   return (
-    <div className="flex h-full w-full">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
-        className={`
-          fixed inset-y-0 left-0 z-40 w-72
-          bg-background-light dark:bg-background-dark
-          text-text-light dark:text-text-dark
-          transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:relative md:translate-x-0
-          border-r border-border-light dark:border-border-dark
-        `}
-        onLinkClick={handleCloseSidebar}
         onSettingsClick={() => setIsSettingsOpen(true)}
+        onClearChat={handleClearChat}
       />
+      <main className="flex-1 flex flex-col">
+        <ChatWindow />
+        <CharacterPane />
+      </main>
 
-      {/* Backdrop for mobile when sidebar is open */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-50 md:hidden"
-          onClick={handleCloseSidebar}
-        />
-      )}
-
-      {/* Main content area - wider when CharacterPane is hidden */}
-      <div className="flex-1 w-0 min-w-0">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <ErrorBoundary>
-                <ChatWindow onMenuClick={handleOpenSidebar} />
-              </ErrorBoundary>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            }
-          />
-        </Routes>
-      </div>
-
-      {/* Show CharacterPane only when not on admin route, now on the right */}
-      {!isAdminRoute && <CharacterPane />}
-
-      {/* Modals */}
       <PersonalityModal
         isOpen={isModalOpen}
         initialData={current}
@@ -102,6 +103,32 @@ function ProtectedContent() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      {/* Confirmation Modal */}
+      {confirmClear && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">{t('chat.confirmClear')}</h3>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setConfirmClear(null)}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleConfirmClear}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast notifications */}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

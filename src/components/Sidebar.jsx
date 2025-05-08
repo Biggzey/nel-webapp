@@ -8,7 +8,7 @@ import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
 import { ToastContainer } from "./Toast";
 
-export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick }) {
+export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat }) {
   const navigate = useNavigate();
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
@@ -29,7 +29,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCurrent,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
-  const [confirmClear, setConfirmClear] = useState(null);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -65,32 +64,9 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-  const handleClearChat = async (character) => {
+  const handleClearChat = (character) => {
     setOpenMenuIndex(null);
-    setConfirmClear(character);
-  };
-
-  const handleConfirmClear = async () => {
-    if (!confirmClear) return;
-
-    await clearChat(
-      confirmClear.id,
-      // Success callback
-      (toastData) => {
-        addToast(toastData);
-        // Force a reload of the chat window by triggering a state change
-        setCurrent({ ...current, id: confirmClear.id });
-        // Close the confirmation modal
-        setConfirmClear(null);
-        // Force reload to ensure chat is cleared
-        window.location.reload();
-      },
-      // Error callback
-      (toastData) => {
-        addToast(toastData);
-        setConfirmClear(null);
-      }
-    );
+    onClearChat(character);
   };
 
   return (
@@ -248,29 +224,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
       </div>
-
-      {/* Confirmation Modal */}
-      {confirmClear && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold mb-4">{t('chat.confirmClear')}</h3>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setConfirmClear(null)}
-                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleConfirmClear}
-                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-              >
-                {t('common.delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Toast notifications */}
       <ToastContainer toasts={toasts} onClose={removeToast} />
