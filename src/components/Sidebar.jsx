@@ -261,10 +261,10 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
-            {/* DEBUG: Show available chat keys */}
-            <div style={{ color: 'yellow', fontSize: '0.9em', marginBottom: '1em' }}>{JSON.stringify(t('chat'))}</div>
             <h3 className="text-xl font-semibold mb-4">
-              {t('chat.confirmDeleteCharacter', { name: confirmDelete.character.name })}
+              {t('chat.confirmDeleteCharacter', { name: confirmDelete.character.name }) !== 'chat.confirmDeleteCharacter'
+                ? t('chat.confirmDeleteCharacter', { name: confirmDelete.character.name })
+                : `Are you sure you want to delete ${confirmDelete.character.name}? This cannot be undone.`}
             </h3>
             <div className="flex justify-end space-x-4">
               <button

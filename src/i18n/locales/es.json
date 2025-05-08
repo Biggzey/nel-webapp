@@ -29,8 +29,7 @@
     "name": "Nombre",
     "personality": "Personalidad",
     "backstory": "Historia",
-    "noCharacters": "Aún no hay personajes",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar a {{name}}? Esto no se puede deshacer."
+    "noCharacters": "Aún no hay personajes"
   },
   "chat": {
     "sendMessage": "Enviar mensaje",
@@ -51,8 +50,5 @@
     "passwordMismatch": "Las contraseñas no coinciden",
     "invalidCredentials": "Correo o contraseña inválidos",
     "serverError": "Ocurrió un error en el servidor"
-  },
-  "character": {
-    "confirmDelete": "¿Estás seguro de que deseas eliminar a {{name}}? Esto no se puede deshacer."
   }
 } 
