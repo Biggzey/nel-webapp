@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, createContext, useContext, useState, useCallback } from 'react';
 
 const TOAST_TYPES = {
   success: {
@@ -23,6 +23,36 @@ const TOAST_TYPES = {
   }
 };
 
+// ToastContext for global access
+const ToastContext = createContext({ addToast: () => {}, removeToast: () => {} });
+export const useToast = () => useContext(ToastContext);
+
+// ToastProvider to wrap the app
+export function ToastProvider({ children }) {
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((toast) => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { ...toast, id }]);
+    if (toast.duration) {
+      setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+    }
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  }, []);
+
+  return (
+    <ToastContext.Provider value={{ addToast, removeToast }}>
+      {children}
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+    </ToastContext.Provider>
+  );
+}
+
 // ToastContainer component to manage multiple toasts
 export function ToastContainer({ toasts, onClose }) {
   return (
@@ -35,7 +65,6 @@ export function ToastContainer({ toasts, onClose }) {
           type={toast.type}
           duration={toast.duration}
           onClose={() => {
-            console.log('Closing toast:', toast.id);
             onClose(toast.id);
           }}
         />
@@ -46,19 +75,14 @@ export function ToastContainer({ toasts, onClose }) {
 
 function Toast({ id, message, type = 'info', duration = 3000, onClose }) {
   useEffect(() => {
-    console.log('Toast mounted:', { id, message, type, duration });
     let timeoutId;
-    
     if (duration && onClose) {
       timeoutId = setTimeout(() => {
-        console.log('Toast timeout triggered:', id);
         onClose(id);
       }, duration);
     }
-
     return () => {
       if (timeoutId) {
-        console.log('Clearing toast timeout:', id);
         clearTimeout(timeoutId);
       }
     };
@@ -78,10 +102,7 @@ function Toast({ id, message, type = 'info', duration = 3000, onClose }) {
         </div>
         {onClose && (
           <button
-            onClick={() => {
-              console.log('Toast close button clicked:', id);
-              onClose(id);
-            }}
+            onClick={() => onClose(id)}
             className="ml-4 hover:opacity-80 transition"
             aria-label="Close notification"
           >

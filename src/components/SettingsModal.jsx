@@ -5,6 +5,7 @@ import { useSettings } from '../context/SettingsContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
+import { useToast } from './Toast';
 
 // Tab components
 function Profile({ user, onSave }) {
@@ -311,8 +312,23 @@ function Profile({ user, onSave }) {
 }
 
 function Preferences() {
-  const { dark, setTheme, chatColor, setChatColor, model, setModel } = useTheme();
+  const { dark, setTheme, chatColor, setChatColor } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+  const { addToast } = useToast();
+  const [model, setModel] = useState('openai');
+
+  const handleModelChange = (e) => {
+    e.stopPropagation();
+    const value = e.target.value;
+    setModel(value);
+    if (value !== 'openai') {
+      addToast({
+        type: 'error',
+        message: 'This model is not available yet.',
+        duration: 4000
+      });
+    }
+  };
 
   return (
     <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
@@ -394,10 +410,7 @@ function Preferences() {
           <label className="block text-sm font-medium mb-2">Model</label>
           <select
             value={model || 'openai'}
-            onChange={(e) => {
-              e.stopPropagation();
-              setModel(e.target.value);
-            }}
+            onChange={handleModelChange}
             onClick={(e) => e.stopPropagation()}
             className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
           >

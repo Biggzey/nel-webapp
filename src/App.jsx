@@ -6,7 +6,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { SettingsProvider } from "./context/SettingsContext";
 import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 import ErrorBoundary from "./components/ErrorBoundary";
-import Toast, { ToastContainer } from "./components/Toast";
+import Toast, { ToastContainer, ToastProvider } from "./components/Toast";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ChatWindow from "./components/ChatWindow";
@@ -83,6 +83,7 @@ function ProtectedContent({ addToast }) {
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
+        addToast={addToast}
       />
 
       {/* Confirmation Modal */}
@@ -193,7 +194,9 @@ export default function App() {
         <ThemeProvider>
           <LanguageProvider>
             <SettingsProvider>
-              <InnerApp />
+              <ToastProvider>
+                <InnerApp />
+              </ToastProvider>
             </SettingsProvider>
           </LanguageProvider>
         </ThemeProvider>

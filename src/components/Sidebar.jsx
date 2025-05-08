@@ -190,17 +190,15 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         <div className="w-full mt-auto">
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl">
             {isModerator && (
-              <Link
-                to="/admin"
-                className="block px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+              <button
+                onClick={() => navigate('/admin')}
+                className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="text-primary group-hover:scale-110 transition-transform">
-                    <i className="fas fa-shield-alt" />
-                  </span>
-                  <span>Admin Panel</span>
-                </div>
-              </Link>
+                <span className="text-primary group-hover:scale-110 transition-transform">
+                  <i className="fas fa-shield-alt" />
+                </span>
+                <span>Admin Panel</span>
+              </button>
             )}
             
             {/* Profile section with dropdown */}
