@@ -29,14 +29,16 @@
     "name": "Name",
     "personality": "Personality",
     "backstory": "Backstory",
-    "noCharacters": "No characters yet"
+    "noCharacters": "No characters yet",
+    "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone."
   },
   "chat": {
     "sendMessage": "Send Message",
     "typeMessage": "Type your message...",
     "clearChat": "Clear Chat",
     "loadMore": "Load More",
-    "noMessages": "No messages yet"
+    "noMessages": "No messages yet",
+    "confirmDeleteCharacter": "Are you sure you want to delete {{name}}? This cannot be undone."
   },
   "errors": {
     "required": "This field is required",

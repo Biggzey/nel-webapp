@@ -29,14 +29,21 @@
     "name": "Nombre",
     "personality": "Personalidad",
     "backstory": "Historia",
-    "noCharacters": "Aún no hay personajes"
+    "noCharacters": "Aún no hay personajes",
+    "confirmDelete": "¿Estás seguro de que deseas eliminar a {{name}}? Esto no se puede deshacer."
   },
   "chat": {
-    "sendMessage": "Enviar Mensaje",
+    "sendMessage": "Enviar mensaje",
     "typeMessage": "Escribe tu mensaje...",
-    "clearChat": "Limpiar Chat",
-    "loadMore": "Cargar Más",
-    "noMessages": "Aún no hay mensajes"
+    "loading": "Cargando mensajes...",
+    "noMessages": "¡No hay mensajes aún. ¡Inicia una conversación!",
+    "clearChat": "Limpiar chat",
+    "confirmClear": "¿Estás seguro de que quieres borrar esta conversación? Esta acción no se puede deshacer.",
+    "chatCleared": "Historial de chat borrado exitosamente",
+    "noCharacterSelected": "No hay personaje seleccionado. Por favor, selecciona un personaje primero.",
+    "messageTooLong": "El mensaje es demasiado largo. Por favor, mantenlo por debajo de 2000 caracteres.",
+    "addReaction": "Añadir reacción",
+    "confirmDeleteCharacter": "¿Estás seguro de que deseas eliminar a {{name}}? Esto no se puede deshacer."
   },
   "errors": {
     "required": "Este campo es obligatorio",
