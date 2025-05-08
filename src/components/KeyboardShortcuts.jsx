@@ -36,14 +36,14 @@ export default function KeyboardShortcuts({ chatInputRef, onSendMessage, onOpenS
         onOpenSettings && onOpenSettings();
         return;
       }
-      // Alt+B
-      if (e.altKey && e.key.toLowerCase() === 'b') {
+      // Alt+C (now toggles sidebar)
+      if (e.altKey && e.key.toLowerCase() === 'c') {
         e.preventDefault();
         onToggleSidebar && onToggleSidebar();
         return;
       }
-      // Alt+C
-      if (e.altKey && e.key.toLowerCase() === 'c') {
+      // Alt+B (now toggles character pane)
+      if (e.altKey && e.key.toLowerCase() === 'b') {
         e.preventDefault();
         onToggleCharacterPane && onToggleCharacterPane();
         return;
