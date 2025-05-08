@@ -1265,6 +1265,101 @@ try {
     }
   });
 
+  // Regenerate an assistant message
+  app.post("/api/chat/message/:messageId/regenerate", authMiddleware, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.messageId);
+
+      // 1. Find the message and ensure it is an assistant message belonging to the user's character
+      const message = await prisma.chatMessage.findFirst({
+        where: {
+          id: messageId,
+          role: "assistant",
+          character: {
+            userId: req.user.id
+          }
+        },
+        include: {
+          character: true
+        }
+      });
+
+      if (!message) {
+        return res.status(404).json({ error: "Message not found or not authorized" });
+      }
+
+      // 2. Get all messages for this character, ordered by createdAt
+      const allMessages = await prisma.chatMessage.findMany({
+        where: {
+          characterId: message.characterId
+        },
+        orderBy: {
+          createdAt: "asc"
+        }
+      });
+
+      // 3. Find the index of the message to regenerate
+      const msgIdx = allMessages.findIndex(m => m.id === messageId);
+      if (msgIdx === -1) {
+        return res.status(400).json({ error: "Message not found in conversation" });
+      }
+
+      // 4. Build the conversation up to the user message before this assistant message
+      // Find the last user message before this assistant message
+      let userMsgIdx = msgIdx - 1;
+      while (userMsgIdx >= 0 && allMessages[userMsgIdx].role !== "user") {
+        userMsgIdx--;
+      }
+      if (userMsgIdx < 0) {
+        return res.status(400).json({ error: "No user message found before this assistant message" });
+      }
+
+      // Conversation up to and including the user message
+      const convoUpToUser = allMessages.slice(0, userMsgIdx + 1);
+
+      // 5. Build system prompt
+      let systemMessage = message.character.systemPrompt || "You are a helpful AI assistant.";
+      if (message.character.personality) {
+        systemMessage += "\n\nPersonality:\n" + message.character.personality;
+      }
+      if (message.character.backstory) {
+        systemMessage += "\n\nBackstory:\n" + message.character.backstory;
+      }
+      if (message.character.customInstructions) {
+        systemMessage += "\n\nAdditional Instructions:\n" + message.character.customInstructions;
+      }
+
+      // 6. Prepare messages for OpenAI
+      const openaiMessages = [
+        { role: "system", content: systemMessage },
+        ...convoUpToUser.map(m => ({
+          role: m.role,
+          content: m.content
+        }))
+      ];
+
+      // 7. Call OpenAI to regenerate the assistant's response
+      const model = req.body.model || process.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
+      const completion = await openai.chat.completions.create({
+        model,
+        messages: openaiMessages
+      });
+
+      const newContent = completion.choices[0].message.content;
+
+      // 8. Update the assistant message in the DB
+      const updatedMsg = await prisma.chatMessage.update({
+        where: { id: messageId },
+        data: { content: newContent }
+      });
+
+      res.json(updatedMsg);
+    } catch (error) {
+      console.error("Error regenerating assistant message:", error);
+      res.status(500).json({ error: "Failed to regenerate assistant message" });
+    }
+  });
+
   // — CHARACTER ENDPOINTS —
 
   /**
