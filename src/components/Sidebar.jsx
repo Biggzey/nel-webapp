@@ -36,6 +36,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const menuRef = useRef(null);
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingSelectNewCharacter, setPendingSelectNewCharacter] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -86,6 +87,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const handleCancelDelete = () => {
     setConfirmDelete(null);
   };
+
+  useEffect(() => {
+    if (pendingSelectNewCharacter && characters.length > 0) {
+      setSelectedIndexRaw(characters.length - 1);
+      setSelectedIndex(characters.length - 1);
+      setPendingSelectNewCharacter(false);
+    }
+  }, [pendingSelectNewCharacter, characters, setSelectedIndex, setSelectedIndexRaw]);
 
   return (
     <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
@@ -297,8 +306,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             }
             const newCharacter = await res.json();
             setCharacters(prev => [...prev, newCharacter]);
-            setSelectedIndexRaw(characters.length);
-            setSelectedIndex(characters.length);
+            setPendingSelectNewCharacter(true);
             addToast({ type: "success", message: "Character imported!", duration: 4000 });
             setShowImportModal(false);
           } catch (err) {
