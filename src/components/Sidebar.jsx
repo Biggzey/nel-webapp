@@ -7,6 +7,8 @@ import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
 import PersonalityModal from "./PersonalityModal";
+import CharacterImportModal from "./CharacterImportModal";
+import { useToast } from "./Toast";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat }) {
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const menuRef = useRef(null);
+  const { addToast } = useToast();
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -99,19 +103,29 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       {/* Content container with backdrop blur */}
       <div className="relative w-full h-full flex flex-col items-center">
         {/* Top controls section */}
-        <div className="w-full space-y-3 mb-6">
-          {/* New Character button */}
+        <div className="w-full flex flex-row space-x-2 mb-6">
+          {/* New Character button (50%) */}
           <button
             onClick={() => {
               handleNewCharacter();
               onLinkClick();
             }}
-            className="w-full bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center"
+            className="w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
           >
-            <span className="text-primary mr-2">
+            <span className="text-primary mr-1 text-base">
               <i className="fas fa-plus" />
             </span>
-            <span className="font-medium">{t('sidebar.newCharacter')}</span>
+            <span className="font-medium text-sm">{t('sidebar.newCharacter')}</span>
+          </button>
+          {/* Import Character button (50%) */}
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
+          >
+            <span className="text-primary mr-1 text-base">
+              <i className="fas fa-file-import" />
+            </span>
+            <span className="font-medium text-sm">Import</span>
           </button>
         </div>
 
@@ -260,6 +274,31 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           </div>
         </div>
       )}
+
+      {/* CharacterImportModal */}
+      <CharacterImportModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={async (characterData) => {
+          try {
+            const res = await fetch("/api/characters", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: token ? `Bearer ${token}` : undefined,
+              },
+              body: JSON.stringify(characterData),
+            });
+            if (!res.ok) {
+              const errorData = await res.json().catch(() => ({}));
+              throw new Error(errorData.error || "Failed to import character");
+            }
+            addToast({ type: "success", message: "Character imported!", duration: 4000 });
+          } catch (err) {
+            addToast({ type: "error", message: err.message, duration: 5000 });
+          }
+        }}
+      />
     </aside>
   );
 }
