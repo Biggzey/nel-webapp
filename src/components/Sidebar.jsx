@@ -35,6 +35,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const menuRef = useRef(null);
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingSelectNewCharacter, setPendingSelectNewCharacter] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -295,14 +296,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               throw new Error(errorData.error || "Failed to import character");
             }
             const newCharacter = await res.json();
-            setCharacters(prev => {
-              const updated = [...prev, newCharacter];
-              // Update selected index after state update
-              setTimeout(() => {
-                setSelectedIndex(updated.length - 1);
-              }, 0);
-              return updated;
-            });
+            setCharacters(prev => [...prev, newCharacter]);
+            setPendingSelectNewCharacter(true);
             addToast({ type: "success", message: "Character imported!", duration: 4000 });
             setShowImportModal(false);
           } catch (err) {
@@ -310,6 +305,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           }
         }}
       />
+
+      {/* Auto-select new character */}
+      {useEffect(() => {
+        if (pendingSelectNewCharacter && characters.length > 0) {
+          setSelectedIndex(characters.length - 1);
+          setPendingSelectNewCharacter(false);
+        }
+      }, [pendingSelectNewCharacter, characters, setSelectedIndex])}
     </aside>
   );
 }
