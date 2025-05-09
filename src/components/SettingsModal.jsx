@@ -458,16 +458,19 @@ function Preferences() {
             pattern="^#[0-9A-Fa-f]{6}$"
             style={{ width: '14ch', minWidth: '14ch', maxWidth: '14ch' }}
           />
-          <select
-            value={settings.chatFont || 'inherit'}
-            onChange={e => updateSettings({ chatFont: e.target.value })}
-            className="ml-2 p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
-            style={{ minWidth: 120 }}
-          >
-            {fontOptions.map(opt => (
-              <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>{opt.label}</option>
-            ))}
-          </select>
+          <div className="flex flex-col space-y-2">
+            <label className="block text-sm font-medium">{t('settings.chatFont')}</label>
+            <select
+              value={settings.chatFont || 'inherit'}
+              onChange={e => updateSettings({ chatFont: e.target.value })}
+              className="p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+              style={{ minWidth: 120 }}
+            >
+              {fontOptions.map(opt => (
+                <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
     </div>
