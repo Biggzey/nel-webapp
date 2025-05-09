@@ -87,7 +87,21 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
         throw new Error(t('errors.serverError'));
       }
       
-      const data = await res.json();
+      let data = await res.json();
+
+      // If no messages and character has a firstMessage, inject it as an assistant message
+      if (data.length === 0 && current?.firstMessage) {
+        data = [{
+          id: "first-message", // synthetic id
+          characterId: current.id,
+          role: "assistant",
+          content: current.firstMessage,
+          reactions: {},
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }];
+      }
+
       setMessages(data);
     } catch (error) {
       console.error('Error loading messages:', error);
