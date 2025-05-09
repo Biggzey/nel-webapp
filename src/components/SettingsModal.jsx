@@ -434,7 +434,7 @@ function Preferences() {
       {/* Chat color picker and font selector */}
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-end space-x-4">
           <input
             type="color"
             value={chatColor}
@@ -458,8 +458,8 @@ function Preferences() {
             pattern="^#[0-9A-Fa-f]{6}$"
             style={{ width: '14ch', minWidth: '14ch', maxWidth: '14ch' }}
           />
-          <div className="flex flex-col space-y-2">
-            <label className="block text-sm font-medium">{t('settings.chatFont')}</label>
+          <div className="flex flex-col justify-end">
+            <label className="block text-sm font-medium mb-2" style={{marginLeft: 2}}>Font</label>
             <select
               value={settings.chatFont || 'inherit'}
               onChange={e => updateSettings({ chatFont: e.target.value })}
