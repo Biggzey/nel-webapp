@@ -1,0 +1,13 @@
+-- Add new fields to Character table
+ALTER TABLE "Character" ADD COLUMN "spec" TEXT;
+ALTER TABLE "Character" ADD COLUMN "specVersion" TEXT;
+ALTER TABLE "Character" ADD COLUMN "description" TEXT;
+ALTER TABLE "Character" ADD COLUMN "firstMessage" TEXT;
+ALTER TABLE "Character" ADD COLUMN "messageExample" TEXT;
+ALTER TABLE "Character" ADD COLUMN "scenario" TEXT;
+ALTER TABLE "Character" ADD COLUMN "creatorNotes" TEXT;
+ALTER TABLE "Character" ADD COLUMN "alternateGreetings" TEXT[];
+ALTER TABLE "Character" ADD COLUMN "tags" TEXT[];
+ALTER TABLE "Character" ADD COLUMN "creator" TEXT;
+ALTER TABLE "Character" ADD COLUMN "characterVersion" TEXT;
+ALTER TABLE "Character" ADD COLUMN "extensions" JSONB; 
