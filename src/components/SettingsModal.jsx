@@ -433,11 +433,11 @@ function Preferences() {
 
       {/* Chat color picker and font selector */}
       <div className="space-y-2">
-        <div className="flex flex-row items-end space-x-8">
+        <div className="flex flex-row items-end space-x-28">
           <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
           <label className="block text-sm font-medium mb-2">Font</label>
         </div>
-        <div className="flex flex-row items-start space-x-8">
+        <div className="flex flex-row items-start space-x-4">
           <div className="flex flex-col items-center">
             <input
               type="color"
