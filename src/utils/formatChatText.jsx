@@ -5,7 +5,7 @@
 // - Handles multiple asterisks and user tags per message
 import React from 'react';
 
-export function formatChatText(text, user) {
+export function formatChatText(text, user, fontFamily) {
   if (!text) return null;
   // Replace {{user}} with displayName or username
   const userName = user?.displayName || user?.username || 'User';
@@ -15,11 +15,15 @@ export function formatChatText(text, user) {
   // e.g. Hello *world* => ["Hello ", "world", ""]
   const parts = replaced.split(/(\*[^*]+\*)/g);
 
-  return parts.map((part, i) => {
-    if (/^\*[^*]+\*$/.test(part)) {
-      // Remove asterisks and render as <em>
-      return <em key={i}>{part.slice(1, -1)}</em>;
-    }
-    return <React.Fragment key={i}>{part}</React.Fragment>;
-  });
+  return (
+    <span style={fontFamily ? { fontFamily } : undefined}>
+      {parts.map((part, i) => {
+        if (/^\*[^*]+\*$/.test(part)) {
+          // Remove asterisks and render as <em>
+          return <em key={i}>{part.slice(1, -1)}</em>;
+        }
+        return <React.Fragment key={i}>{part}</React.Fragment>;
+      })}
+    </span>
+  );
 } 

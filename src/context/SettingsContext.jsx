@@ -18,7 +18,8 @@ export function SettingsProvider({ children }) {
       language: 'en',
       chatStyle: 'default',
       chatColor: '#7C3AED',
-      aiModel: 'gpt-3.5'
+      aiModel: 'gpt-3.5',
+      chatFont: 'inherit', // Default font
     };
   });
 

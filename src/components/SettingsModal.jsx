@@ -315,7 +315,17 @@ function Preferences() {
   const { dark, setTheme, chatColor, setChatColor } = useTheme();
   const { language, setLanguage, t } = useLanguage();
   const { addToast } = useToast();
+  const { settings, updateSettings } = useSettings();
   const [model, setModel] = useState('openai');
+
+  const fontOptions = [
+    { label: 'Default', value: 'inherit' },
+    { label: 'Sans-serif', value: 'sans-serif' },
+    { label: 'Serif', value: 'serif' },
+    { label: 'Monospace', value: 'monospace' },
+    { label: 'Comic Sans MS', value: 'Comic Sans MS, Comic Sans, cursive' },
+    { label: 'Cursive', value: 'cursive' },
+  ];
 
   const handleModelChange = (e) => {
     e.stopPropagation();
@@ -421,7 +431,7 @@ function Preferences() {
         </div>
       </div>
 
-      {/* Chat color picker */}
+      {/* Chat color picker and font selector */}
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
         <div className="flex items-center space-x-4">
@@ -435,20 +445,29 @@ function Preferences() {
             onClick={(e) => e.stopPropagation()}
             className="w-16 h-16 rounded-lg cursor-pointer"
           />
-          <div className="flex-1">
-            <input
-              type="text"
-              value={chatColor}
-              onChange={(e) => {
-                e.stopPropagation();
-                setChatColor(e.target.value);
-              }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-              placeholder="#000000"
-              pattern="^#[0-9A-Fa-f]{6}$"
-            />
-          </div>
+          <input
+            type="text"
+            value={chatColor}
+            onChange={(e) => {
+              e.stopPropagation();
+              setChatColor(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+            placeholder="#000000"
+            pattern="^#[0-9A-Fa-f]{6}$"
+            style={{ width: '7ch', minWidth: '7ch', maxWidth: '7ch' }}
+          />
+          <select
+            value={settings.chatFont || 'inherit'}
+            onChange={e => updateSettings({ chatFont: e.target.value })}
+            className="ml-2 p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary"
+            style={{ minWidth: 120 }}
+          >
+            {fontOptions.map(opt => (
+              <option key={opt.value} value={opt.value} style={{ fontFamily: opt.value }}>{opt.label}</option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

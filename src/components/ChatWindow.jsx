@@ -9,6 +9,7 @@ import TypingIndicator from "./TypingIndicator";
 import { useToast } from "./Toast";
 import RegenerateButton from './RegenerateButton';
 import { formatChatText } from '../utils/formatChatText.jsx';
+import { useSettings } from '../context/SettingsContext';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
@@ -41,6 +42,8 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
 
   // Add highlightedIndex state
   const [highlightedIndex, setHighlightedIndex] = useState(null);
+
+  const { settings } = useSettings();
 
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
@@ -415,7 +418,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                         </div>
                       ) : (
                         <>
-                          {formatChatText(msg.content, user)}
+                          {formatChatText(msg.content, user, settings.chatFont)}
                           {/* Reaction picker button for agent message, bottom right */}
                           {msg.role === 'assistant' && !editingIndex && (
                             <button
@@ -477,7 +480,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                           </button>
                         </div>
                       ) : (
-                        <>{formatChatText(msg.content, user)}</>
+                        <>{formatChatText(msg.content, user, settings.chatFont)}</>
                       )}
                       {/* Pencil icon for user messages, bottom-left, only on hover, original style */}
                       {msg.role === 'user' && !editingIndex && (
