@@ -1,5 +1,5 @@
 // src/components/PersonalityModal.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import { CharacterPrompts } from "./CharacterPrompts";
@@ -9,10 +9,95 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
   const { t } = useLanguage();
   const [form, setForm] = useState(initialData);
   const inputRefs = useRef({});
+  const modalRef = useRef(null);
+
+  // Function to extract character details from description
+  const extractCharacterDetails = useCallback((description) => {
+    if (!description) return;
+
+    // Common patterns for age
+    const ageMatch = description.match(/(\d+)\s*(?:years? old|yo|y\.o\.|age|aged)/i);
+    if (ageMatch && !form.age) {
+      setForm(prev => ({ ...prev, age: ageMatch[1] }));
+    }
+
+    // Common patterns for gender
+    const genderMatch = description.match(/\b(male|female|non-binary|transgender|trans|genderfluid|agender|genderqueer|man|woman|boy|girl)\b/i);
+    if (genderMatch && !form.gender) {
+      setForm(prev => ({ ...prev, gender: genderMatch[1] }));
+    }
+
+    // Common patterns for race/species
+    const raceMatch = description.match(/\b(human|elf|dwarf|orc|halfling|dragon|fairy|demon|angel|vampire|werewolf|alien|robot|android|cyborg|ghost|undead|monster|beast|animal|creature|species|race)\b/i);
+    if (raceMatch && !form.race) {
+      setForm(prev => ({ ...prev, race: raceMatch[1] }));
+    }
+
+    // Common patterns for occupation
+    const occupationMatch = description.match(/\b(wizard|warrior|knight|mage|sorcerer|priest|cleric|paladin|ranger|rogue|thief|assassin|bard|druid|monk|barbarian|fighter|archer|hunter|scout|guard|soldier|merchant|noble|royalty|prince|princess|king|queen|emperor|empress|lord|lady|sir|madam|doctor|scientist|engineer|teacher|student|scholar|researcher|explorer|adventurer|traveler|wanderer|mercenary|bounty hunter|pirate|sailor|captain|commander|general|officer|guard|soldier|merchant|trader|shopkeeper|innkeeper|bartender|chef|cook|farmer|miner|blacksmith|carpenter|tailor|weaver|jeweler|alchemist|apothecary|healer|midwife|nurse|doctor|surgeon|priest|monk|nun|cleric|paladin|druid|shaman|witch|warlock|necromancer|summoner|conjurer|illusionist|enchanter|transmuter|diviner|abjurer|evoker|conjurer|necromancer|illusionist|enchanter|transmuter|diviner|abjurer|evoker)\b/i);
+    if (occupationMatch && !form.occupation) {
+      setForm(prev => ({ ...prev, occupation: occupationMatch[1] }));
+    }
+
+    // Extract likes (looking for patterns like "likes:", "enjoys:", "loves:", etc.)
+    const likesMatch = description.match(/(?:likes?|enjoys?|loves?|fond of|interested in)[:]\s*([^.]+)/i);
+    if (likesMatch && !form.likes) {
+      setForm(prev => ({ ...prev, likes: likesMatch[1].trim() }));
+    }
+
+    // Extract dislikes (looking for patterns like "dislikes:", "hates:", "avoids:", etc.)
+    const dislikesMatch = description.match(/(?:dislikes?|hates?|avoids?|not fond of)[:]\s*([^.]+)/i);
+    if (dislikesMatch && !form.dislikes) {
+      setForm(prev => ({ ...prev, dislikes: dislikesMatch[1].trim() }));
+    }
+
+    // Extract first message if it exists in the description
+    const firstMessageMatch = description.match(/(?:first message|greeting|initial message)[:]\s*([^.]+)/i);
+    if (firstMessageMatch && !form.firstMessage) {
+      setForm(prev => ({ ...prev, firstMessage: firstMessageMatch[1].trim() }));
+    }
+  }, [form]);
 
   useEffect(() => {
     setForm(initialData);
   }, [initialData]);
+
+  // Add keyboard event listener for ESC key
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  // Add click-outside handler
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  // Extract details when description changes
+  useEffect(() => {
+    if (form.description) {
+      extractCharacterDetails(form.description);
+    }
+  }, [form.description, extractCharacterDetails]);
 
   if (!isOpen) return null;
 
@@ -75,6 +160,7 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
 
       {/* Modal */}
       <form
+        ref={modalRef}
         onSubmit={handleSubmit}
         className="relative z-10 w-full max-w-[90rem] rounded-xl bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-6 shadow-xl overflow-y-auto max-h-[90vh] border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up"
       >
@@ -164,12 +250,12 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
                 
                 {/* Main content wrapper */}
                 <div className="flex-1 flex flex-col">
-                  {/* Personality */}
+                  {/* Description (replacing Personality) */}
                   <div className="mb-2">
                     <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}</label>
                     <textarea
-                      name="personality"
-                      value={form.personality || ""}
+                      name="description"
+                      value={form.description || ""}
                       onChange={handleChange}
                       rows={2}
                       className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
@@ -204,15 +290,6 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
 
                   {/* --- New Card Fields --- */}
                   <div className="mt-4 space-y-2">
-                    <label className="block mb-1 text-sm font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={form.description || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Short character description"
-                    />
                     <label className="block mb-1 text-sm font-medium">First Message</label>
                     <textarea
                       name="firstMessage"

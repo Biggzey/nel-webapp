@@ -28,6 +28,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     handleDeleteCharacter,
     toggleBookmark,
     setCurrent,
+    setCharacters,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -293,7 +294,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               const errorData = await res.json().catch(() => ({}));
               throw new Error(errorData.error || "Failed to import character");
             }
+            const newCharacter = await res.json();
+            setCharacters(prev => [...prev, newCharacter]);
+            setSelectedIndex(characters.length);
             addToast({ type: "success", message: "Character imported!", duration: 4000 });
+            setShowImportModal(false);
           } catch (err) {
             addToast({ type: "error", message: err.message, duration: 5000 });
           }
