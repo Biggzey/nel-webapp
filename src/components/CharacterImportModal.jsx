@@ -21,12 +21,51 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
       try {
         let characterData;
         if (format === 'json') {
-          characterData = JSON.parse(event.target.result);
+          const raw = JSON.parse(event.target.result);
+          // Detect chub.ai/Character.AI card format
+          if (raw.spec && raw.data) {
+            const d = raw.data;
+            characterData = {
+              spec: raw.spec,
+              specVersion: raw.spec_version || raw.specVersion,
+              name: d.name,
+              avatar: d.avatar,
+              personality: d.personality || d.description || '',
+              description: d.description || '',
+              systemPrompt: d.system_prompt || '',
+              customInstructions: d.creator_notes || '',
+              firstMessage: d.first_mes || '',
+              messageExample: d.mes_example || '',
+              scenario: d.scenario || '',
+              creatorNotes: d.creator_notes || '',
+              alternateGreetings: d.alternate_greetings || [],
+              tags: d.tags || [],
+              creator: d.creator || '',
+              characterVersion: d.character_version || '',
+              extensions: d.extensions || null,
+              age: d.age || '',
+              gender: d.gender || '',
+              race: d.race || '',
+              occupation: d.job || d.occupation || '',
+              likes: d.likes || '',
+              dislikes: d.dislikes || '',
+              backstory: d.backstory || '',
+              fullImage: d.full_image || d.background_image || '',
+              status: d.status || '',
+              bookmarked: false,
+            };
+          } else {
+            // Fallback: assume it's already in our format
+            characterData = raw;
+          }
+          // Validate required fields
+          if (!characterData.name || !characterData.avatar) {
+            setError('Imported card is missing required fields (name, avatar).');
+            return;
+          }
         } else if (format === 'v2') {
-          // TODO: parse V2 card format
           characterData = parseV2Card(event.target.result);
         } else if (format === 'png') {
-          // TODO: parse PNG card format (extract metadata)
           characterData = await parsePngCard(file);
         }
         if (!characterData) throw new Error('Could not parse character card.');

@@ -201,6 +201,105 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
                     customInstructions={form.customInstructions || ""}
                     onChange={(field, value) => handleChange({ target: { name: field, value } })}
                   />
+
+                  {/* --- New Card Fields --- */}
+                  <div className="mt-4 space-y-2">
+                    <label className="block mb-1 text-sm font-medium">Description</label>
+                    <textarea
+                      name="description"
+                      value={form.description || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Short character description"
+                    />
+                    <label className="block mb-1 text-sm font-medium">First Message</label>
+                    <textarea
+                      name="firstMessage"
+                      value={form.firstMessage || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="First message to user"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Message Example</label>
+                    <textarea
+                      name="messageExample"
+                      value={form.messageExample || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Example conversation"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Scenario</label>
+                    <textarea
+                      name="scenario"
+                      value={form.scenario || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Scenario"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Creator Notes</label>
+                    <textarea
+                      name="creatorNotes"
+                      value={form.creatorNotes || ""}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Creator notes"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Alternate Greetings (comma separated)</label>
+                    <input
+                      name="alternateGreetings"
+                      value={Array.isArray(form.alternateGreetings) ? form.alternateGreetings.join(", ") : form.alternateGreetings || ""}
+                      onChange={e => handleChange({ target: { name: "alternateGreetings", value: e.target.value.split(/,\s*/) } })}
+                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Hi!, Hello!, Welcome!"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Tags (comma separated)</label>
+                    <input
+                      name="tags"
+                      value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
+                      onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
+                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="tag1, tag2, tag3"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Creator</label>
+                    <input
+                      name="creator"
+                      value={form.creator || ""}
+                      onChange={handleChange}
+                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="Creator name"
+                    />
+                    <label className="block mb-1 text-sm font-medium">Character Version</label>
+                    <input
+                      name="characterVersion"
+                      value={form.characterVersion || ""}
+                      onChange={handleChange}
+                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      placeholder="main, v2, etc."
+                    />
+                    <label className="block mb-1 text-sm font-medium">Extensions (JSON)</label>
+                    <textarea
+                      name="extensions"
+                      value={typeof form.extensions === 'string' ? form.extensions : JSON.stringify(form.extensions || {}, null, 2)}
+                      onChange={e => {
+                        let val = e.target.value;
+                        try {
+                          val = JSON.parse(val);
+                        } catch {
+                          // keep as string if not valid JSON
+                        }
+                        handleChange({ target: { name: "extensions", value: val } });
+                      }}
+                      rows={2}
+                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono"
+                      placeholder={'{\n  "chub": { ... }\n}'}
+                    />
+                  </div>
+                  {/* --- End new card fields --- */}
                 </div>
 
                 {/* Buttons */}
