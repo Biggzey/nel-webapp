@@ -433,33 +433,39 @@ function Preferences() {
 
       {/* Chat color picker and font selector */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
-        <div className="flex items-end space-x-4">
-          <input
-            type="color"
-            value={chatColor}
-            onChange={(e) => {
-              e.stopPropagation();
-              setChatColor(e.target.value);
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-16 h-16 rounded-lg cursor-pointer"
-          />
-          <input
-            type="text"
-            value={chatColor}
-            onChange={(e) => {
-              e.stopPropagation();
-              setChatColor(e.target.value);
-            }}
-            onClick={(e) => e.stopPropagation()}
-            className="p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
-            placeholder="#000000"
-            pattern="^#[0-9A-Fa-f]{6}$"
-            style={{ width: '14ch', minWidth: '14ch', maxWidth: '14ch' }}
-          />
-          <div className="flex flex-col justify-end">
-            <label className="block text-sm font-medium mb-2" style={{marginLeft: 2}}>Font</label>
+        <div className="flex flex-row items-end space-x-8">
+          <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
+          <label className="block text-sm font-medium mb-2">Font</label>
+        </div>
+        <div className="flex flex-row items-start space-x-8">
+          <div className="flex flex-col items-center">
+            <input
+              type="color"
+              value={chatColor}
+              onChange={(e) => {
+                e.stopPropagation();
+                setChatColor(e.target.value);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-16 h-16 rounded-lg cursor-pointer"
+            />
+          </div>
+          <div className="flex flex-col">
+            <input
+              type="text"
+              value={chatColor}
+              onChange={(e) => {
+                e.stopPropagation();
+                setChatColor(e.target.value);
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className="p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              placeholder="#000000"
+              pattern="^#[0-9A-Fa-f]{6}$"
+              style={{ width: '14ch', minWidth: '14ch', maxWidth: '14ch' }}
+            />
+          </div>
+          <div className="flex flex-col">
             <select
               value={settings.chatFont || 'inherit'}
               onChange={e => updateSettings({ chatFont: e.target.value })}
