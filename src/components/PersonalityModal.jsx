@@ -3,11 +3,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import { CharacterPrompts } from "./CharacterPrompts";
+import { useIsMobile } from "../hooks/useIsMobile";
 
-export default function PersonalityModal({ isOpen, initialData, onClose, onSave }) {
+export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave }) {
   const { resetCurrentCharacter } = useCharacter();
   const { t } = useLanguage();
-  const [form, setForm] = useState(initialData);
+  const isMobile = useIsMobile();
+  const [form, setForm] = useState(initialData || {});
   const inputRefs = useRef({});
   const modalRef = useRef(null);
 
@@ -172,22 +174,22 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
       <form
         ref={modalRef}
         onSubmit={handleSubmit}
-        className="relative z-10 w-full max-w-[90rem] rounded-xl bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-6 shadow-xl overflow-y-auto max-h-[90vh] border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up"
+        className={`relative z-10 ${isMobile ? 'w-full h-full max-w-none max-h-none rounded-none' : 'w-full max-w-[90rem] rounded-xl max-h-[90vh]'} bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-4 md:p-6 shadow-xl overflow-y-auto border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up`}
       >
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary-light/5 to-transparent dark:from-accent-primary-dark/5 rounded-xl pointer-events-none" />
 
         {/* Content container with backdrop blur */}
         <div className="relative">
-          <div className="flex gap-6">
+          <div className={`flex ${isMobile ? 'flex-col' : 'gap-6'}`}>
             {/* Left Column - Character Details */}
-            <div className="w-[500px] space-y-3">
+            <div className={`${isMobile ? 'w-full' : 'w-[500px]'} space-y-3`}>
               <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
                 <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {fields.map(({ label, field, placeholder, multiline }) => (
-                    <div key={field} className={multiline ? "col-span-2" : ""}>
+                    <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
                       <label className="block mb-1 text-sm font-medium">{label}</label>
                       {multiline ? (
                         <textarea
@@ -254,7 +256,7 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
             </div>
 
             {/* Right Column - Custom Prompts */}
-            <div className="flex-1 space-y-2 flex flex-col">
+            <div className={`${isMobile ? 'w-full mt-4' : 'flex-1'} space-y-2 flex flex-col`}>
               <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark flex-1 flex flex-col">
                 <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
                 

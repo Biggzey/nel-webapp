@@ -19,6 +19,8 @@ import { useChat } from "./hooks/useChat";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
+import { useIsMobile } from './hooks/useIsMobile';
+import ChatWindowMobile from './components/ChatWindowMobile';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -44,6 +46,7 @@ function ProtectedContent({ addToast }) {
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
+  const isMobile = useIsMobile();
 
   // Handler stubs for global shortcuts
   const handleSendMessage = () => {
@@ -123,7 +126,7 @@ function ProtectedContent({ addToast }) {
         onShowShortcutHelp={handleShowShortcutHelp}
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
-      {sidebarVisible && (
+      {sidebarVisible && !isMobile && (
         <Sidebar
           className="w-[22rem]"
           onSettingsClick={() => setIsSettingsOpen(true)}
@@ -136,8 +139,17 @@ function ProtectedContent({ addToast }) {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            <ChatWindow ref={chatWindowRef} chatInputRef={chatInputRef} className="flex-1" chatReloadKey={chatReloadKey} />
-            {characterPaneVisible && <CharacterPane className="w-[22rem]" />}
+            {isMobile ? (
+              <ChatWindowMobile
+                chatInputRef={chatInputRef}
+                chatReloadKey={chatReloadKey}
+              />
+            ) : (
+              <>
+                <ChatWindow ref={chatWindowRef} chatInputRef={chatInputRef} className="flex-1" chatReloadKey={chatReloadKey} />
+                {characterPaneVisible && <CharacterPane className="w-[22rem]" />}
+              </>
+            )}
           </>
         } />
       </Routes>
