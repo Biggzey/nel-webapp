@@ -8,6 +8,7 @@ import ReactionPicker from "./ReactionPicker";
 import TypingIndicator from "./TypingIndicator";
 import { useToast } from "./Toast";
 import RegenerateButton from './RegenerateButton';
+import { formatChatText } from '../utils/formatChatText';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
@@ -414,7 +415,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                         </div>
                       ) : (
                         <>
-                          {msg.content}
+                          {formatChatText(msg.content, user)}
                           {/* Reaction picker button for agent message, bottom right */}
                           {msg.role === 'assistant' && !editingIndex && (
                             <button
@@ -476,7 +477,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                           </button>
                         </div>
                       ) : (
-                        <>{msg.content}</>
+                        <>{formatChatText(msg.content, user)}</>
                       )}
                       {/* Pencil icon for user messages, bottom-left, only on hover, original style */}
                       {msg.role === 'user' && !editingIndex && (
