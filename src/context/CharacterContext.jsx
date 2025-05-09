@@ -335,6 +335,20 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  async function reloadCharacters() {
+    try {
+      const res = await fetch("/api/characters", {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+      });
+      if (res.ok) {
+        const userChars = await res.json();
+        setCharacters(userChars);
+      }
+    } catch (err) {
+      // Optionally handle error
+    }
+  }
+
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -356,6 +370,7 @@ export function CharacterProvider({ children }) {
         handleDeleteCharacter,
         resetCurrentCharacter,
         toggleBookmark,
+        reloadCharacters,
       }}
     >
       {children}
