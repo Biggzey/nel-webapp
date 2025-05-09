@@ -1,8 +1,10 @@
 // Utility to format chat text for display in chat bubbles
 // - *text* => <em>text</em>
+// - **text** => <strong>text</strong>
+// - __text__ => <u>text</u>
 // - {{user}} => displayName or username
 // - "quoted text" => normal (no special styling)
-// - Handles multiple asterisks and user tags per message
+// - Handles multiple asterisks, bold, underline, and user tags per message
 import React from 'react';
 
 export function formatChatText(text, user, fontFamily) {
@@ -11,19 +13,15 @@ export function formatChatText(text, user, fontFamily) {
   const userName = user?.displayName || user?.username || 'User';
   let replaced = text.replace(/\{\{user\}\}/gi, userName);
 
-  // Split by asterisks to alternate between normal and italic
-  // e.g. Hello *world* => ["Hello ", "world", ""]
-  const parts = replaced.split(/(\*[^*]+\*)/g);
+  // Handle underline (__text__)
+  replaced = replaced.replace(/__(.+?)__/g, '<u>$1</u>');
+  // Handle bold (**text**)
+  replaced = replaced.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Handle italics (*text*)
+  replaced = replaced.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 
+  // Return as React element with dangerouslySetInnerHTML for formatting
   return (
-    <span style={fontFamily ? { fontFamily } : undefined}>
-      {parts.map((part, i) => {
-        if (/^\*[^*]+\*$/.test(part)) {
-          // Remove asterisks and render as <em>
-          return <em key={i}>{part.slice(1, -1)}</em>;
-        }
-        return <React.Fragment key={i}>{part}</React.Fragment>;
-      })}
-    </span>
+    <span style={fontFamily ? { fontFamily } : undefined} dangerouslySetInnerHTML={{ __html: replaced }} />
   );
 } 

@@ -289,6 +289,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
 
   // Expose regenerateLastAssistantMessage, scrollToMessage, and messages via ref
   useImperativeHandle(ref, () => ({
+    handleSend,
     regenerateLastAssistantMessage: async () => {
       // Find the last assistant message
       const lastIdx = [...messages].reverse().findIndex(m => m.role === 'assistant');
@@ -518,7 +519,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
       <div className="p-4 border-t border-transparent bg-chatwindow-light dark:bg-chatwindow-dark">
         <div className="flex items-end space-x-2 rounded-2xl bg-[#23242a] px-4 py-3 shadow-lg">
           <textarea
-            ref={textareaRef}
+            ref={chatInputRef || textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t('chat.typeMessage') + ' (Alt+/ for shortcuts)'}
