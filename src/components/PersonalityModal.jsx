@@ -16,9 +16,19 @@ export default function PersonalityModal({ isOpen, initialData, onClose, onSave 
     if (!description) return;
 
     // Common patterns for age
-    const ageMatch = description.match(/(\d+)\s*(?:years? old|yo|y\.o\.|age|aged)/i);
-    if (ageMatch && !form.age) {
-      setForm(prev => ({ ...prev, age: ageMatch[1] }));
+    const agePatterns = [
+      /(\d+)\s*(?:years? old|yo|y\.o\.|age|aged)/i,
+      /age:\s*(\d+)/i,
+      /aged\s*(\d+)/i,
+      /(\d+)\s*(?:years|yrs)/i
+    ];
+    
+    for (const pattern of agePatterns) {
+      const ageMatch = description.match(pattern);
+      if (ageMatch && !form.age) {
+        setForm(prev => ({ ...prev, age: ageMatch[1] }));
+        break;
+      }
     }
 
     // Common patterns for gender

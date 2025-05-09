@@ -295,8 +295,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               throw new Error(errorData.error || "Failed to import character");
             }
             const newCharacter = await res.json();
-            setCharacters(prev => [...prev, newCharacter]);
-            setSelectedIndex(characters.length);
+            setCharacters(prev => {
+              const updated = [...prev, newCharacter];
+              // Update selected index after state update
+              setTimeout(() => {
+                setSelectedIndex(updated.length - 1);
+              }, 0);
+              return updated;
+            });
             addToast({ type: "success", message: "Character imported!", duration: 4000 });
             setShowImportModal(false);
           } catch (err) {
