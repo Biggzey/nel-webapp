@@ -43,6 +43,7 @@ function ProtectedContent({ addToast }) {
   const chatWindowRef = useRef(null);
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
   const [showChatSearch, setShowChatSearch] = useState(false);
+  const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
 
   // Handler stubs for global shortcuts
   const handleSendMessage = () => {
@@ -123,7 +124,13 @@ function ProtectedContent({ addToast }) {
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
       {sidebarVisible && (
-        <Sidebar className="w-[22rem]" onSettingsClick={() => setIsSettingsOpen(true)} onClearChat={handleClearChat} />
+        <Sidebar
+          className="w-[22rem]"
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          onClearChat={handleClearChat}
+          sidebarReloadKey={sidebarReloadKey}
+          setSidebarReloadKey={setSidebarReloadKey}
+        />
       )}
       <Routes>
         <Route path="/admin" element={<AdminPanel />} />

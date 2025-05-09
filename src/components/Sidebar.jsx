@@ -10,7 +10,7 @@ import PersonalityModal from "./PersonalityModal";
 import CharacterImportModal from "./CharacterImportModal";
 import { useToast } from "./Toast";
 
-export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat }) {
+export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey }) {
   const navigate = useNavigate();
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
@@ -36,7 +36,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const menuRef = useRef(null);
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
-  const [pendingSelectNewCharacter, setPendingSelectNewCharacter] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -87,14 +86,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const handleCancelDelete = () => {
     setConfirmDelete(null);
   };
-
-  useEffect(() => {
-    if (pendingSelectNewCharacter && characters.length > 0) {
-      setSelectedIndexRaw(characters.length - 1);
-      setSelectedIndex(characters.length - 1);
-      setPendingSelectNewCharacter(false);
-    }
-  }, [pendingSelectNewCharacter, characters, setSelectedIndex, setSelectedIndexRaw]);
 
   return (
     <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
@@ -304,11 +295,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               const errorData = await res.json().catch(() => ({}));
               throw new Error(errorData.error || "Failed to import character");
             }
-            const newCharacter = await res.json();
-            setCharacters(prev => [...prev, newCharacter]);
-            setPendingSelectNewCharacter(true);
-            addToast({ type: "success", message: "Character imported!", duration: 4000 });
+            await res.json();
+            addToast({ type: "success", message: "Character imported! Reloading...", duration: 4000 });
             setShowImportModal(false);
+            setTimeout(() => {
+              setSidebarReloadKey(k => k + 1);
+            }, 2000); // 2 seconds delay
           } catch (err) {
             addToast({ type: "error", message: err.message, duration: 5000 });
           }
@@ -317,3 +309,22 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     </aside>
   );
 }
+
+// Add a useEffect to reload characters when sidebarReloadKey changes
+useEffect(() => {
+  // This will force a reload of the character list from the backend
+  async function reloadCharacters() {
+    try {
+      const res = await fetch("/api/characters", {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+      });
+      if (res.ok) {
+        const userChars = await res.json();
+        setCharacters(userChars);
+      }
+    } catch (err) {
+      // Optionally handle error
+    }
+  }
+  if (sidebarReloadKey > 0) reloadCharacters();
+}, [sidebarReloadKey, setCharacters, token]);
