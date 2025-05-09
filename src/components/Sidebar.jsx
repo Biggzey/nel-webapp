@@ -87,6 +87,24 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setConfirmDelete(null);
   };
 
+  // Add a useEffect to reload characters when sidebarReloadKey changes (must be before return!)
+  useEffect(() => {
+    async function reloadCharacters() {
+      try {
+        const res = await fetch("/api/characters", {
+          headers: { Authorization: token ? `Bearer ${token}` : undefined },
+        });
+        if (res.ok) {
+          const userChars = await res.json();
+          setCharacters(userChars);
+        }
+      } catch (err) {
+        // Optionally handle error
+      }
+    }
+    if (sidebarReloadKey > 0) reloadCharacters();
+  }, [sidebarReloadKey, setCharacters, token]);
+
   return (
     <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
       {/* Decorative background patterns */}
@@ -309,22 +327,3 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     </aside>
   );
 }
-
-// Add a useEffect to reload characters when sidebarReloadKey changes
-useEffect(() => {
-  // This will force a reload of the character list from the backend
-  async function reloadCharacters() {
-    try {
-      const res = await fetch("/api/characters", {
-        headers: { Authorization: token ? `Bearer ${token}` : undefined },
-      });
-      if (res.ok) {
-        const userChars = await res.json();
-        setCharacters(userChars);
-      }
-    } catch (err) {
-      // Optionally handle error
-    }
-  }
-  if (sidebarReloadKey > 0) reloadCharacters();
-}, [sidebarReloadKey, setCharacters, token]);
