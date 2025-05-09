@@ -20,6 +20,7 @@ export function SettingsProvider({ children }) {
       chatColor: '#7C3AED',
       aiModel: 'gpt-3.5',
       chatFont: 'inherit', // Default font
+      autoRegenerateAfterEdit: false,
     };
   });
 

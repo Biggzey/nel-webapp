@@ -10,6 +10,7 @@ import { useToast } from "./Toast";
 import RegenerateButton from './RegenerateButton';
 import { formatChatText } from '../utils/formatChatText.jsx';
 import { useSettings } from '../context/SettingsContext';
+import ReactDOM from 'react-dom';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
@@ -44,6 +45,10 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
   const [highlightedIndex, setHighlightedIndex] = useState(null);
 
   const { settings } = useSettings();
+
+  // Modal state for regenerate-after-edit
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [regenerateTargetIndex, setRegenerateTargetIndex] = useState(null);
 
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
@@ -233,6 +238,18 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
       setEditingIndex(null);
       setEditText("");
 
+      // After editing a user message, check for next assistant message
+      const nextAiIndex = messages.findIndex((m, i) => i > index && m.role === 'assistant');
+      if (nextAiIndex !== -1) {
+        if (settings.autoRegenerateAfterEdit) {
+          // Auto-regenerate
+          await regenerateAssistantMessage(nextAiIndex);
+        } else {
+          // Show modal
+          setRegenerateTargetIndex(nextAiIndex);
+          setShowRegenerateModal(true);
+        }
+      }
     } catch (error) {
       console.error('Error editing message:', error);
       addToast({
@@ -241,6 +258,37 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
         duration: 5000
       });
     }
+  }
+
+  // Helper to regenerate an assistant message by index
+  async function regenerateAssistantMessage(aiIndex) {
+    const msg = messages[aiIndex];
+    if (!msg) return;
+    setRegeneratingIndex(aiIndex);
+    try {
+      const res = await fetch(`/api/chat/message/${msg.id}/regenerate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to regenerate response');
+      }
+      const newMsg = await res.json();
+      setMessages(prev => prev.map((m, idx) => idx === aiIndex ? newMsg : m));
+      setRegeneratingIndex(null);
+      addToast({ type: 'success', message: 'AI response regenerated!', duration: 4000 });
+    } catch (error) {
+      setRegeneratingIndex(null);
+      addToast({ type: 'error', message: error.message, duration: 5000 });
+      console.error('Regenerate error:', error);
+    }
+    setShowRegenerateModal(false);
+    setRegenerateTargetIndex(null);
   }
 
   async function handleReaction(messageId, emoji) {
@@ -536,6 +584,30 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
           </button>
         </div>
       </div>
+
+      {/* Regenerate after edit modal */}
+      {showRegenerateModal && typeof document !== 'undefined' && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl shadow-2xl p-6 w-full max-w-md mx-auto relative">
+            <div className="mb-4 text-lg font-semibold">Regenerate AI response to match this edit?</div>
+            <div className="flex space-x-4 justify-end">
+              <button
+                className="px-4 py-2 rounded bg-primary text-white hover:bg-primary/90"
+                onClick={() => regenerateAssistantMessage(regenerateTargetIndex)}
+              >
+                Yes, regenerate
+              </button>
+              <button
+                className="px-4 py-2 rounded bg-gray-400 text-white hover:bg-gray-500"
+                onClick={() => { setShowRegenerateModal(false); setRegenerateTargetIndex(null); }}
+              >
+                No, keep current response
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 });
