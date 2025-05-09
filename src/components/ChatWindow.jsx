@@ -8,7 +8,7 @@ import ReactionPicker from "./ReactionPicker";
 import TypingIndicator from "./TypingIndicator";
 import { useToast } from "./Toast";
 import RegenerateButton from './RegenerateButton';
-import { formatChatText } from '../utils/formatChatText';
+import { formatChatText } from '../utils/formatChatText.jsx';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
