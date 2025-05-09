@@ -456,7 +456,7 @@ function Preferences() {
             className="p-3 rounded-lg bg-background-container-hover-light dark:bg-background-container-hover-dark border border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary font-mono"
             placeholder="#000000"
             pattern="^#[0-9A-Fa-f]{6}$"
-            style={{ width: '7ch', minWidth: '7ch', maxWidth: '7ch' }}
+            style={{ width: '14ch', minWidth: '14ch', maxWidth: '14ch' }}
           />
           <select
             value={settings.chatFont || 'inherit'}
@@ -499,6 +499,8 @@ export default function SettingsModal({ isOpen, onClose }) {
   // Handle clicks on the backdrop
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) {
+      e.preventDefault();
+      e.stopPropagation();
       onClose();
     }
   };
@@ -513,6 +515,7 @@ export default function SettingsModal({ isOpen, onClose }) {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
       }
     };
@@ -532,6 +535,7 @@ export default function SettingsModal({ isOpen, onClose }) {
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4" 
       onClick={handleBackdropClick}
+      onMouseDown={handleBackdropClick}
     >
       {/* Backdrop with blur */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
