@@ -22,6 +22,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     bookmarks,
     current,
     setSelectedIndex,
+    setSelectedIndexRaw,
     handleNewCharacter,
     handleOpenModal,
     handleSaveCharacter,
@@ -35,7 +36,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const menuRef = useRef(null);
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
-  const [pendingSelectNewCharacter, setPendingSelectNewCharacter] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -297,7 +297,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             }
             const newCharacter = await res.json();
             setCharacters(prev => [...prev, newCharacter]);
-            setPendingSelectNewCharacter(true);
+            setSelectedIndexRaw(characters.length);
+            setSelectedIndex(characters.length);
             addToast({ type: "success", message: "Character imported!", duration: 4000 });
             setShowImportModal(false);
           } catch (err) {
@@ -305,14 +306,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           }
         }}
       />
-
-      {/* Auto-select new character */}
-      {useEffect(() => {
-        if (pendingSelectNewCharacter && characters.length > 0) {
-          setSelectedIndex(characters.length - 1);
-          setPendingSelectNewCharacter(false);
-        }
-      }, [pendingSelectNewCharacter, characters, setSelectedIndex])}
     </aside>
   );
 }

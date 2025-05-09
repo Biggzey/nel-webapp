@@ -348,6 +348,7 @@ export function CharacterProvider({ children }) {
         isModalOpen,
         bookmarks,
         setSelectedIndex,
+        setSelectedIndexRaw: _setSelectedIndex,
         handleNewCharacter,
         handleOpenModal,
         handleSaveCharacter,
