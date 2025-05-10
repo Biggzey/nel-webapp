@@ -258,9 +258,34 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         <CharacterImportModal
           open={showImportModal}
           onClose={() => setShowImportModal(false)}
-          onImport={() => {
-            setShowImportModal(false);
-            setSidebarReloadKey(prev => prev + 1);
+          onImport={async (characterData) => {
+            try {
+              const res = await fetch("/api/characters", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(characterData),
+              });
+
+              if (!res.ok) {
+                throw new Error("Failed to import character");
+              }
+
+              const imported = await res.json();
+              setCharacters(prev => [...prev, imported]);
+              setSelectedIndex(characters.length);
+              setShowImportModal(false);
+              setSidebarReloadKey(prev => prev + 1);
+            } catch (error) {
+              console.error("Error importing character:", error);
+              addToast({
+                type: "error",
+                message: "Failed to import character: " + error.message,
+                duration: 5000,
+              });
+            }
           }}
         />
       )}

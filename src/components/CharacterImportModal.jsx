@@ -141,36 +141,33 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
+// Helper function to find JSON data in image
+async function findJsonInImage(file) {
+  try {
+    const text = await file.text();
+    // Look for JSON data between markers or at the start of the file
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const json = JSON.parse(jsonMatch[0]);
+        // Validate that it's a character card
+        if (json.spec && json.data) {
+          return jsonMatch[0];
+        }
+      } catch (e) {
+        console.warn('Found JSON but failed to parse:', e);
+      }
+    }
+    return null;
+  } catch (e) {
+    console.warn('Error searching for JSON in image:', e);
+    return null;
+  }
+}
+
 // PNG card parser
 async function parsePngCard(file) {
   try {
-    // Create a canvas to load the image
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    // Load the image
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = URL.createObjectURL(file);
-    });
-
-    // Set canvas size to image size
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw image to canvas
-    ctx.drawImage(img, 0, 0);
-
-    // Get image data
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    // Look for PNG tEXt chunks (metadata)
-    let metadata = {};
-    let offset = 0;
-
     // First try to find JSON data in the image
     const jsonMatch = await findJsonInImage(file);
     if (jsonMatch) {
@@ -213,7 +210,33 @@ async function parsePngCard(file) {
       }
     }
 
-    // Fallback to PNG metadata if JSON not found
+    // If no JSON found, try to extract metadata from PNG chunks
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Load the image
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+
+    // Set canvas size to image size
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Draw image to canvas
+    ctx.drawImage(img, 0, 0);
+
+    // Get image data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Look for PNG tEXt chunks (metadata)
+    let metadata = {};
+    let offset = 0;
+
     while (offset < data.length) {
       // Check for tEXt chunk
       if (data[offset] === 116 && // 't'
@@ -302,22 +325,6 @@ async function parsePngCard(file) {
     };
   } catch (error) {
     console.error('Error parsing PNG card:', error);
-    throw new Error('Failed to parse PNG card format.');
-  }
-}
-
-// Helper function to find JSON data in image
-async function findJsonInImage(file) {
-  try {
-    const text = await file.text();
-    // Look for JSON data between markers
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return jsonMatch[0];
-    }
-    return null;
-  } catch (e) {
-    console.warn('Error searching for JSON in image:', e);
-    return null;
+    throw new Error('Failed to parse PNG card format: ' + error.message);
   }
 } 
