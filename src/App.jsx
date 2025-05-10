@@ -86,7 +86,9 @@ function ProtectedContent({ addToast }) {
     if (newIndex >= characters.length) newIndex = 0;
     setSelectedIndex(newIndex);
   };
-  const handleFocusSearch = () => {/* TODO: implement chat search focus */};
+  const handleFocusSearch = () => {
+    // Chat search is implemented in ChatSearch component
+  };
   const handleShowShortcutHelp = () => setShowShortcutHelp(true);
 
   const handleClearChat = (character) => {

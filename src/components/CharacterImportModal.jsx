@@ -1,14 +1,15 @@
 import React, { useRef, useState } from 'react';
+import { useToast } from './Toast';
 
 const FORMATS = [
   { key: 'json', label: 'JSON', accept: '.json', icon: <i className="fas fa-file-code" /> },
-  { key: 'v2', label: 'V2 Card', accept: '.v2,.card', icon: <i className="fas fa-id-card" /> },
   { key: 'png', label: 'PNG Card', accept: '.png', icon: <i className="fas fa-image" /> },
 ];
 
 export default function CharacterImportModal({ open, onClose, onImport }) {
   const [error, setError] = useState(null);
   const fileInputs = useRef({});
+  const { addToast } = useToast();
 
   if (!open) return null;
 
@@ -51,7 +52,7 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
               dislikes: d.dislikes || '',
               backstory: d.backstory || '',
               fullImage: d.full_image || d.background_image || '',
-              status: d.status || '',
+              status: 'Ready to chat',
               bookmarked: false,
             };
           } else {
@@ -60,19 +61,31 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
           }
           // Validate required fields
           if (!characterData.name || !characterData.avatar) {
-            setError('Imported card is missing required fields (name, avatar).');
-            return;
+            throw new Error('Imported card is missing required fields (name, avatar).');
           }
-        } else if (format === 'v2') {
-          characterData = parseV2Card(event.target.result);
         } else if (format === 'png') {
           characterData = await parsePngCard(file);
         }
+
         if (!characterData) throw new Error('Could not parse character card.');
+        
+        // Show success toast
+        addToast({
+          type: 'success',
+          message: `Successfully imported ${characterData.name}`,
+          duration: 3000
+        });
+        
         onImport(characterData);
         onClose();
       } catch (err) {
+        console.error('Import error:', err);
         setError('Failed to import: ' + err.message);
+        addToast({
+          type: 'error',
+          message: 'Failed to import character: ' + err.message,
+          duration: 5000
+        });
       }
     };
     if (format === 'png') {
@@ -122,101 +135,10 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
           ))}
         </div>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        <div className="text-xs text-gray-400 mt-4">Supported: JSON, V2 Card, PNG Card (Character.AI, Janitor.AI, etc.)</div>
+        <div className="text-xs text-gray-400 mt-4">Supported: JSON, PNG Card (Character.AI, Janitor.AI, etc.)</div>
       </div>
     </div>
   );
-}
-
-// V2 card parser
-function parseV2Card(text) {
-  try {
-    // Split the text into sections
-    const sections = text.split('---').map(s => s.trim()).filter(Boolean);
-    const data = {};
-
-    // Parse each section
-    sections.forEach(section => {
-      const lines = section.split('\n').map(l => l.trim()).filter(Boolean);
-      const key = lines[0].toLowerCase();
-      const value = lines.slice(1).join('\n');
-
-      switch (key) {
-        case 'name':
-          data.name = value;
-          break;
-        case 'avatar':
-          data.avatar = value;
-          break;
-        case 'description':
-          data.personality = value;
-          break;
-        case 'personality':
-          data.personality = value;
-          break;
-        case 'first_mes':
-          data.firstMessage = value;
-          break;
-        case 'mes_example':
-          data.messageExample = value;
-          break;
-        case 'scenario':
-          data.scenario = value;
-          break;
-        case 'creator_notes':
-          data.creatorNotes = value;
-          break;
-        case 'tags':
-          data.tags = value.split(',').map(t => t.trim());
-          break;
-        case 'creator':
-          data.creator = value;
-          break;
-        case 'character_version':
-          data.characterVersion = value;
-          break;
-        case 'age':
-          data.age = value;
-          break;
-        case 'gender':
-          data.gender = value;
-          break;
-        case 'race':
-          data.race = value;
-          break;
-        case 'occupation':
-          data.occupation = value;
-          break;
-        case 'likes':
-          data.likes = value;
-          break;
-        case 'dislikes':
-          data.dislikes = value;
-          break;
-        case 'backstory':
-          data.backstory = value;
-          break;
-        case 'full_image':
-        case 'background_image':
-          data.fullImage = value;
-          break;
-      }
-    });
-
-    // Validate required fields
-    if (!data.name || !data.avatar) {
-      throw new Error('Imported card is missing required fields (name, avatar).');
-    }
-
-    return {
-      ...data,
-      bookmarked: false,
-      status: 'Ready to chat'
-    };
-  } catch (error) {
-    console.error('Error parsing V2 card:', error);
-    throw new Error('Failed to parse V2 card format.');
-  }
 }
 
 // PNG card parser
@@ -249,6 +171,49 @@ async function parsePngCard(file) {
     let metadata = {};
     let offset = 0;
 
+    // First try to find JSON data in the image
+    const jsonMatch = await findJsonInImage(file);
+    if (jsonMatch) {
+      try {
+        const jsonData = JSON.parse(jsonMatch);
+        if (jsonData.spec && jsonData.data) {
+          const d = jsonData.data;
+          return {
+            spec: jsonData.spec,
+            specVersion: jsonData.spec_version || jsonData.specVersion,
+            name: d.name,
+            avatar: URL.createObjectURL(file),
+            personality: d.personality || d.description || '',
+            description: d.description || '',
+            systemPrompt: d.system_prompt || '',
+            customInstructions: d.creator_notes || '',
+            firstMessage: d.first_mes || '',
+            messageExample: d.mes_example || '',
+            scenario: d.scenario || '',
+            creatorNotes: d.creator_notes || '',
+            alternateGreetings: d.alternate_greetings || [],
+            tags: d.tags || [],
+            creator: d.creator || '',
+            characterVersion: d.character_version || '',
+            extensions: d.extensions || null,
+            age: d.age || '',
+            gender: d.gender || '',
+            race: d.race || '',
+            occupation: d.job || d.occupation || '',
+            likes: d.likes || '',
+            dislikes: d.dislikes || '',
+            backstory: d.backstory || '',
+            fullImage: d.full_image || d.background_image || '',
+            status: 'Ready to chat',
+            bookmarked: false,
+          };
+        }
+      } catch (e) {
+        console.warn('Failed to parse JSON from image:', e);
+      }
+    }
+
+    // Fallback to PNG metadata if JSON not found
     while (offset < data.length) {
       // Check for tEXt chunk
       if (data[offset] === 116 && // 't'
@@ -338,5 +303,21 @@ async function parsePngCard(file) {
   } catch (error) {
     console.error('Error parsing PNG card:', error);
     throw new Error('Failed to parse PNG card format.');
+  }
+}
+
+// Helper function to find JSON data in image
+async function findJsonInImage(file) {
+  try {
+    const text = await file.text();
+    // Look for JSON data between markers
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return jsonMatch[0];
+    }
+    return null;
+  } catch (e) {
+    console.warn('Error searching for JSON in image:', e);
+    return null;
   }
 } 
