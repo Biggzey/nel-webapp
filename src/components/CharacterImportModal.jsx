@@ -128,14 +128,215 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
-// Placeholder for V2 card parsing
+// V2 card parser
 function parseV2Card(text) {
-  // TODO: implement actual V2 card parsing
-  throw new Error('V2 card import not yet implemented.');
+  try {
+    // Split the text into sections
+    const sections = text.split('---').map(s => s.trim()).filter(Boolean);
+    const data = {};
+
+    // Parse each section
+    sections.forEach(section => {
+      const lines = section.split('\n').map(l => l.trim()).filter(Boolean);
+      const key = lines[0].toLowerCase();
+      const value = lines.slice(1).join('\n');
+
+      switch (key) {
+        case 'name':
+          data.name = value;
+          break;
+        case 'avatar':
+          data.avatar = value;
+          break;
+        case 'description':
+          data.personality = value;
+          break;
+        case 'personality':
+          data.personality = value;
+          break;
+        case 'first_mes':
+          data.firstMessage = value;
+          break;
+        case 'mes_example':
+          data.messageExample = value;
+          break;
+        case 'scenario':
+          data.scenario = value;
+          break;
+        case 'creator_notes':
+          data.creatorNotes = value;
+          break;
+        case 'tags':
+          data.tags = value.split(',').map(t => t.trim());
+          break;
+        case 'creator':
+          data.creator = value;
+          break;
+        case 'character_version':
+          data.characterVersion = value;
+          break;
+        case 'age':
+          data.age = value;
+          break;
+        case 'gender':
+          data.gender = value;
+          break;
+        case 'race':
+          data.race = value;
+          break;
+        case 'occupation':
+          data.occupation = value;
+          break;
+        case 'likes':
+          data.likes = value;
+          break;
+        case 'dislikes':
+          data.dislikes = value;
+          break;
+        case 'backstory':
+          data.backstory = value;
+          break;
+        case 'full_image':
+        case 'background_image':
+          data.fullImage = value;
+          break;
+      }
+    });
+
+    // Validate required fields
+    if (!data.name || !data.avatar) {
+      throw new Error('Imported card is missing required fields (name, avatar).');
+    }
+
+    return {
+      ...data,
+      bookmarked: false,
+      status: 'Ready to chat'
+    };
+  } catch (error) {
+    console.error('Error parsing V2 card:', error);
+    throw new Error('Failed to parse V2 card format.');
+  }
 }
 
-// Placeholder for PNG card parsing
+// PNG card parser
 async function parsePngCard(file) {
-  // TODO: implement actual PNG card metadata extraction
-  throw new Error('PNG card import not yet implemented.');
+  try {
+    // Create a canvas to load the image
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Load the image
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+
+    // Set canvas size to image size
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Draw image to canvas
+    ctx.drawImage(img, 0, 0);
+
+    // Get image data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    // Look for PNG tEXt chunks (metadata)
+    let metadata = {};
+    let offset = 0;
+
+    while (offset < data.length) {
+      // Check for tEXt chunk
+      if (data[offset] === 116 && // 't'
+          data[offset + 1] === 69 && // 'E'
+          data[offset + 2] === 88 && // 'X'
+          data[offset + 3] === 116) { // 't'
+        
+        // Get chunk length
+        const length = (data[offset - 4] << 24) | 
+                      (data[offset - 3] << 16) | 
+                      (data[offset - 2] << 8) | 
+                      data[offset - 1];
+
+        // Extract key-value pair
+        const text = new TextDecoder().decode(data.slice(offset + 4, offset + 4 + length));
+        const [key, value] = text.split('\0');
+        
+        // Map common metadata keys to our schema
+        switch (key.toLowerCase()) {
+          case 'name':
+            metadata.name = value;
+            break;
+          case 'description':
+          case 'personality':
+            metadata.personality = value;
+            break;
+          case 'first_mes':
+            metadata.firstMessage = value;
+            break;
+          case 'mes_example':
+            metadata.messageExample = value;
+            break;
+          case 'scenario':
+            metadata.scenario = value;
+            break;
+          case 'creator_notes':
+            metadata.creatorNotes = value;
+            break;
+          case 'tags':
+            metadata.tags = value.split(',').map(t => t.trim());
+            break;
+          case 'creator':
+            metadata.creator = value;
+            break;
+          case 'character_version':
+            metadata.characterVersion = value;
+            break;
+          case 'age':
+            metadata.age = value;
+            break;
+          case 'gender':
+            metadata.gender = value;
+            break;
+          case 'race':
+            metadata.race = value;
+            break;
+          case 'occupation':
+            metadata.occupation = value;
+            break;
+          case 'likes':
+            metadata.likes = value;
+            break;
+          case 'dislikes':
+            metadata.dislikes = value;
+            break;
+          case 'backstory':
+            metadata.backstory = value;
+            break;
+        }
+      }
+      offset += 4;
+    }
+
+    // Use the image itself as the avatar
+    metadata.avatar = URL.createObjectURL(file);
+
+    // Validate required fields
+    if (!metadata.name) {
+      throw new Error('Imported card is missing required field (name).');
+    }
+
+    return {
+      ...metadata,
+      bookmarked: false,
+      status: 'Ready to chat'
+    };
+  } catch (error) {
+    console.error('Error parsing PNG card:', error);
+    throw new Error('Failed to parse PNG card format.');
+  }
 } 
