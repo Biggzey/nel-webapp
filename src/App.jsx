@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CharacterProvider, useCharacter } from "./context/CharacterContext";
@@ -10,7 +10,6 @@ import Toast, { ToastContainer, ToastProvider } from "./components/Toast";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ChatWindow from "./components/ChatWindow";
-import Sidebar from "./components/Sidebar";
 import CharacterPane from "./components/CharacterPane";
 import AdminPanel from "./pages/AdminPanel";
 import PersonalityModal from "./components/PersonalityModal";
@@ -20,7 +19,8 @@ import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
 import { useIsMobile } from './hooks/useIsMobile';
-import ChatWindowMobile from './components/ChatWindowMobile';
+
+const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -39,14 +39,31 @@ function ProtectedContent({ addToast }) {
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [characterPaneVisible, setCharacterPaneVisible] = useState(true);
+  const isMobile = useIsMobile();
+  // Set initial state based on mobile/desktop
+  const [sidebarVisible, setSidebarVisible] = useState(!isMobile);
+  const [characterPaneVisible, setCharacterPaneVisible] = useState(!isMobile);
   const chatInputRef = useRef(null);
   const chatWindowRef = useRef(null);
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
-  const isMobile = useIsMobile();
+
+  // Update visibility when switching between mobile/desktop
+  useEffect(() => {
+    setSidebarVisible(!isMobile);
+    setCharacterPaneVisible(!isMobile);
+  }, [isMobile]);
+
+  // Add mobile sidebar toggle handler
+  const handleMobileMenuClick = () => {
+    setSidebarVisible(v => !v);
+  };
+
+  // Add mobile character pane toggle handler
+  const handleMobileCharacterPaneClick = () => {
+    setCharacterPaneVisible(v => !v);
+  };
 
   // Handler stubs for global shortcuts
   const handleSendMessage = () => {
@@ -126,29 +143,56 @@ function ProtectedContent({ addToast }) {
         onShowShortcutHelp={handleShowShortcutHelp}
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
+      {sidebarVisible && isMobile && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarVisible(false)} />
+          <div className="fixed inset-y-0 left-0 z-50 w-3/4 max-w-xs transition-transform duration-300 ease-in-out transform translate-x-0 shadow-2xl">
+            <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><div className="loader" /></div>}>
+              <Sidebar
+                className="h-full w-full"
+                onSettingsClick={() => setIsSettingsOpen(true)}
+                onClearChat={handleClearChat}
+                sidebarReloadKey={sidebarReloadKey}
+                setSidebarReloadKey={setSidebarReloadKey}
+              />
+            </Suspense>
+          </div>
+        </>
+      )}
       {sidebarVisible && !isMobile && (
-        <Sidebar
-          className="w-[22rem]"
-          onSettingsClick={() => setIsSettingsOpen(true)}
-          onClearChat={handleClearChat}
-          sidebarReloadKey={sidebarReloadKey}
-          setSidebarReloadKey={setSidebarReloadKey}
-        />
+        <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
+          <Sidebar
+            className="w-[22rem]"
+            onSettingsClick={() => setIsSettingsOpen(true)}
+            onClearChat={handleClearChat}
+            sidebarReloadKey={sidebarReloadKey}
+            setSidebarReloadKey={setSidebarReloadKey}
+          />
+        </Suspense>
       )}
       <Routes>
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            {isMobile ? (
-              <ChatWindowMobile
-                chatInputRef={chatInputRef}
+            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
+              <ChatWindow 
+                ref={chatWindowRef} 
+                chatInputRef={chatInputRef} 
+                className="flex-1" 
                 chatReloadKey={chatReloadKey}
+                onMenuClick={handleMobileMenuClick}
+                onCharacterPaneClick={handleMobileCharacterPaneClick}
               />
-            ) : (
-              <>
-                <ChatWindow ref={chatWindowRef} chatInputRef={chatInputRef} className="flex-1" chatReloadKey={chatReloadKey} />
-                {characterPaneVisible && <CharacterPane className="w-[22rem]" />}
-              </>
+            </Suspense>
+            {characterPaneVisible && isMobile && (
+              <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
+            )}
+            {characterPaneVisible && (
+              <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
+                <CharacterPane 
+                  className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
+                />
+              </Suspense>
             )}
           </>
         } />

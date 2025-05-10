@@ -9,6 +9,7 @@ import { useChat } from "../hooks/useChat";
 import PersonalityModal from "./PersonalityModal";
 import CharacterImportModal from "./CharacterImportModal";
 import { useToast } from "./Toast";
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey }) {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
+  const isMobile = useIsMobile();
   const {
     characters,
     selectedIndex,
@@ -94,7 +96,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }, [sidebarReloadKey, reloadCharacters]);
 
   return (
-    <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
+    <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark ${isMobile ? 'w-[280px] backdrop-blur-lg' : ''}`}>
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70">
         {/* Top right decorative circle */}
@@ -138,7 +140,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         </div>
 
         {/* Character list directly on background */}
-        <div className="w-full flex-1 space-y-2 mb-6 px-2">
+        <div className="w-full flex-1 space-y-2 mb-6 px-2 overflow-y-auto">
           {/* Time indicator */}
           <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">{t('sidebar.characters')}</div>
           
@@ -147,7 +149,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             return (
               <div
                 key={c.id}
-                className="group flex items-center justify-between px-3 py-2 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
+                className="group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
               >
                 <button
                   onClick={() => {
@@ -163,7 +165,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                   <img
                     src={c.avatar}
                     alt=""
-                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10"
+                    className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
                   />
                   <span className="font-medium">{c.name}</span>
                 </button>
@@ -173,20 +175,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     e.stopPropagation();
                     setOpenMenuIndex(openMenuIndex === i ? null : i);
                   }}
-                  className="ml-2 p-1 text-gray-400 hover:text-primary focus:outline-none"
+                  className="ml-2 p-2 text-gray-400 hover:text-primary focus:outline-none"
                   title={t('common.more')}
                 >
                   <i className="fas fa-ellipsis-v" />
                 </button>
                 {/* Context menu */}
                 {openMenuIndex === i && (
-                  <div ref={menuRef} className="absolute right-0 top-10 z-50 min-w-[160px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
+                  <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleClearChat(c);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+                      className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                     >
                       <i className="fas fa-trash mr-2" /> {t('chat.clearChat')}
                     </button>
@@ -196,7 +198,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                           e.stopPropagation();
                           handleDeleteCharacterWithConfirm(c, i);
                         }}
-                        className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark text-red-500 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark text-red-500 transition-colors"
                       >
                         <i className="fas fa-user-times mr-2" /> {t('common.delete')}
                       </button>
@@ -214,7 +216,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             {isModerator && (
               <button
                 onClick={() => navigate('/admin')}
-                className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center space-x-2 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <span className="text-primary group-hover:scale-110 transition-transform">
                   <i className="fas fa-shield-alt" />
@@ -227,7 +229,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <div className="flex items-center space-x-2">
                   <span className="text-primary group-hover:scale-110 transition-transform">
@@ -251,20 +253,23 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         </div>
       </div>
 
-      {/* Subtle background gradient */}
-      <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/3 to-transparent" />
-      </div>
+      {/* Import Modal */}
+      {showImportModal && (
+        <CharacterImportModal
+          open={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onImport={() => {
+            setShowImportModal(false);
+            setSidebarReloadKey(prev => prev + 1);
+          }}
+        />
+      )}
 
-      {/* Confirmation Modal for Delete Character */}
+      {/* Delete Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold mb-4">
-              {t('chat.confirmDeleteCharacter', { name: confirmDelete.character.name }) !== 'chat.confirmDeleteCharacter'
-                ? t('chat.confirmDeleteCharacter', { name: confirmDelete.character.name })
-                : `Are you sure you want to delete ${confirmDelete.character.name}? This cannot be undone.`}
-            </h3>
+            <h3 className="text-xl font-semibold mb-4">{t('character.confirmDelete')}</h3>
             <div className="flex justify-end space-x-4">
               <button
                 onClick={handleCancelDelete}
@@ -282,36 +287,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           </div>
         </div>
       )}
-
-      {/* CharacterImportModal */}
-      <CharacterImportModal
-        open={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        onImport={async (characterData) => {
-          try {
-            const res = await fetch("/api/characters", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: token ? `Bearer ${token}` : undefined,
-              },
-              body: JSON.stringify(characterData),
-            });
-            if (!res.ok) {
-              const errorData = await res.json().catch(() => ({}));
-              throw new Error(errorData.error || "Failed to import character");
-            }
-            await res.json();
-            addToast({ type: "success", message: "Character imported! Reloading...", duration: 4000 });
-            setShowImportModal(false);
-            setTimeout(() => {
-              setSidebarReloadKey(k => k + 1);
-            }, 2000); // 2 seconds delay
-          } catch (err) {
-            addToast({ type: "error", message: err.message, duration: 5000 });
-          }
-        }}
-      />
     </aside>
   );
 }

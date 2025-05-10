@@ -1,10 +1,12 @@
 import React from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export default function CharacterPane({ className = "" }) {
   const { current, handleOpenModal } = useCharacter();
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   // Helper function to format and limit likes/dislikes
   const formatList = (text) => {
@@ -18,14 +20,14 @@ export default function CharacterPane({ className = "" }) {
   const hasInfo = !!(current?.age || current?.gender || current?.race || current?.occupation || current?.likes || current?.dislikes);
 
   return (
-    <aside className={`hidden md:flex flex-col ${className} bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4`}>
+    <aside className={`${isMobile ? 'w-[280px] backdrop-blur-lg' : 'hidden md:flex'} flex-col ${className} bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4`}>
       <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3">
         <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
           {current?.name}
         </h2>
         <button
           onClick={handleOpenModal}
-          className="p-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-all duration-200 hover:scale-110 transform group"
+          className="p-3 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-all duration-200 hover:scale-110 transform group"
           title={t('character.edit')}
         >
           <i className="fas fa-edit group-hover:rotate-12 transition-transform duration-200" />
@@ -36,7 +38,7 @@ export default function CharacterPane({ className = "" }) {
       <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden">
         {/* Metadata section that will push the image down */}
         {hasInfo && (
-          <div className="space-y-2 text-sm bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
+          <div className="space-y-3 text-sm bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
             {current?.age && (
               <div className="flex items-center space-x-2">
                 <i className="fas fa-birthday-cake w-5 text-text-light dark:text-text-dark" />

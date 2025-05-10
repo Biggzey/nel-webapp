@@ -1,5 +1,5 @@
 // src/components/ChatWindow.jsx
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, Suspense } from "react";
 import { useCharacter } from "../context/CharacterContext";
 import { useAuth } from "../context/AuthContext";
 import { useLanguage } from "../context/LanguageContext";
@@ -11,17 +11,25 @@ import RegenerateButton from './RegenerateButton';
 import { formatChatText } from '../utils/formatChatText.jsx';
 import { useSettings } from '../context/SettingsContext';
 import ReactDOM from 'react-dom';
+import { useDebouncedCallback } from 'use-debounce';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 // Add a default avatar for user and agent if not present
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
 const DEFAULT_AGENT_AVATAR = "/agent-avatar.png";
 
-const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, chatInputRef }, ref) {
+const PersonalityModal = React.lazy(() => import('./PersonalityModal'));
+const SettingsModal = React.lazy(() => import('./SettingsModal'));
+const CharacterImportModal = React.lazy(() => import('./CharacterImportModal'));
+const ProfileDropdown = React.lazy(() => import('./ProfileDropdown'));
+
+const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPaneClick, chatReloadKey, chatInputRef }, ref) {
   const { current } = useCharacter();
   const { token, logout, user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const model = import.meta.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
+  const isMobile = useIsMobile();
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -49,6 +57,8 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
   // Modal state for regenerate-after-edit
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [regenerateTargetIndex, setRegenerateTargetIndex] = useState(null);
+
+  const debouncedSetInput = useDebouncedCallback((val) => setInput(val), 100);
 
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
@@ -381,8 +391,28 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="flex items-center justify-between px-4 py-2 bg-background-container-light dark:bg-background-container-dark border-b border-container-border-light dark:border-container-border-dark">
+          <button
+            onClick={onMenuClick}
+            className="p-2 text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            aria-label="Menu"
+          >
+            <i className="fas fa-bars text-xl" />
+          </button>
+          <button
+            onClick={onCharacterPaneClick}
+            className="p-2 text-text-light dark:text-text-dark hover:text-primary transition-colors"
+            aria-label="Character Info"
+          >
+            <i className="fas fa-user text-xl" />
+          </button>
+        </div>
+      )}
+
       {/* Messages */}
-      <div className="flex-1 w-full overflow-y-auto px-6 py-8 space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
+      <div className="flex-1 w-full overflow-y-auto px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-gray-500 dark:text-gray-400">
@@ -398,13 +428,13 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
         ) : (
           messages.map((msg, i) => (
             <div key={msg.id} ref={el => messageRefs.current[i] = el} className={`w-full flex ${highlightedIndex === i ? 'ring-4 ring-primary/60 transition-all duration-500' : ''}`}>
-              <div className={`flex items-end group max-w-[70%] min-w-0 ${msg.role === 'user' ? 'justify-end ml-auto flex-row' : 'justify-start mr-auto flex-row'}`}>
+              <div className={`flex items-end group max-w-[85%] md:max-w-[70%] min-w-0 ${msg.role === 'user' ? 'justify-end ml-auto flex-row' : 'justify-start mr-auto flex-row'}`}>
                 {/* Agent side: avatar left, bubble right */}
                 {msg.role === 'assistant' && (
                   <img
                     src={current?.avatar || DEFAULT_AGENT_AVATAR}
                     alt={current?.name || 'Agent'}
-                    className="w-9 h-9 rounded-full shadow-md object-cover mr-2 order-1"
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full shadow-md object-cover mr-2 order-1"
                   />
                 )}
                 {msg.role === 'assistant' && (
@@ -414,7 +444,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                       <span className="text-xs font-semibold text-gray-300">{current?.name || 'Agent'}</span>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#23242a] text-gray-400 font-bold tracking-wide uppercase">Nel.ai</span>
                     </div>
-                    <div className={`chat-message relative px-5 py-3 rounded-2xl shadow-md w-fit max-w-full break-normal bg-[#23242a] text-gray-100 rounded-bl-md mr-2`}>
+                    <div className={`chat-message relative px-4 md:px-5 py-2 md:py-3 rounded-2xl shadow-md w-fit max-w-full break-normal bg-[#23242a] text-gray-100 rounded-bl-md mr-2 text-sm md:text-base`}>
                       {/* Reactions for agent message, top right overlapping bubble */}
                       {msg.role === 'assistant' && !editingIndex && Object.keys(msg.reactions || {}).length > 0 && (
                         <div className="absolute -right-4 -top-3 flex items-center space-x-2">
@@ -445,13 +475,13 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                           <textarea
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none text-sm md:text-base"
                             rows={1}
                             autoFocus
                           />
                           <button
                             onClick={() => handleEdit(i)}
-                            className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                            className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 text-sm md:text-base"
                           >
                             {t('common.save')}
                           </button>
@@ -460,7 +490,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                               setEditingIndex(null);
                               setEditText("");
                             }}
-                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm md:text-base"
                           >
                             {t('common.cancel')}
                           </button>
@@ -497,24 +527,24 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                 )}
                 {/* User side: bubble left, avatar right */}
                 {msg.role === 'user' && (
-                  <div className="flex flex-col max-w-[80%] min-w-0 items-end order-1 group relative">
+                  <div className="flex flex-col max-w-[85%] md:max-w-[80%] min-w-0 items-end order-1 group relative">
                     {/* User display name */}
                     <div className="flex items-center mb-1 space-x-2 justify-end">
                       <span className="text-xs font-semibold text-gray-300">{user?.displayName || user?.username || 'You'}</span>
                     </div>
-                    <div className="chat-message user-message bg-chat-user text-chat-user ml-2 relative">
+                    <div className="chat-message user-message bg-chat-user text-chat-user ml-2 relative text-sm md:text-base">
                       {editingIndex === i ? (
                         <div className="flex items-end space-x-2 min-w-0">
                           <textarea
                             value={editText}
                             onChange={(e) => setEditText(e.target.value)}
-                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none min-w-0"
+                            className="flex-1 p-2 rounded bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none min-w-0 text-sm md:text-base"
                             rows={1}
                             autoFocus
                           />
                           <button
                             onClick={() => handleEdit(i)}
-                            className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90"
+                            className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 text-sm md:text-base"
                           >
                             {t('common.save')}
                           </button>
@@ -523,7 +553,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                               setEditingIndex(null);
                               setEditText("");
                             }}
-                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm md:text-base"
                           >
                             {t('common.cancel')}
                           </button>
@@ -552,7 +582,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
                   <img
                     src={user?.avatar || DEFAULT_USER_AVATAR}
                     alt={user?.displayName || user?.username || 'You'}
-                    className="w-9 h-9 rounded-full shadow-md object-cover ml-2 order-2"
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full shadow-md object-cover ml-2 order-2"
                   />
                 )}
               </div>
@@ -564,23 +594,23 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-transparent bg-chatwindow-light dark:bg-chatwindow-dark">
-        <div className="flex items-end space-x-2 rounded-2xl bg-[#23242a] px-4 py-3 shadow-lg">
+      <div className="p-2 md:p-4 border-t border-transparent bg-chatwindow-light dark:bg-chatwindow-dark">
+        <div className="flex items-end space-x-2 rounded-2xl bg-[#23242a] px-3 md:px-4 py-2 md:py-3 shadow-lg">
           <textarea
             ref={chatInputRef || textareaRef}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => debouncedSetInput(e.target.value)}
             placeholder={t('chat.typeMessage') + ' (Alt+/ for shortcuts)'}
-            className="flex-1 p-2 min-h-[40px] max-h-[200px] rounded-2xl bg-chatwindow-light dark:bg-chatwindow-dark text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            className="flex-1 p-2 min-h-[36px] md:min-h-[40px] max-h-[200px] rounded-2xl bg-chatwindow-light dark:bg-chatwindow-dark text-gray-100 border-none focus:outline-none focus:ring-2 focus:ring-primary resize-none text-sm md:text-base"
             rows={1}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="w-12 h-12 flex items-center justify-center bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            style={{ minWidth: 48, minHeight: 48 }}
+            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            style={{ minWidth: 40, minHeight: 40 }}
           >
-            <i className="fas fa-paper-plane text-lg" />
+            <i className="fas fa-paper-plane text-base md:text-lg" />
           </button>
         </div>
       </div>
@@ -588,17 +618,17 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, chatReloadKey, 
       {/* Regenerate after edit modal */}
       {showRegenerateModal && typeof document !== 'undefined' && ReactDOM.createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl shadow-2xl p-6 w-full max-w-md mx-auto relative">
-            <div className="mb-4 text-lg font-semibold">Regenerate AI response to match this edit?</div>
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl shadow-2xl p-4 md:p-6 w-full max-w-md mx-4 md:mx-auto relative">
+            <div className="mb-4 text-base md:text-lg font-semibold">Regenerate AI response to match this edit?</div>
             <div className="flex space-x-4 justify-end">
               <button
-                className="px-4 py-2 rounded bg-primary text-white hover:bg-primary/90"
+                className="px-3 md:px-4 py-2 rounded bg-primary text-white hover:bg-primary/90 text-sm md:text-base"
                 onClick={() => regenerateAssistantMessage(regenerateTargetIndex)}
               >
                 Yes, regenerate
               </button>
               <button
-                className="px-4 py-2 rounded bg-gray-400 text-white hover:bg-gray-500"
+                className="px-3 md:px-4 py-2 rounded bg-gray-400 text-white hover:bg-gray-500 text-sm md:text-base"
                 onClick={() => { setShowRegenerateModal(false); setRegenerateTargetIndex(null); }}
               >
                 No, keep current response
