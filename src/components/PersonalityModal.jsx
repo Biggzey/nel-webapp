@@ -162,6 +162,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      {/* Backdrop */}
+      <div className="absolute inset-0" onClick={onClose} />
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70 pointer-events-none">
         {/* Top right decorative circle */}
@@ -175,6 +177,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         ref={modalRef}
         onSubmit={handleSubmit}
         className={`relative z-10 ${isMobile ? 'w-full h-full max-w-none max-h-none rounded-none' : 'w-full max-w-[90rem] rounded-xl max-h-[90vh]'} bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-4 md:p-6 shadow-xl overflow-y-auto border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up`}
+        onClick={e => e.stopPropagation()}
       >
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-accent-primary-light/5 to-transparent dark:from-accent-primary-dark/5 rounded-xl pointer-events-none" />

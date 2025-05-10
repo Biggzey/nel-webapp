@@ -11,9 +11,10 @@ import PersonalityModal from './PersonalityModal';
 import { useChat } from '../hooks/useChat';
 import CharacterImportModal from './CharacterImportModal';
 import ProfileDropdown from './ProfileDropdown';
+import SettingsModal from './SettingsModal';
 
 export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
-  const { current, characters, setSelectedIndex, handleNewCharacter, handleOpenModal, handleDeleteCharacter } = useCharacter();
+  const { current, characters, setSelectedIndex, handleNewCharacter, handleOpenModal, handleDeleteCharacter, handleSaveCharacter } = useCharacter();
   const { token, logout, user } = useAuth();
   const { t } = useLanguage();
   const { settings } = useSettings();
@@ -31,6 +32,7 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
   const model = import.meta.env.VITE_OPENAI_MODEL || "gpt-3.5-turbo";
   const [showImportModal, setShowImportModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Load messages on mount, when character changes, or when chatReloadKey changes
   useEffect(() => {
@@ -39,21 +41,50 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
     // eslint-disable-next-line
   }, [current?.id, token, chatReloadKey]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or when window resizes (keyboard closes)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Ensure input bar returns to bottom after keyboard closes
-  useEffect(() => {
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    scrollToBottom();
     const handler = () => {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      setTimeout(scrollToBottom, 100);
     };
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
-  }, []);
+  }, [messages]);
+
+  // Aggressive keyboard handling: scroll input into view and scroll window to bottom on focus
+  useEffect(() => {
+    const inputEl = chatInputRef?.current;
+    const scrollToBottom = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+    const handleFocus = () => {
+      // Scroll the input bar into view
+      if (inputEl) {
+        inputEl.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      }
+      // For iOS Safari, force window scroll to bottom
+      setTimeout(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+        scrollToBottom();
+      }, 100);
+    };
+    const handleBlur = () => {
+      setTimeout(scrollToBottom, 100);
+    };
+    if (inputEl) {
+      inputEl.addEventListener('focus', handleFocus);
+      inputEl.addEventListener('blur', handleBlur);
+    }
+    return () => {
+      if (inputEl) {
+        inputEl.removeEventListener('focus', handleFocus);
+        inputEl.removeEventListener('blur', handleBlur);
+      }
+    };
+  }, [chatInputRef, messages]);
 
   async function loadMessages() {
     try {
@@ -229,6 +260,10 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
               onNewCharacter={handleNewCharacter}
               onImportCharacter={handleImportCharacter}
               onProfile={handleProfileMenu}
+              onSettings={() => {
+                setSidebarOpen(false);
+                setShowSettingsModal(true);
+              }}
             />
           </div>
         </div>
@@ -251,7 +286,10 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
         isOpen={showPersonalityModal}
         initialData={current}
         onClose={() => setShowPersonalityModal(false)}
-        onSave={() => setShowPersonalityModal(false)}
+        onSave={async (form) => {
+          await handleSaveCharacter(form);
+          setShowPersonalityModal(false);
+        }}
       />
       {/* Confirm clear chat modal */}
       {confirmClear && (
@@ -318,7 +356,7 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
         />
       )}
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-4 pb-28"> {/* pb-28 for input bar space */}
+      <div className="flex-1 overflow-y-auto px-2 py-4 space-y-4 pb-36"> {/* pb-36 for input bar space and keyboard */}
         {isLoading ? (
           <div className="text-center text-gray-400 mt-8">{t('chat.loading')}</div>
         ) : messages.length === 0 ? (
@@ -364,6 +402,10 @@ export default function ChatWindowMobile({ chatInputRef, chatReloadKey }) {
           </button>
         </div>
       </div>
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+      />
     </div>
   );
 } 

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import ProfileDropdown from './ProfileDropdown';
 
-export default function SidebarMobile({ onClose, characters = [], selectedIndex = 0, onSelect, onNewCharacter, onImportCharacter, onClearChat, onDeleteCharacter, onProfile }) {
+export default function SidebarMobile({ onClose, characters = [], selectedIndex = 0, onSelect, onNewCharacter, onImportCharacter, onClearChat, onDeleteCharacter, onProfile, onSettings }) {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -137,25 +137,35 @@ export default function SidebarMobile({ onClose, characters = [], selectedIndex 
         </div>
       )}
       {/* Profile button at the bottom */}
-      <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark flex flex-col items-center">
+      <div className="mt-4 pt-4 border-t border-border-light dark:border-border-dark flex flex-col items-center relative">
         <button
-          className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-all duration-200"
-          onClick={() => setShowProfileMenu(true)}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-all duration-200 ${showProfileMenu ? 'bg-background-container-hover-light dark:bg-background-container-hover-dark' : ''}`}
+          onClick={() => setShowProfileMenu((v) => !v)}
         >
-          <span className="text-primary">
-            <i className="fas fa-user-circle text-2xl" />
+          <span className="flex items-center space-x-3">
+            <span className="text-primary">
+              <i className="fas fa-user-circle text-2xl" />
+            </span>
+            <span className="font-medium">Profile</span>
           </span>
-          <span className="font-medium">Profile</span>
+          <span className={`transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''}`}>
+            <i className="fas fa-chevron-up text-text-light/60 dark:text-text-dark/60" />
+          </span>
         </button>
+        {/* ProfileDropdown as absolute menu above button */}
+        {showProfileMenu && (
+          <div className="absolute bottom-14 left-0 w-full z-50">
+            <ProfileDropdown
+              isOpen={showProfileMenu}
+              onClose={() => setShowProfileMenu(false)}
+              onSettingsClick={() => {
+                setShowProfileMenu(false);
+                if (onSettings) onSettings();
+              }}
+            />
+          </div>
+        )}
       </div>
-      {/* ProfileDropdown overlay for mobile */}
-      {showProfileMenu && (
-        <ProfileDropdown
-          isOpen={showProfileMenu}
-          onClose={() => setShowProfileMenu(false)}
-          onSettingsClick={handleSettingsClick}
-        />
-      )}
     </div>
   );
 } 

@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useToast } from './Toast';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 // Tab components
 function Profile({ user, onSave }) {
@@ -502,6 +503,7 @@ export default function SettingsModal({ isOpen, onClose }) {
   const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const modalRef = useRef(null);
+  const isMobile = useIsMobile();
 
   const tabs = [
     { id: 'profile', label: t('settings.profile'), icon: 'user' },
@@ -556,7 +558,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4" 
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${isMobile ? 'p-0' : ''}`}
       onClick={handleBackdropClick}
       onMouseDown={handleBackdropClick}
     >
@@ -566,49 +568,63 @@ export default function SettingsModal({ isOpen, onClose }) {
       {/* Modal */}
       <div 
         ref={modalRef}
-        className="relative w-full max-w-4xl bg-background-container-light dark:bg-background-container-dark rounded-xl shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl"
+        className={`relative bg-background-container-light dark:bg-background-container-dark shadow-xl flex overflow-hidden border-2 border-container-border-light dark:border-container-border-dark shadow-container-shadow-light dark:shadow-container-shadow-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl ${isMobile ? 'w-full h-full max-w-none max-h-none rounded-none flex-col' : 'w-full max-w-4xl rounded-xl'}`}
         onClick={handleModalClick}
       >
-        {/* Sidebar with container styling */}
-        <div 
-          className="w-48 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-r border-container-border-light dark:border-container-border-dark p-2"
-          onClick={handleModalClick}
-        >
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setActiveTab(tab.id);
-              }}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                activeTab === tab.id
-                  ? 'bg-primary text-white'
-                  : 'hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark'
-              }`}
-            >
-              <i className={`fas fa-${tab.icon}`} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Content area with container styling */}
-        <div 
-          className="flex-1 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end"
-          onClick={handleModalClick}
-        >
-          <div className="p-6 overflow-y-auto max-h-[80vh]">
-            {activeTab === 'profile' && (
-              <Profile 
-                user={user} 
-                onSave={handleProfileSave}
-              />
-            )}
-            {activeTab === 'preferences' && <Preferences />}
+        {/* Tabs as top nav on mobile, sidebar on desktop */}
+        {isMobile ? (
+          <div className="flex w-full border-b border-container-border-light dark:border-container-border-dark bg-background-light dark:bg-background-dark">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex flex-col items-center py-3 px-1 text-base font-medium transition-all duration-200 ${activeTab === tab.id ? 'text-primary border-b-2 border-primary bg-background-container-light dark:bg-background-container-dark' : 'text-text-secondary-light dark:text-text-secondary-dark'}`}
+              >
+                <i className={`fas fa-${tab.icon} mb-1`} />
+                <span>{tab.label}</span>
+              </button>
+            ))}
           </div>
+        ) : (
+          <div 
+            className="w-48 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-r border-container-border-light dark:border-container-border-dark p-2"
+            onClick={handleModalClick}
+          >
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveTab(tab.id);
+                }}
+                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  activeTab === tab.id
+                    ? 'bg-primary text-white'
+                    : 'hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark'
+                }`}
+              >
+                <i className={`fas fa-${tab.icon}`} />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Content area */}
+        <div 
+          className={`flex-1 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end ${isMobile ? 'overflow-y-auto max-h-full p-4' : 'p-6 overflow-y-auto max-h-[80vh]'}`}
+          onClick={handleModalClick}
+        >
+          {activeTab === 'profile' && (
+            <Profile 
+              user={user} 
+              onSave={handleProfileSave}
+            />
+          )}
+          {activeTab === 'preferences' && <Preferences />}
         </div>
 
         {/* Close button */}
@@ -619,7 +635,7 @@ export default function SettingsModal({ isOpen, onClose }) {
             e.stopPropagation();
             onClose();
           }}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-text-light/60 dark:text-text-dark/60 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+          className={`absolute ${isMobile ? 'top-3 right-3' : 'top-4 right-4'} w-8 h-8 flex items-center justify-center rounded-full text-text-light/60 dark:text-text-dark/60 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors`}
         >
           <i className="fas fa-times" />
         </button>
