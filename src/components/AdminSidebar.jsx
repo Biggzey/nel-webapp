@@ -137,6 +137,14 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
     setOpenMenuIndex(null);
   };
 
+  // Helper to get a valid avatar URL
+  function getValidAvatarUrl(avatar) {
+    if (!avatar || typeof avatar !== 'string' || avatar.trim() === '') return '/user-avatar.png';
+    // Accept data URLs, absolute URLs, or fallback
+    if (avatar.startsWith('data:') || avatar.startsWith('http')) return avatar;
+    return '/user-avatar.png';
+  }
+
   return (
     <aside className="w-80 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
       {/* Search bar */}
@@ -167,11 +175,11 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
               onClick={() => onUserSelect(user.id)}
             >
               <img
-                src={user.avatar && user.avatar.startsWith('http') ? user.avatar : '/user-avatar.png'}
+                src={getValidAvatarUrl(user.avatar)}
                 alt=""
                 className="w-10 h-10 rounded-full object-cover"
                 onError={e => {
-                  if (e.target.src !== window.location.origin + '/user-avatar.png') {
+                  if (!e.target.src.endsWith('/user-avatar.png')) {
                     e.target.onerror = null;
                     e.target.src = '/user-avatar.png';
                   }

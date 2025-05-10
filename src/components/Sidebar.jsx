@@ -96,7 +96,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }, [sidebarReloadKey, reloadCharacters]);
 
   return (
-    <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark ${isMobile ? 'w-[280px] backdrop-blur-lg' : ''}`}>
+    <aside className={`${className} flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark ${isMobile ? 'w-[280px]' : 'w-[22rem]'}`}>
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70">
         {/* Top right decorative circle */}
