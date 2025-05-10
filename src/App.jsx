@@ -145,32 +145,14 @@ function ProtectedContent({ addToast }) {
         onShowShortcutHelp={handleShowShortcutHelp}
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
-      {sidebarVisible && isMobile && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setSidebarVisible(false)} />
-          <div className="fixed inset-y-0 left-0 z-50 w-3/4 max-w-xs transition-transform duration-300 ease-in-out transform translate-x-0 shadow-2xl">
-            <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><div className="loader" /></div>}>
-              <Sidebar
-                className="h-full w-full"
-                onSettingsClick={() => setIsSettingsOpen(true)}
-                onClearChat={handleClearChat}
-                sidebarReloadKey={sidebarReloadKey}
-                setSidebarReloadKey={setSidebarReloadKey}
-              />
-            </Suspense>
-          </div>
-        </>
-      )}
-      {sidebarVisible && !isMobile && (
-        <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
-          <Sidebar
-            className="w-[22rem]"
-            onSettingsClick={() => setIsSettingsOpen(true)}
-            onClearChat={handleClearChat}
-            sidebarReloadKey={sidebarReloadKey}
-            setSidebarReloadKey={setSidebarReloadKey}
-          />
-        </Suspense>
+      {location.pathname !== '/admin' && (
+        <Sidebar
+          className="h-full w-full"
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          onClearChat={handleClearChat}
+          sidebarReloadKey={sidebarReloadKey}
+          setSidebarReloadKey={setSidebarReloadKey}
+        />
       )}
       <Routes>
         <Route path="/admin" element={<AdminPanel />} />
@@ -245,6 +227,7 @@ function ProtectedContent({ addToast }) {
 function InnerApp() {
   const [toast, setToast] = useState(null);
   const [toasts, setToasts] = useState([]);
+  const location = useLocation();
 
   // Add global error handler
   useEffect(() => {

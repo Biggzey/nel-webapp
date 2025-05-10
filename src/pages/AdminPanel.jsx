@@ -36,6 +36,27 @@ export default function AdminPanel() {
           message: 'Failed to load user details',
           duration: 5000
         });
+        // Mock user details
+        setUserDetails({
+          id: selectedUserId,
+          username: 'MockUser',
+          email: 'mockuser@example.com',
+          avatar: '/user-avatar.png',
+          role: 'user',
+          blocked: false,
+          online: false,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+          stats: {
+            totalMessages: 42,
+            charactersCreated: 2,
+            activeSessions: 1
+          },
+          activity: [
+            { icon: 'comment', color: 'blue', description: 'Sent a message', timestamp: new Date().toISOString() },
+            { icon: 'user', color: 'green', description: 'Logged in', timestamp: new Date().toISOString() }
+          ]
+        });
       }
     }
 
@@ -65,6 +86,22 @@ export default function AdminPanel() {
           type: 'error',
           message: 'Failed to load system stats',
           duration: 5000
+        });
+        // Mock system stats
+        setSystemStats({
+          totalUsers: 10,
+          activeUsers: 2,
+          newUsersToday: 1,
+          totalMessages: 100,
+          messagesToday: 10,
+          avgMessagesPerUser: 10,
+          totalCharacters: 5,
+          charactersCreatedToday: 1,
+          avgCharactersPerUser: 0.5,
+          recentActivity: [
+            { icon: 'user', color: 'green', description: 'User registered', timestamp: new Date().toISOString() },
+            { icon: 'comment', color: 'blue', description: 'Message sent', timestamp: new Date().toISOString() }
+          ]
         });
       }
     }

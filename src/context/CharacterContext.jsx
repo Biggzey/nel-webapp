@@ -47,14 +47,16 @@ export function CharacterProvider({ children }) {
           return;
         }
 
-        if (!charsRes.ok) {
-          throw new Error("Failed to load characters");
+        let userChars = [];
+        if (charsRes.ok) {
+          userChars = await charsRes.json();
+        } else {
+          // Show error and fallback to default character
+          console.error("Failed to load characters, using default.");
         }
 
-        const userChars = await charsRes.json();
-        
         // Find user's Nelliel instance
-        const nelliel = userChars.find(c => c.name === "Nelliel");
+        let nelliel = userChars.find(c => c.name === "Nelliel");
         
         // If Nelliel doesn't exist for this user, create it
         if (!nelliel) {
@@ -79,12 +81,17 @@ export function CharacterProvider({ children }) {
             if (createRes.ok) {
               const defaultChar = await createRes.json();
               userChars.unshift(defaultChar);
+            } else {
+              // If creation fails, fallback to local default
+              userChars.unshift({ ...defaultCharacters[0] });
             }
           } catch (error) {
-            console.error("Error creating Nelliel character:", error);
+            userChars.unshift({ ...defaultCharacters[0] });
           }
         }
-
+        if (!userChars.length) {
+          userChars = [{ ...defaultCharacters[0] }];
+        }
         setCharacters(userChars);
 
         // Load preferences
@@ -381,4 +388,5 @@ export function CharacterProvider({ children }) {
 export function useCharacter() {
   return useContext(CharacterContext);
 }
+
 
