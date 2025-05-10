@@ -2,6 +2,9 @@ import React, { useRef, useState } from 'react';
 import { useToast } from './Toast';
 import extractChunks from 'png-chunks-extract';
 import PNGText from 'png-chunk-text';
+import PNGzTXt from 'png-chunk-ztxt';
+import PNGiTXt from 'png-chunk-itxt';
+import pako from 'pako';
 
 const FORMATS = [
   { key: 'json', label: 'JSON', accept: '.json', icon: <i className="fas fa-file-code" /> },
@@ -191,18 +194,39 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
-// Extract embedded JSON from PNG tEXt chunks
+// Extract embedded JSON from PNG tEXt, zTXt, and iTXt chunks
 async function extractCharacterJsonFromPng(file) {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
     const chunks = extractChunks(uint8);
-    // Find all tEXt chunks
+    // tEXt chunks
     const textChunks = chunks
       .filter(chunk => chunk.name === 'tEXt')
       .map(chunk => PNGText.decode(chunk.data));
-    // Look for a chunk with JSON (commonly key is 'chara' or 'character')
-    for (const { keyword, text } of textChunks) {
+    // zTXt chunks (compressed)
+    const ztxtChunks = chunks
+      .filter(chunk => chunk.name === 'zTXt')
+      .map(chunk => {
+        const { keyword, compressed, text } = PNGzTXt.decode(chunk.data);
+        let decompressed = '';
+        if (compressed) {
+          try {
+            decompressed = pako.inflate(text, { to: 'string' });
+          } catch (e) {
+            decompressed = '';
+          }
+        }
+        return { keyword, text: decompressed };
+      });
+    // iTXt chunks (international text)
+    const itxtChunks = chunks
+      .filter(chunk => chunk.name === 'iTXt')
+      .map(chunk => PNGiTXt.decode(chunk.data));
+    // Combine all chunks
+    const allChunks = [...textChunks, ...ztxtChunks, ...itxtChunks];
+    // Look for a chunk with JSON (try common keywords and any chunk that looks like JSON)
+    for (const { keyword = '', text = '' } of allChunks) {
       if (
         keyword.toLowerCase().includes('chara') ||
         keyword.toLowerCase().includes('character') ||

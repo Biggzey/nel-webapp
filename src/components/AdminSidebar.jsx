@@ -167,10 +167,15 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
               onClick={() => onUserSelect(user.id)}
             >
               <img
-                src={user.avatar || '/user-avatar.png'}
+                src={user.avatar && user.avatar.startsWith('http') ? user.avatar : '/user-avatar.png'}
                 alt=""
                 className="w-10 h-10 rounded-full object-cover"
-                onError={e => { e.target.onerror = null; e.target.src = '/user-avatar.png'; }}
+                onError={e => {
+                  if (e.target.src !== window.location.origin + '/user-avatar.png') {
+                    e.target.onerror = null;
+                    e.target.src = '/user-avatar.png';
+                  }
+                }}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2">

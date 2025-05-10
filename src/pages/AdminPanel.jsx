@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../components/Toast';
 import AdminSidebar from '../components/AdminSidebar';
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminPanel() {
   const { token } = useAuth();
@@ -11,6 +12,7 @@ export default function AdminPanel() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [systemStats, setSystemStats] = useState(null);
+  const navigate = useNavigate();
 
   // Load user details when selected
   useEffect(() => {
@@ -111,6 +113,14 @@ export default function AdminPanel() {
 
   return (
     <div className="flex h-screen">
+      <div className="absolute top-4 left-4 z-50">
+        <button
+          onClick={() => navigate('/')}
+          className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+        >
+          ← Back to Home
+        </button>
+      </div>
       <AdminSidebar
         onUserSelect={setSelectedUserId}
         selectedUserId={selectedUserId}
