@@ -20,6 +20,9 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
     const file = e.target.files[0];
     if (!file) return;
     setError(null);
+    if (format === 'png') {
+      console.error('PNG import handler triggered for file:', file);
+    }
     const reader = new FileReader();
     reader.onload = async (event) => {
       try {
@@ -132,6 +135,10 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
       } catch (err) {
         console.error('Import error:', err);
         setError('Failed to import: ' + err.message);
+        if (format === 'png') {
+          // Show error visibly in modal
+          alert('PNG import failed: ' + err.message);
+        }
         addToast({
           type: 'error',
           message: 'Failed to import character: ' + err.message,

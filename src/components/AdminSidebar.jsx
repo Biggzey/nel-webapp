@@ -146,7 +146,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
   }
 
   return (
-    <aside className="w-adminsidebar h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
+    <aside className="w-72 md:w-80 flex-shrink-0 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
       {/* Search bar */}
       <div className="p-4 border-b border-border-light dark:border-border-dark">
         <div className="relative">
@@ -245,9 +245,12 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
       <div className="sticky bottom-0 left-0 w-full bg-background-container-light dark:bg-background-container-dark border-t border-border-light dark:border-border-dark p-4 z-10">
         <button
           onClick={() => window.location.href = '/'}
-          className="w-full px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+          className="w-full bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
         >
-          ← Back to Home
+          <span className="text-primary mr-1 text-base">
+            <i className="fas fa-arrow-left" />
+          </span>
+          <span className="font-medium text-sm">Back to Home</span>
         </button>
       </div>
     </aside>

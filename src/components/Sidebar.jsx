@@ -82,7 +82,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
   const handleConfirmDelete = async () => {
     if (!confirmDelete) return;
-    await handleDeleteCharacter(confirmDelete.idx);
+    try {
+      await handleDeleteCharacter(confirmDelete.idx);
+      addToast({
+        type: 'success',
+        message: t('character.deleted') || 'Character deleted',
+        duration: 3000,
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        message: t('character.deleteFailed') || 'Failed to delete character',
+        duration: 5000,
+      });
+    }
     setConfirmDelete(null);
   };
 
@@ -96,7 +109,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }, [sidebarReloadKey, reloadCharacters]);
 
   return (
-    <aside className={`${className} w-sidebar flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
+    <aside className={`${className} w-72 md:w-80 flex-shrink-0 flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70">
         {/* Top right decorative circle */}
