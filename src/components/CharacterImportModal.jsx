@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useToast } from './Toast';
+import extractChunks from 'png-chunks-extract';
+import PNGText from 'png-chunk-text';
 
 const FORMATS = [
   { key: 'json', label: 'JSON', accept: '.json', icon: <i className="fas fa-file-code" /> },
@@ -22,9 +24,15 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
       try {
         let characterData;
         if (format === 'json') {
-          const raw = JSON.parse(event.target.result);
-          // Detect chub.ai/Character.AI card format
+          // Restore robust JSON import logic
+          let raw;
+          try {
+            raw = JSON.parse(event.target.result);
+          } catch (err) {
+            throw new Error('Invalid JSON file.');
+          }
           if (raw.spec && raw.data) {
+            // chub.ai/Character.AI card format
             const d = raw.data;
             characterData = {
               spec: raw.spec,
@@ -64,7 +72,49 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
             throw new Error('Imported card is missing required fields (name, avatar).');
           }
         } else if (format === 'png') {
-          characterData = await parsePngCard(file);
+          // Use robust PNG chunk extraction
+          const jsonData = await extractCharacterJsonFromPng(file);
+          if (!jsonData) {
+            throw new Error('No valid character data found in PNG. Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+          }
+          let d;
+          if (jsonData.spec && jsonData.data) {
+            d = jsonData.data;
+          } else {
+            d = jsonData;
+          }
+          characterData = {
+            spec: jsonData.spec,
+            specVersion: jsonData.spec_version || jsonData.specVersion,
+            name: d.name,
+            avatar: URL.createObjectURL(file),
+            personality: d.personality || d.description || '',
+            description: d.description || '',
+            systemPrompt: d.system_prompt || '',
+            customInstructions: d.creator_notes || '',
+            firstMessage: d.first_mes || '',
+            messageExample: d.mes_example || '',
+            scenario: d.scenario || '',
+            creatorNotes: d.creator_notes || '',
+            alternateGreetings: d.alternate_greetings || [],
+            tags: d.tags || [],
+            creator: d.creator || '',
+            characterVersion: d.character_version || '',
+            extensions: d.extensions || null,
+            age: d.age || '',
+            gender: d.gender || '',
+            race: d.race || '',
+            occupation: d.job || d.occupation || '',
+            likes: d.likes || '',
+            dislikes: d.dislikes || '',
+            backstory: d.backstory || '',
+            fullImage: d.full_image || d.background_image || '',
+            status: 'Ready to chat',
+            bookmarked: false,
+          };
+          if (!characterData.name) {
+            throw new Error('Imported PNG card is missing required field (name). Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+          }
         }
 
         if (!characterData) throw new Error('Could not parse character card.');
@@ -141,190 +191,33 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
-// Helper function to find JSON data in image
-async function findJsonInImage(file) {
+// Extract embedded JSON from PNG tEXt chunks
+async function extractCharacterJsonFromPng(file) {
   try {
-    const text = await file.text();
-    // Look for JSON data between markers or at the start of the file
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        const json = JSON.parse(jsonMatch[0]);
-        // Validate that it's a character card
-        if (json.spec && json.data) {
-          return jsonMatch[0];
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8 = new Uint8Array(arrayBuffer);
+    const chunks = extractChunks(uint8);
+    // Find all tEXt chunks
+    const textChunks = chunks
+      .filter(chunk => chunk.name === 'tEXt')
+      .map(chunk => PNGText.decode(chunk.data));
+    // Look for a chunk with JSON (commonly key is 'chara' or 'character')
+    for (const { keyword, text } of textChunks) {
+      if (
+        keyword.toLowerCase().includes('chara') ||
+        keyword.toLowerCase().includes('character') ||
+        text.trim().startsWith('{')
+      ) {
+        try {
+          const json = JSON.parse(text);
+          return json;
+        } catch (e) {
+          // Not valid JSON, skip
         }
-      } catch (e) {
-        console.warn('Found JSON but failed to parse:', e);
       }
     }
     return null;
   } catch (e) {
-    console.warn('Error searching for JSON in image:', e);
     return null;
-  }
-}
-
-// PNG card parser
-async function parsePngCard(file) {
-  try {
-    // First try to find JSON data in the image
-    const jsonMatch = await findJsonInImage(file);
-    if (jsonMatch) {
-      try {
-        const jsonData = JSON.parse(jsonMatch);
-        if (jsonData.spec && jsonData.data) {
-          const d = jsonData.data;
-          return {
-            spec: jsonData.spec,
-            specVersion: jsonData.spec_version || jsonData.specVersion,
-            name: d.name,
-            avatar: URL.createObjectURL(file),
-            personality: d.personality || d.description || '',
-            description: d.description || '',
-            systemPrompt: d.system_prompt || '',
-            customInstructions: d.creator_notes || '',
-            firstMessage: d.first_mes || '',
-            messageExample: d.mes_example || '',
-            scenario: d.scenario || '',
-            creatorNotes: d.creator_notes || '',
-            alternateGreetings: d.alternate_greetings || [],
-            tags: d.tags || [],
-            creator: d.creator || '',
-            characterVersion: d.character_version || '',
-            extensions: d.extensions || null,
-            age: d.age || '',
-            gender: d.gender || '',
-            race: d.race || '',
-            occupation: d.job || d.occupation || '',
-            likes: d.likes || '',
-            dislikes: d.dislikes || '',
-            backstory: d.backstory || '',
-            fullImage: d.full_image || d.background_image || '',
-            status: 'Ready to chat',
-            bookmarked: false,
-          };
-        }
-      } catch (e) {
-        console.warn('Failed to parse JSON from image:', e);
-      }
-    }
-
-    // If no JSON found, try to extract metadata from PNG chunks
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    // Load the image
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-      img.src = URL.createObjectURL(file);
-    });
-
-    // Set canvas size to image size
-    canvas.width = img.width;
-    canvas.height = img.height;
-
-    // Draw image to canvas
-    ctx.drawImage(img, 0, 0);
-
-    // Get image data
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
-
-    // Look for PNG tEXt chunks (metadata)
-    let metadata = {};
-    let offset = 0;
-
-    while (offset < data.length) {
-      // Check for tEXt chunk
-      if (data[offset] === 116 && // 't'
-          data[offset + 1] === 69 && // 'E'
-          data[offset + 2] === 88 && // 'X'
-          data[offset + 3] === 116) { // 't'
-        
-        // Get chunk length
-        const length = (data[offset - 4] << 24) | 
-                      (data[offset - 3] << 16) | 
-                      (data[offset - 2] << 8) | 
-                      data[offset - 1];
-
-        // Extract key-value pair
-        const text = new TextDecoder().decode(data.slice(offset + 4, offset + 4 + length));
-        const [key, value] = text.split('\0');
-        
-        // Map common metadata keys to our schema
-        switch (key.toLowerCase()) {
-          case 'name':
-            metadata.name = value;
-            break;
-          case 'description':
-          case 'personality':
-            metadata.personality = value;
-            break;
-          case 'first_mes':
-            metadata.firstMessage = value;
-            break;
-          case 'mes_example':
-            metadata.messageExample = value;
-            break;
-          case 'scenario':
-            metadata.scenario = value;
-            break;
-          case 'creator_notes':
-            metadata.creatorNotes = value;
-            break;
-          case 'tags':
-            metadata.tags = value.split(',').map(t => t.trim());
-            break;
-          case 'creator':
-            metadata.creator = value;
-            break;
-          case 'character_version':
-            metadata.characterVersion = value;
-            break;
-          case 'age':
-            metadata.age = value;
-            break;
-          case 'gender':
-            metadata.gender = value;
-            break;
-          case 'race':
-            metadata.race = value;
-            break;
-          case 'occupation':
-            metadata.occupation = value;
-            break;
-          case 'likes':
-            metadata.likes = value;
-            break;
-          case 'dislikes':
-            metadata.dislikes = value;
-            break;
-          case 'backstory':
-            metadata.backstory = value;
-            break;
-        }
-      }
-      offset += 4;
-    }
-
-    // Use the image itself as the avatar
-    metadata.avatar = URL.createObjectURL(file);
-
-    // Validate required fields
-    if (!metadata.name) {
-      throw new Error('Imported card is missing required field (name).');
-    }
-
-    return {
-      ...metadata,
-      bookmarked: false,
-      status: 'Ready to chat'
-    };
-  } catch (error) {
-    console.error('Error parsing PNG card:', error);
-    throw new Error('Failed to parse PNG card format: ' + error.message);
   }
 } 

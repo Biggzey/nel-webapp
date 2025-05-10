@@ -40,6 +40,8 @@
     "morgan": "^1.10.0",
     "nanoid": "^5.1.5",
     "openai": "^4.97.0",
+    "png-chunk-text": "^1.0.0",
+    "png-chunks-extract": "^1.0.0",
     "postcss": "^8.4.0",
     "prisma": "^6.7.0",
     "prom-client": "^15.1.3",

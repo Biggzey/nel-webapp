@@ -274,8 +274,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               }
 
               const imported = await res.json();
-              setCharacters(prev => [...prev, imported]);
-              setSelectedIndex(characters.length);
+              // Reload the character list and select the new character
+              await reloadCharacters();
+              // Find the new character's index
+              const idx = characters.findIndex(c => c.id === imported.id);
+              if (idx !== -1) setSelectedIndex(idx);
               setShowImportModal(false);
               setSidebarReloadKey(prev => prev + 1);
             } catch (error) {
