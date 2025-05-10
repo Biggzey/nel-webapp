@@ -1680,6 +1680,7 @@ try {
           blockedUntil: true,
           createdAt: true,
           updatedAt: true,
+          avatar: true,
           _count: {
             select: {
               characters: true,

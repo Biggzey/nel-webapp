@@ -41,6 +41,10 @@ export function CharacterProvider({ children }) {
           },
         });
 
+        if (charsRes.status === 429) {
+          handleRateLimit();
+          return;
+        }
         if (charsRes.status === 401) {
           logout();
           navigate("/login", { replace: true });
@@ -101,6 +105,10 @@ export function CharacterProvider({ children }) {
           },
         });
 
+        if (prefsRes.status === 429) {
+          handleRateLimit();
+          return;
+        }
         if (!prefsRes.ok) {
           throw new Error("Failed to load preferences");
         }
@@ -180,12 +188,19 @@ export function CharacterProvider({ children }) {
         body: JSON.stringify(blank),
       });
 
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (!res.ok) {
         throw new Error("Failed to create character");
       }
 
       const created = await res.json();
-      setCharacters(prev => [...prev, created]);
+      setCharacters(prev => {
+        if (prev.some(c => c.id === created.id)) return prev;
+        return [...prev, created];
+      });
       _setSelectedIndex(characters.length);
       setIsModalOpen(true);
     } catch (error) {
@@ -204,6 +219,10 @@ export function CharacterProvider({ children }) {
         body: JSON.stringify(updated),
       });
 
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (!res.ok) {
         throw new Error("Failed to update character");
       }
@@ -267,6 +286,10 @@ export function CharacterProvider({ children }) {
         },
       });
 
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (!res.ok) {
         throw new Error("Failed to delete character");
       }
@@ -301,6 +324,10 @@ export function CharacterProvider({ children }) {
         body: JSON.stringify(defaultChar),
       });
 
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (!res.ok) {
         throw new Error("Failed to reset character");
       }
@@ -329,6 +356,10 @@ export function CharacterProvider({ children }) {
         }),
       });
 
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (!res.ok) {
         throw new Error("Failed to update bookmark");
       }
@@ -347,12 +378,32 @@ export function CharacterProvider({ children }) {
       const res = await fetch("/api/characters", {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
       });
+      if (res.status === 429) {
+        handleRateLimit();
+        return;
+      }
       if (res.ok) {
         const userChars = await res.json();
-        setCharacters(userChars);
+        // Remove duplicates by id
+        const uniqueChars = [];
+        const seenIds = new Set();
+        for (const c of userChars) {
+          if (!seenIds.has(c.id)) {
+            uniqueChars.push(c);
+            seenIds.add(c.id);
+          }
+        }
+        setCharacters(uniqueChars);
       }
     } catch (err) {
       // Optionally handle error
+    }
+  }
+
+  // Helper to show a toast or alert for 429 errors
+  function handleRateLimit() {
+    if (window && window.alert) {
+      alert('You are being rate limited (429 Too Many Requests). Please wait and try again later.');
     }
   }
 

@@ -220,20 +220,20 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
                   onClick={() => handleResetPassword(user.id)}
                   className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
                 >
-                  <i className="fas fa-key mr-2" /> Reset Password
+                  <i className="fas fa-key mr-2" /> {t('admin.resetPassword')}
                 </button>
                 <button
                   onClick={() => handleToggleBlock(user.id, user.blocked)}
                   className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
                 >
                   <i className={`fas fa-${user.blocked ? 'unlock' : 'lock'} mr-2`} />
-                  {user.blocked ? 'Unblock User' : 'Block User'}
+                  {user.blocked ? t('admin.unblockUser') : t('admin.blockUser')}
                 </button>
                 <button
                   onClick={() => handleDeleteUser(user.id)}
                   className="w-full text-left px-4 py-2 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
                 >
-                  <i className="fas fa-trash mr-2" /> Delete User
+                  <i className="fas fa-trash mr-2" /> {t('admin.deleteUser')}
                 </button>
               </div>
             )}
@@ -250,7 +250,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
           <span className="text-primary mr-1 text-base">
             <i className="fas fa-arrow-left" />
           </span>
-          <span className="font-medium text-sm">Back to Home</span>
+          <span className="font-medium text-sm">{t('admin.backToHome')}</span>
         </button>
       </div>
     </aside>

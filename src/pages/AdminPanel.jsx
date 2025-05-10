@@ -218,70 +218,66 @@ export default function AdminPanel() {
           // System stats view
           systemStats && (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold">System Overview</h1>
-              
+              <h1 className="text-2xl font-bold">{t('admin.systemOverview')}</h1>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* User Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Users</h2>
+                  <h2 className="text-xl font-semibold mb-4">{t('admin.users')}</h2>
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-gray-500">Total Users</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.totalUsers')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Active Now</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.activeNow')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">New Today</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.newToday')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-        </div>
+                    </div>
                   </dl>
-      </div>
-
+                </div>
                 {/* Message Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Messages</h2>
+                  <h2 className="text-xl font-semibold mb-4">{t('admin.messages')}</h2>
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-gray-500">Total Messages</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.totalMessages')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Today</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.createdToday')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Avg. Per User</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.avgMessagesPerUser')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.avgMessagesPerUser}</dd>
                     </div>
                   </dl>
                 </div>
-
                 {/* Character Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Characters</h2>
+                  <h2 className="text-xl font-semibold mb-4">{t('admin.characters')}</h2>
                   <dl className="space-y-3">
                     <div>
-                      <dt className="text-sm text-gray-500">Total Characters</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.totalCharacters')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Created Today</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.createdToday')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Avg. Per User</dt>
+                      <dt className="text-sm text-gray-500">{t('admin.avgPerUser')}</dt>
                       <dd className="text-2xl font-bold">{systemStats.avgCharactersPerUser}</dd>
                     </div>
                   </dl>
                 </div>
               </div>
-
               {/* Recent System Activity */}
               <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                <h2 className="text-xl font-semibold mb-4">Recent System Activity</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('admin.systemActivity')}</h2>
                 <div className="space-y-4">
                   {systemStats.recentActivity?.map((activity, index) => (
                     <div
@@ -294,14 +290,14 @@ export default function AdminPanel() {
                         <p className="text-sm text-gray-500">
                           {new Date(activity.timestamp).toLocaleString()}
                         </p>
-            </div>
-          </div>
+                      </div>
+                    </div>
                   ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
           )
-      )}
+        )}
       </main>
     </div>
   );

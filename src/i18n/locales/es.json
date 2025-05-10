@@ -54,7 +54,9 @@
     "passwordMismatch": "Las contraseñas no coinciden",
     "invalidCredentials": "Correo o contraseña inválidos",
     "serverError": "Ocurrió un error en el servidor",
-    "unexpectedError": "Lo sentimos, pero ocurrió algo inesperado. Por favor, intenta actualizar la página."
+    "unexpectedError": "Lo sentimos, pero ocurrió algo inesperado. Por favor, intenta actualizar la página.",
+    "rateLimited": "Estás siendo limitado por el servidor (429 Demasiadas solicitudes). Por favor, espera e inténtalo de nuevo más tarde.",
+    "importFailed": "Error al importar la tarjeta del personaje."
   },
   "profile": {
     "title": "Perfil",
@@ -93,7 +95,9 @@
       "yearsOld": "años"
     },
     "new": "Nuevo personaje",
-    "edit": "Editar personaje"
+    "edit": "Editar personaje",
+    "deleted": "Personaje eliminado.",
+    "deleteFailed": "No se pudo eliminar el personaje."
   },
   "settings": {
     "profile": "Perfil",
@@ -117,13 +121,37 @@
   },
   "admin": {
     "title": "Panel de administración",
+    "searchUsers": "Buscar usuarios...",
+    "backToHome": "Volver al inicio",
+    "systemOverview": "Resumen del sistema",
     "users": "Usuarios",
+    "messages": "Mensajes",
     "characters": "Personajes",
-    "settings": "Configuración",
     "stats": "Estadísticas",
-    "userManagement": "Gestión de usuarios",
-    "characterManagement": "Gestión de personajes",
-    "systemSettings": "Configuración del sistema",
-    "viewStats": "Ver estadísticas"
+    "recentActivity": "Actividad reciente",
+    "role": "Rol",
+    "status": "Estado",
+    "joined": "Registrado",
+    "lastLogin": "Último acceso",
+    "totalMessages": "Mensajes totales",
+    "charactersCreated": "Personajes creados",
+    "activeSessions": "Sesiones activas",
+    "blocked": "Bloqueado",
+    "online": "En línea",
+    "offline": "Desconectado",
+    "resetPassword": "Restablecer contraseña",
+    "blockUser": "Bloquear usuario",
+    "unblockUser": "Desbloquear usuario",
+    "deleteUser": "Eliminar usuario",
+    "activityStats": "Estadísticas de actividad",
+    "basicInfo": "Información básica",
+    "activity": "Actividad",
+    "systemStats": "Estadísticas del sistema",
+    "createdToday": "Creado hoy",
+    "avgPerUser": "Prom. por usuario",
+    "newToday": "Nuevo hoy",
+    "activeNow": "Activos ahora",
+    "avgMessagesPerUser": "Prom. por usuario",
+    "systemActivity": "Actividad reciente del sistema"
   }
 } 

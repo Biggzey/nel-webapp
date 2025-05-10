@@ -54,7 +54,9 @@
     "passwordMismatch": "Passwords do not match",
     "invalidCredentials": "Invalid email or password",
     "serverError": "Server error occurred",
-    "unexpectedError": "We're sorry, but something unexpected happened. Please try refreshing the page."
+    "unexpectedError": "We're sorry, but something unexpected happened. Please try refreshing the page.",
+    "rateLimited": "You are being rate limited (429 Too Many Requests). Please wait and try again later.",
+    "importFailed": "Failed to import character card."
   },
   "character": {
     "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone.",
@@ -88,7 +90,9 @@
       "yearsOld": "years old"
     },
     "new": "New Character",
-    "edit": "Edit Character"
+    "edit": "Edit Character",
+    "deleted": "Character deleted.",
+    "deleteFailed": "Failed to delete character."
   },
   "profile": {
     "title": "Profile",
@@ -118,13 +122,37 @@
   },
   "admin": {
     "title": "Admin Panel",
+    "searchUsers": "Search users...",
+    "backToHome": "Back to Home",
+    "systemOverview": "System Overview",
     "users": "Users",
+    "messages": "Messages",
     "characters": "Characters",
-    "settings": "Settings",
-    "stats": "Statistics",
-    "userManagement": "User Management",
-    "characterManagement": "Character Management",
-    "systemSettings": "System Settings",
-    "viewStats": "View Statistics"
+    "stats": "Stats",
+    "recentActivity": "Recent Activity",
+    "role": "Role",
+    "status": "Status",
+    "joined": "Joined",
+    "lastLogin": "Last Login",
+    "totalMessages": "Total Messages",
+    "charactersCreated": "Characters Created",
+    "activeSessions": "Active Sessions",
+    "blocked": "Blocked",
+    "online": "Online",
+    "offline": "Offline",
+    "resetPassword": "Reset Password",
+    "blockUser": "Block User",
+    "unblockUser": "Unblock User",
+    "deleteUser": "Delete User",
+    "activityStats": "Activity Stats",
+    "basicInfo": "Basic Information",
+    "activity": "Activity",
+    "systemStats": "System Stats",
+    "createdToday": "Created Today",
+    "avgPerUser": "Avg. Per User",
+    "newToday": "New Today",
+    "activeNow": "Active Now",
+    "avgMessagesPerUser": "Avg. Per User",
+    "systemActivity": "Recent System Activity"
   }
 } 
