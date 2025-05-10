@@ -2,8 +2,6 @@ import React, { useRef, useState } from 'react';
 import { useToast } from './Toast';
 import extractChunks from 'png-chunks-extract';
 import PNGText from 'png-chunk-text';
-import PNGzTXt from 'png-chunk-ztxt';
-import PNGiTXt from 'png-chunk-itxt';
 import pako from 'pako';
 
 const FORMATS = [
@@ -194,7 +192,7 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
-// Extract embedded JSON from PNG tEXt, zTXt, and iTXt chunks
+// Extract embedded JSON from PNG tEXt and zTXt chunks
 async function extractCharacterJsonFromPng(file) {
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -207,24 +205,9 @@ async function extractCharacterJsonFromPng(file) {
     // zTXt chunks (compressed)
     const ztxtChunks = chunks
       .filter(chunk => chunk.name === 'zTXt')
-      .map(chunk => {
-        const { keyword, compressed, text } = PNGzTXt.decode(chunk.data);
-        let decompressed = '';
-        if (compressed) {
-          try {
-            decompressed = pako.inflate(text, { to: 'string' });
-          } catch (e) {
-            decompressed = '';
-          }
-        }
-        return { keyword, text: decompressed };
-      });
-    // iTXt chunks (international text)
-    const itxtChunks = chunks
-      .filter(chunk => chunk.name === 'iTXt')
-      .map(chunk => PNGiTXt.decode(chunk.data));
+      .map(chunk => decodeZtxtChunk(chunk.data));
     // Combine all chunks
-    const allChunks = [...textChunks, ...ztxtChunks, ...itxtChunks];
+    const allChunks = [...textChunks, ...ztxtChunks];
     // Look for a chunk with JSON (try common keywords and any chunk that looks like JSON)
     for (const { keyword = '', text = '' } of allChunks) {
       if (
@@ -244,4 +227,23 @@ async function extractCharacterJsonFromPng(file) {
   } catch (e) {
     return null;
   }
+}
+
+// Manual zTXt chunk decoder
+function decodeZtxtChunk(data) {
+  // zTXt: [keyword][null][compression method][compressed text]
+  let i = 0;
+  while (data[i] !== 0 && i < data.length) i++;
+  const keyword = String.fromCharCode(...data.slice(0, i));
+  const compressionMethod = data[i + 1];
+  const compressedText = data.slice(i + 2);
+  if (compressionMethod === 0) {
+    try {
+      const text = pako.inflate(compressedText, { to: 'string' });
+      return { keyword, text };
+    } catch (e) {
+      return { keyword, text: '' };
+    }
+  }
+  return { keyword, text: '' };
 } 
