@@ -22,19 +22,19 @@ export default function AdminPanel() {
     }
 
     async function loadUserDetails() {
-      try {
+    try {
         const res = await fetch(`/api/admin/users/${selectedUserId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
         if (!res.ok) throw new Error('Failed to load user details');
         const data = await res.json();
         setUserDetails(data);
       } catch (error) {
         console.error('Error loading user details:', error);
-        addToast({
-          type: 'error',
+      addToast({
+        type: 'error',
           message: 'Failed to load user details',
           duration: 5000
         });
@@ -75,17 +75,17 @@ export default function AdminPanel() {
     async function loadSystemStats() {
       try {
         const res = await fetch('/api/admin/stats', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
         if (!res.ok) throw new Error('Failed to load system stats');
         const data = await res.json();
         setSystemStats(data);
       } catch (error) {
         console.error('Error loading system stats:', error);
-        addToast({
-          type: 'error',
+      addToast({
+        type: 'error',
           message: 'Failed to load system stats',
           duration: 5000
         });
@@ -113,14 +113,6 @@ export default function AdminPanel() {
 
   return (
     <div className="flex h-screen">
-      <div className="absolute top-4 left-4 z-50">
-        <button
-          onClick={() => navigate('/')}
-          className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
-        >
-          ← Back to Home
-        </button>
-      </div>
       <AdminSidebar
         onUserSelect={setSelectedUserId}
         selectedUserId={selectedUserId}
@@ -162,7 +154,7 @@ export default function AdminPanel() {
                         }`}>
                           {userDetails.blocked ? 'Blocked' :
                            userDetails.online ? 'Online' : 'Offline'}
-                        </span>
+                      </span>
                       </dd>
                     </div>
                     <div>
@@ -244,9 +236,9 @@ export default function AdminPanel() {
                     <div>
                       <dt className="text-sm text-gray-500">New Today</dt>
                       <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-                    </div>
+        </div>
                   </dl>
-                </div>
+      </div>
 
                 {/* Message Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
@@ -302,14 +294,14 @@ export default function AdminPanel() {
                         <p className="text-sm text-gray-500">
                           {new Date(activity.timestamp).toLocaleString()}
                         </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
+          </div>
+                  ))}
+            </div>
+          </div>
+        </div>
           )
-        )}
+      )}
       </main>
     </div>
   );

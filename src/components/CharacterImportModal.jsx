@@ -192,7 +192,7 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   );
 }
 
-// Extract embedded JSON from PNG tEXt and zTXt chunks
+// Extract embedded JSON from PNG tEXt, zTXt, and iTXt chunks
 async function extractCharacterJsonFromPng(file) {
   try {
     const arrayBuffer = await file.arrayBuffer();
@@ -206,8 +206,14 @@ async function extractCharacterJsonFromPng(file) {
     const ztxtChunks = chunks
       .filter(chunk => chunk.name === 'zTXt')
       .map(chunk => decodeZtxtChunk(chunk.data));
+    // iTXt chunks (optional, not always present)
+    const itxtChunks = chunks
+      .filter(chunk => chunk.name === 'iTXt')
+      .map(chunk => decodeITXtChunk(chunk.data));
     // Combine all chunks
-    const allChunks = [...textChunks, ...ztxtChunks];
+    const allChunks = [...textChunks, ...ztxtChunks, ...itxtChunks];
+    // Debug: log all found keywords and first 100 chars of text
+    console.log('PNG Card Import: Found chunks:', allChunks.map(c => ({ keyword: c.keyword, text: c.text?.slice(0, 100) })));
     // Look for a chunk with JSON (try common keywords and any chunk that looks like JSON)
     for (const { keyword = '', text = '' } of allChunks) {
       if (
@@ -246,4 +252,32 @@ function decodeZtxtChunk(data) {
     }
   }
   return { keyword, text: '' };
+}
+
+// Manual iTXt chunk decoder (basic, non-compressed only)
+function decodeITXtChunk(data) {
+  // iTXt: [keyword][null][compression flag][compression method][null][lang tag][null][translated keyword][null][text]
+  let i = 0;
+  while (data[i] !== 0 && i < data.length) i++;
+  const keyword = String.fromCharCode(...data.slice(0, i));
+  let j = i + 1;
+  const compressionFlag = data[j];
+  const compressionMethod = data[j + 1];
+  j += 2;
+  while (data[j] !== 0 && j < data.length) j++;
+  j++; // skip lang tag null
+  while (data[j] !== 0 && j < data.length) j++;
+  j++; // skip translated keyword null
+  const textData = data.slice(j);
+  let text = '';
+  if (compressionFlag === 0) {
+    text = String.fromCharCode(...textData);
+  } else if (compressionFlag === 1 && compressionMethod === 0) {
+    try {
+      text = pako.inflate(textData, { to: 'string' });
+    } catch (e) {
+      text = '';
+    }
+  }
+  return { keyword, text };
 } 

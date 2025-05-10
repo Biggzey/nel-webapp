@@ -20,7 +20,7 @@ export default function CharacterPane({ className = "" }) {
   const hasInfo = !!(current?.age || current?.gender || current?.race || current?.occupation || current?.likes || current?.dislikes);
 
   return (
-    <aside className={`${isMobile ? 'w-[280px]' : 'w-[22rem]'} flex-col ${className} bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4`}>
+    <aside className={`w-characterpane flex-col ${className} bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-4`}>
       <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3">
         <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
           {current?.name}

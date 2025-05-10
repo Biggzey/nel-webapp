@@ -435,21 +435,21 @@ function Preferences() {
       {/* Chat color picker and font selector */}
       <div className="space-y-2">
         <div className="flex flex-row items-end space-x-28">
-          <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
+        <label className="block text-sm font-medium mb-2">{t('settings.chatColor')}</label>
           <label className="block text-sm font-medium mb-2">Font</label>
         </div>
         <div className="flex flex-row items-start space-x-4">
           <div className="flex flex-col items-center">
-            <input
-              type="color"
-              value={chatColor}
-              onChange={(e) => {
-                e.stopPropagation();
-                setChatColor(e.target.value);
-              }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-16 h-16 rounded-lg cursor-pointer"
-            />
+          <input
+            type="color"
+            value={chatColor}
+            onChange={(e) => {
+              e.stopPropagation();
+              setChatColor(e.target.value);
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-16 h-16 rounded-lg cursor-pointer"
+          />
           </div>
           <div className="flex flex-col">
             <input
@@ -587,30 +587,30 @@ export default function SettingsModal({ isOpen, onClose }) {
             ))}
           </div>
         ) : (
-          <div 
-            className="w-48 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-r border-container-border-light dark:border-container-border-dark p-2"
-            onClick={handleModalClick}
-          >
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setActiveTab(tab.id);
-                }}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-primary text-white'
-                    : 'hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark'
-                }`}
-              >
-                <i className={`fas fa-${tab.icon}`} />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
+        <div 
+          className="w-48 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end border-r border-container-border-light dark:border-container-border-dark p-2"
+          onClick={handleModalClick}
+        >
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setActiveTab(tab.id);
+              }}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-primary text-white'
+                  : 'hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark'
+              }`}
+            >
+              <i className={`fas fa-${tab.icon}`} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
         )}
 
         {/* Content area */}
@@ -618,13 +618,13 @@ export default function SettingsModal({ isOpen, onClose }) {
           className={`flex-1 bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:bg-gradient-to-b dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end ${isMobile ? 'overflow-y-auto max-h-full p-4' : 'p-6 overflow-y-auto max-h-[80vh]'}`}
           onClick={handleModalClick}
         >
-          {activeTab === 'profile' && (
-            <Profile 
-              user={user} 
-              onSave={handleProfileSave}
-            />
-          )}
-          {activeTab === 'preferences' && <Preferences />}
+            {activeTab === 'profile' && (
+              <Profile 
+                user={user} 
+                onSave={handleProfileSave}
+              />
+            )}
+            {activeTab === 'preferences' && <Preferences />}
         </div>
 
         {/* Close button */}

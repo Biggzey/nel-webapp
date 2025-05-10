@@ -146,7 +146,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
   }
 
   return (
-    <aside className="w-80 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
+    <aside className="w-adminsidebar h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
       {/* Search bar */}
       <div className="p-4 border-b border-border-light dark:border-border-dark">
         <div className="relative">
@@ -238,6 +238,16 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Sticky Back to Home button at the bottom */}
+      <div className="sticky bottom-0 left-0 w-full bg-background-container-light dark:bg-background-container-dark border-t border-border-light dark:border-border-dark p-4 z-10">
+        <button
+          onClick={() => window.location.href = '/'}
+          className="w-full px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+        >
+          ← Back to Home
+        </button>
       </div>
     </aside>
   );
