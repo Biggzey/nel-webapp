@@ -11,7 +11,11 @@
     "save": "Guardar",
     "delete": "Eliminar",
     "edit": "Editar",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "goBack": "Volver",
+    "refresh": "Actualizar página",
+    "goHome": "Ir a inicio",
+    "error": "Algo salió mal"
   },
   "auth": {
     "loginTitle": "Bienvenido de Nuevo",
@@ -49,6 +53,77 @@
     "invalidEmail": "Correo electrónico inválido",
     "passwordMismatch": "Las contraseñas no coinciden",
     "invalidCredentials": "Correo o contraseña inválidos",
-    "serverError": "Ocurrió un error en el servidor"
+    "serverError": "Ocurrió un error en el servidor",
+    "unexpectedError": "Lo sentimos, pero ocurrió algo inesperado. Por favor, intenta actualizar la página."
+  },
+  "profile": {
+    "title": "Perfil",
+    "passwordChanged": "Contraseña actualizada exitosamente",
+    "newEmail": "Nuevo correo electrónico",
+    "updateEmail": "Actualizar correo electrónico"
+  },
+  "character": {
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Nombre del personaje",
+      "age": "Edad",
+      "agePlaceholder": "Edad",
+      "gender": "Género",
+      "genderPlaceholder": "Género",
+      "race": "Raza",
+      "racePlaceholder": "Raza/Especie",
+      "occupation": "Ocupación",
+      "occupationPlaceholder": "Rol del personaje",
+      "likes": "Gustos",
+      "likesPlaceholder": "Introduce gustos separados por comas (ej: gatos, leer, café)",
+      "dislikes": "Disgustos",
+      "dislikesPlaceholder": "Introduce disgustos separados por comas (ej: lluvia, ruidos fuertes, arañas)",
+      "avatar": "URL o subir avatar",
+      "avatarPlaceholder": "https://example.com/avatar.png",
+      "fullImage": "URL o subir imagen de cuerpo completo",
+      "fullImagePlaceholder": "https://example.com/full.png"
+    },
+    "actions": {
+      "resetDefaults": "Restablecer a valores predeterminados",
+      "upload": "Subir",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "metadata": {
+      "yearsOld": "años"
+    },
+    "new": "Nuevo personaje",
+    "edit": "Editar personaje"
+  },
+  "settings": {
+    "profile": "Perfil",
+    "preferences": "Preferencias",
+    "theme": "Tema",
+    "system": "Sistema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "language": "Idioma",
+    "chatColor": "Color de burbuja de chat",
+    "saveChanges": "Guardar cambios",
+    "saving": "Guardando...",
+    "profileUpdated": "Perfil actualizado exitosamente",
+    "preferencesUpdated": "Preferencias actualizadas exitosamente"
+  },
+  "sidebar": {
+    "characters": "Personajes",
+    "settings": "Configuración",
+    "newCharacter": "Nuevo personaje",
+    "search": "Buscar personajes..."
+  },
+  "admin": {
+    "title": "Panel de administración",
+    "users": "Usuarios",
+    "characters": "Personajes",
+    "settings": "Configuración",
+    "stats": "Estadísticas",
+    "userManagement": "Gestión de usuarios",
+    "characterManagement": "Gestión de personajes",
+    "systemSettings": "Configuración del sistema",
+    "viewStats": "Ver estadísticas"
   }
 } 

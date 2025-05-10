@@ -11,7 +11,11 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "goBack": "Go Back",
+    "refresh": "Refresh Page",
+    "goHome": "Go to Home",
+    "error": "Something went wrong"
   },
   "auth": {
     "loginTitle": "Welcome Back",
@@ -38,16 +42,89 @@
     "clearChat": "Clear Chat",
     "loadMore": "Load More",
     "noMessages": "No messages yet",
-    "confirmDeleteCharacter": "Are you sure you want to delete {{name}}? This cannot be undone."
+    "confirmDeleteCharacter": "Are you sure you want to delete {{name}}? This cannot be undone.",
+    "chatCleared": "Chat history cleared successfully",
+    "noCharacterSelected": "No character selected. Please select a character first.",
+    "messageTooLong": "Message is too long. Please keep it under 2000 characters.",
+    "addReaction": "Add reaction"
   },
   "errors": {
     "required": "This field is required",
     "invalidEmail": "Invalid email address",
     "passwordMismatch": "Passwords do not match",
     "invalidCredentials": "Invalid email or password",
-    "serverError": "Server error occurred"
+    "serverError": "Server error occurred",
+    "unexpectedError": "We're sorry, but something unexpected happened. Please try refreshing the page."
   },
   "character": {
-    "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone."
+    "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone.",
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "Character name",
+      "age": "Age",
+      "agePlaceholder": "Age",
+      "gender": "Gender",
+      "genderPlaceholder": "Gender",
+      "race": "Race",
+      "racePlaceholder": "Race/Species",
+      "occupation": "Occupation",
+      "occupationPlaceholder": "Character's role",
+      "likes": "Likes",
+      "likesPlaceholder": "Enter likes separated by commas (e.g., cats, reading, coffee)",
+      "dislikes": "Dislikes",
+      "dislikesPlaceholder": "Enter dislikes separated by commas (e.g., rain, loud noises, spiders)",
+      "avatar": "Avatar URL or Upload",
+      "avatarPlaceholder": "https://example.com/avatar.png",
+      "fullImage": "Full-Body Image URL or Upload",
+      "fullImagePlaceholder": "https://example.com/full.png"
+    },
+    "actions": {
+      "resetDefaults": "Reset to Defaults",
+      "upload": "Upload",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "metadata": {
+      "yearsOld": "years old"
+    },
+    "new": "New Character",
+    "edit": "Edit Character"
+  },
+  "profile": {
+    "title": "Profile",
+    "passwordChanged": "Password updated successfully",
+    "newEmail": "New Email",
+    "updateEmail": "Update Email"
+  },
+  "settings": {
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "theme": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "language": "Language",
+    "chatColor": "Chat Bubble Color",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "profileUpdated": "Profile updated successfully",
+    "preferencesUpdated": "Preferences updated successfully"
+  },
+  "sidebar": {
+    "characters": "Characters",
+    "settings": "Settings",
+    "newCharacter": "New Character",
+    "search": "Search characters..."
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "users": "Users",
+    "characters": "Characters",
+    "settings": "Settings",
+    "stats": "Statistics",
+    "userManagement": "User Management",
+    "characterManagement": "Character Management",
+    "systemSettings": "System Settings",
+    "viewStats": "View Statistics"
   }
 } 
