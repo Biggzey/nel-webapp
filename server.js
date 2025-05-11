@@ -703,10 +703,20 @@ try {
       }
 
       // Update lastLogin on successful login
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { lastLogin: new Date() }
-      });
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLogin: new Date() }
+        });
+      } catch (updateErr) {
+        console.error("Error updating lastLogin:", {
+          error: updateErr.message,
+          code: updateErr.code,
+          meta: updateErr.meta,
+          userId: user.id
+        });
+        // Continue with login even if lastLogin update fails
+      }
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
       console.log('Token generated successfully');
@@ -726,9 +736,21 @@ try {
         stack: err.stack,
         code: err.code,
         meta: err.meta,
-        body: req.body
+        body: req.body,
+        name: err.name,
+        cause: err.cause
       });
-      res.status(500).json({ error: "An unexpected error occurred during login" });
+      
+      // Send more detailed error in development
+      if (process.env.NODE_ENV === 'development') {
+        res.status(500).json({ 
+          error: "An unexpected error occurred during login",
+          details: err.message,
+          code: err.code
+        });
+      } else {
+        res.status(500).json({ error: "An unexpected error occurred during login" });
+      }
     }
   });
 
