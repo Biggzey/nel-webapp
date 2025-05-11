@@ -9,9 +9,10 @@ import React from 'react';
 
 export function formatChatText(text, user, fontFamily) {
   if (!text) return null;
-  // Replace {{user}} with displayName or username
+  // Replace {{user}} and {{char}} with displayName or username
   const userName = user?.displayName || user?.username || 'User';
-  let replaced = text.replace(/\{\{user\}\}/gi, userName);
+  let replaced = text.replace(/\{\{user\}\}/gi, userName)
+                     .replace(/\{\{char\}\}/gi, userName);
 
   // Handle underline (__text__)
   replaced = replaced.replace(/__(.+?)__/g, '<u>$1</u>');
