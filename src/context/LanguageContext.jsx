@@ -91,7 +91,11 @@ const translations = {
       },
       metadata: {
         yearsOld: 'years old'
-      }
+      },
+      delete: 'Delete Character',
+      deleted: 'Character deleted.',
+      deleteFailed: 'Failed to delete character.',
+      confirmDelete: 'Are you sure you want to delete this character? This cannot be undone.'
     },
     sidebar: {
       characters: 'Characters',
@@ -121,14 +125,46 @@ const translations = {
     },
     admin: {
       title: 'Admin Panel',
+      searchUsers: 'Search users...',
+      backToHome: 'Back to Home',
+      systemOverview: 'System Overview',
       users: 'Users',
+      messages: 'Messages',
       characters: 'Characters',
-      settings: 'Settings',
-      stats: 'Statistics',
-      userManagement: 'User Management',
-      characterManagement: 'Character Management',
-      systemSettings: 'System Settings',
-      viewStats: 'View Statistics'
+      stats: 'Stats',
+      recentActivity: 'Recent Activity',
+      role: 'Role',
+      status: 'Status',
+      joined: 'Joined',
+      lastLogin: 'Last Login',
+      totalMessages: 'Total Messages',
+      charactersCreated: 'Characters Created',
+      activeSessions: 'Active Sessions',
+      blocked: 'Blocked',
+      online: 'Online',
+      offline: 'Offline',
+      resetPassword: 'Reset Password',
+      blockUser: 'Block User',
+      unblockUser: 'Unblock User',
+      deleteUser: 'Delete User',
+      activityStats: 'Activity Stats',
+      basicInfo: 'Basic Information',
+      activity: 'Activity',
+      systemStats: 'System Stats',
+      createdToday: 'Created Today',
+      avgPerUser: 'Avg. Per User',
+      newToday: 'New Today',
+      activeNow: 'Active Now',
+      avgMessagesPerUser: 'Avg. Per User',
+      systemActivity: 'Recent System Activity',
+      removeDuplicatesAll: 'Remove Duplicate Nelliel Characters (All)',
+      removeDuplicatesUser: 'Remove Duplicate Nelliel Characters (User)',
+      duplicatesRemoved: 'Removed {{count}} duplicate Nelliel characters.',
+      duplicateCleanupFailed: 'Failed to clean up duplicates: {{error}}',
+      SUPER_ADMIN: 'Super Admin',
+      USER: 'User',
+      MODERATOR: 'Moderator',
+      ADMIN: 'Admin'
     }
   },
   es: {
@@ -220,12 +256,16 @@ const translations = {
       },
       metadata: {
         yearsOld: 'años'
-      }
+      },
+      delete: 'Eliminar personaje',
+      deleted: 'Personaje eliminado.',
+      deleteFailed: 'No se pudo eliminar el personaje.',
+      confirmDelete: '¿Estás seguro de que deseas eliminar este personaje? Esto no se puede deshacer.'
     },
     sidebar: {
       characters: 'Personajes',
-      settings: 'Ajustes',
-      newCharacter: 'Nuevo Personaje',
+      settings: 'Configuración',
+      newCharacter: 'Nuevo personaje',
       search: 'Buscar personajes...'
     },
     common: {
@@ -249,15 +289,47 @@ const translations = {
       unexpectedError: 'Lo sentimos, pero algo inesperado sucedió. Por favor, intenta refrescar la página.'
     },
     admin: {
-      title: 'Panel de Administración',
+      title: 'Panel de administración',
+      searchUsers: 'Buscar usuarios...',
+      backToHome: 'Volver al inicio',
+      systemOverview: 'Resumen del sistema',
       users: 'Usuarios',
+      messages: 'Mensajes',
       characters: 'Personajes',
-      settings: 'Configuración',
       stats: 'Estadísticas',
-      userManagement: 'Gestión de Usuarios',
-      characterManagement: 'Gestión de Personajes',
-      systemSettings: 'Configuración del Sistema',
-      viewStats: 'Ver Estadísticas'
+      recentActivity: 'Actividad reciente',
+      role: 'Rol',
+      status: 'Estado',
+      joined: 'Registrado',
+      lastLogin: 'Último acceso',
+      totalMessages: 'Mensajes totales',
+      charactersCreated: 'Personajes creados',
+      activeSessions: 'Sesiones activas',
+      blocked: 'Bloqueado',
+      online: 'En línea',
+      offline: 'Desconectado',
+      resetPassword: 'Restablecer contraseña',
+      blockUser: 'Bloquear usuario',
+      unblockUser: 'Desbloquear usuario',
+      deleteUser: 'Eliminar usuario',
+      activityStats: 'Estadísticas de actividad',
+      basicInfo: 'Información básica',
+      activity: 'Actividad',
+      systemStats: 'Estadísticas del sistema',
+      createdToday: 'Creado hoy',
+      avgPerUser: 'Prom. por usuario',
+      newToday: 'Nuevo hoy',
+      activeNow: 'Activos ahora',
+      avgMessagesPerUser: 'Prom. por usuario',
+      systemActivity: 'Actividad reciente del sistema',
+      removeDuplicatesAll: 'Eliminar personajes Nelliel duplicados (Todos)',
+      removeDuplicatesUser: 'Eliminar personajes Nelliel duplicados (Usuario)',
+      duplicatesRemoved: 'Se eliminaron {{count}} personajes Nelliel duplicados.',
+      duplicateCleanupFailed: 'No se pudo limpiar duplicados: {{error}}',
+      SUPER_ADMIN: 'Super Admin',
+      USER: 'Usuario',
+      MODERATOR: 'Moderador',
+      ADMIN: 'Administrador'
     }
   }
 };
