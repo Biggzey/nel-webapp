@@ -2233,6 +2233,6 @@ try {
   });
 
 } catch (err) {
-  console.error('Failed to start server:', err);
+  console.error('Failed to start server:', err && err.stack ? err.stack : err);
   process.exit(1);
 }
