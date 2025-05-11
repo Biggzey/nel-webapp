@@ -1563,7 +1563,19 @@ try {
 
       // Check if target user exists
       const targetUser = await prisma.user.findUnique({
-        where: { id: parseInt(userId) }
+        where: { id: parseInt(userId) },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          role: true,
+          blocked: true,
+          blockedUntil: true,
+          createdAt: true,
+          updatedAt: true,
+          lastLogin: true
+        }
       });
 
       console.log('Target user found:', targetUser);
@@ -2053,23 +2065,38 @@ try {
       const avgCharactersPerUser = totalUsers > 0 ? totalCharacters / totalUsers : 0;
 
       // Get recent activity (last 10 actions)
-      const recentActivity = await prisma.$queryRaw`
-        SELECT 
-          'user' as type,
-          'User registered' as description,
-          u.createdAt as timestamp
-        FROM "User" u
-        WHERE u.createdAt >= NOW() - INTERVAL '24 HOURS'
-        UNION ALL
-        SELECT 
-          'message' as type,
-          'Message sent' as description,
-          m.createdAt as timestamp
-        FROM "ChatMessage" m
-        WHERE m.createdAt >= NOW() - INTERVAL '24 HOURS'
-        ORDER BY timestamp DESC
-        LIMIT 10
-      `;
+      const recentUserActivity = await prisma.user.findMany({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
+        },
+        select: {
+          id: true,
+          username: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      });
+      const recentMessageActivity = await prisma.chatMessage.findMany({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
+        },
+        select: {
+          id: true,
+          characterId: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      });
+      const recentActivity = [
+        ...recentUserActivity.map(u => ({ type: 'user', description: 'User registered', timestamp: u.createdAt, username: u.username })),
+        ...recentMessageActivity.map(m => ({ type: 'message', description: 'Message sent', timestamp: m.createdAt, characterId: m.characterId }))
+      ].sort((a, b) => b.timestamp - a.timestamp).slice(0, 10);
 
       res.json({
         totalUsers,
@@ -2124,19 +2151,24 @@ try {
         }
       });
 
-      // Get user's recent activity
-      const recentActivity = await prisma.$queryRaw`
-        SELECT 
-          'message' as type,
-          'Message sent' as description,
-          m.createdAt as timestamp
-        FROM ChatMessage m
-        JOIN Character c ON m.characterId = c.id
-        WHERE c.userId = ${userId}
-        AND m.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-        ORDER BY m.createdAt DESC
-        LIMIT 10
-      `;
+      // Get user's recent activity (last 10 messages)
+      const recentActivity = await prisma.chatMessage.findMany({
+        where: {
+          character: {
+            userId
+          },
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
+        },
+        select: {
+          id: true,
+          characterId: true,
+          createdAt: true
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      });
 
       res.json({
         totalMessages,
@@ -2165,7 +2197,8 @@ try {
           blocked: true,
           blockedUntil: true,
           createdAt: true,
-          updatedAt: true
+          updatedAt: true,
+          lastLogin: true
         }
       });
       if (!user) return res.status(404).json({ error: 'User not found' });
