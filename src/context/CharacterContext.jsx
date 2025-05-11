@@ -332,32 +332,38 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  let reloadTimeout = null;
   async function reloadCharacters() {
     try {
       if (reloadCharacters._reloading) return;
       reloadCharacters._reloading = true;
-      const res = await fetch("/api/characters", {
-        headers: { Authorization: token ? `Bearer ${token}` : undefined },
-      });
-      if (res.status === 429) {
-        handleRateLimit();
-        reloadCharacters._reloading = false;
-        return;
+      if (reloadTimeout) {
+        clearTimeout(reloadTimeout);
       }
-      if (res.ok) {
-        const userChars = await res.json();
-        // Remove duplicates by id
-        const uniqueChars = [];
-        const seenIds = new Set();
-        for (const c of userChars) {
-          if (!seenIds.has(c.id)) {
-            uniqueChars.push(c);
-            seenIds.add(c.id);
-          }
+      reloadTimeout = setTimeout(async () => {
+        const res = await fetch("/api/characters", {
+          headers: { Authorization: token ? `Bearer ${token}` : undefined },
+        });
+        if (res.status === 429) {
+          handleRateLimit();
+          reloadCharacters._reloading = false;
+          return;
         }
-        setCharacters(uniqueChars);
-      }
-      reloadCharacters._reloading = false;
+        if (res.ok) {
+          const userChars = await res.json();
+          // Remove duplicates by id
+          const uniqueChars = [];
+          const seenIds = new Set();
+          for (const c of userChars) {
+            if (!seenIds.has(c.id)) {
+              uniqueChars.push(c);
+              seenIds.add(c.id);
+            }
+          }
+          setCharacters(uniqueChars);
+        }
+        reloadCharacters._reloading = false;
+      }, 200);
     } catch (err) {
       // Optionally handle error
       reloadCharacters._reloading = false;
@@ -393,6 +399,7 @@ export function CharacterProvider({ children }) {
         resetCurrentCharacter,
         toggleBookmark,
         reloadCharacters,
+        isLoading,
       }}
     >
       {children}

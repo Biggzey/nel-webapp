@@ -34,6 +34,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCurrent,
     setCharacters,
     reloadCharacters,
+    isLoading,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -168,71 +169,77 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           {/* Time indicator */}
           <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">{t('sidebar.characters')}</div>
           
-          {characters.map((c, i) => {
-            const isNelliel = c.name === "Nelliel";
-            return (
-              <div
-                key={c.id}
-                className="group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
-              >
-                <button
-                  onClick={() => {
-                    setSelectedIndex(i);
-                    onLinkClick();
-                  }}
-                  className={`flex-1 text-left flex items-center space-x-3 ${
-                    i === selectedIndex
-                      ? "text-text-light dark:text-text-dark"
-                      : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
-                  }`}
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
+            </div>
+          ) : (
+            characters.map((c, i) => {
+              const isNelliel = c.name === "Nelliel";
+              return (
+                <div
+                  key={c.id}
+                  className="group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
                 >
-                  <img
-                    src={c.avatar}
-                    alt=""
-                    className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
-                  />
-                  <span className="font-medium">{c.name}</span>
-                </button>
-                {/* Ellipsis/context menu for all characters */}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenuIndex(openMenuIndex === i ? null : i);
-                  }}
-                  className="ml-2 p-2 text-gray-400 hover:text-primary focus:outline-none"
-                  title={t('common.more')}
-                >
-                  <i className="fas fa-ellipsis-v" />
-                </button>
-                {/* Context menu */}
-                {openMenuIndex === i && (
-                  <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleClearChat(c);
-                      }}
-                      className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
-                    >
-                      <i className="fas fa-trash-alt text-white mr-2" /> {t('chat.clearChat')}
-                    </button>
-                    {/* Only show delete for non-Nelliel characters */}
-                    {c.name !== 'Nelliel' && (
+                  <button
+                    onClick={() => {
+                      setSelectedIndex(i);
+                      onLinkClick();
+                    }}
+                    className={`flex-1 text-left flex items-center space-x-3 ${
+                      i === selectedIndex
+                        ? "text-text-light dark:text-text-dark"
+                        : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
+                    }`}
+                  >
+                    <img
+                      src={c.avatar}
+                      alt=""
+                      className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
+                    />
+                    <span className="font-medium">{c.name}</span>
+                  </button>
+                  {/* Ellipsis/context menu for all characters */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuIndex(openMenuIndex === i ? null : i);
+                    }}
+                    className="ml-2 p-2 text-gray-400 hover:text-primary focus:outline-none"
+                    title={t('common.more')}
+                  >
+                    <i className="fas fa-ellipsis-v" />
+                  </button>
+                  {/* Context menu */}
+                  {openMenuIndex === i && (
+                    <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteCharacterWithConfirm(c, i);
+                          handleClearChat(c);
                         }}
-                        className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                       >
-                        <i className="fas fa-ban text-red-500 mr-2" /> {t('character.delete')}
+                        <i className="fas fa-trash-alt text-white mr-2" /> {t('chat.clearChat')}
                       </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                      {/* Only show delete for non-Nelliel characters */}
+                      {c.name !== 'Nelliel' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCharacterWithConfirm(c, i);
+                          }}
+                          className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+                        >
+                          <i className="fas fa-ban text-red-500 mr-2" /> {t('character.delete')}
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Bottom controls in container */}

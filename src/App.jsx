@@ -133,6 +133,13 @@ function ProtectedContent({ addToast }) {
     }
   };
 
+  // Add effect to hide character pane when ExplorePage is shown
+  useEffect(() => {
+    if (showExplore) {
+      setCharacterPaneVisible(false);
+    }
+  }, [showExplore]);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <KeyboardShortcuts
@@ -154,6 +161,7 @@ function ProtectedContent({ addToast }) {
           onClearChat={handleClearChat}
           sidebarReloadKey={sidebarReloadKey}
           setSidebarReloadKey={setSidebarReloadKey}
+          setShowExplore={setShowExplore}
         />
       )}
       <Routes>
@@ -162,7 +170,10 @@ function ProtectedContent({ addToast }) {
           <>
             <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
               {(!characters || characters.length === 0 || !current || showExplore) ? (
-                <ExplorePage onClose={() => setShowExplore(false)} />
+                <ExplorePage onClose={() => {
+                  setShowExplore(false);
+                  if (current) setCharacterPaneVisible(true);
+                }} />
               ) : (
                 <ChatWindow 
                   ref={chatWindowRef} 
