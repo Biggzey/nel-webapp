@@ -287,12 +287,19 @@ async function extractCharacterJsonFromPng(file) {
         keyword.toLowerCase().includes('character') ||
         text.trim().startsWith('{')
       ) {
+        // Try direct JSON parse
         try {
-          const json = JSON.parse(text);
-          return json;
+          return JSON.parse(text);
         } catch (e) {
-          console.error('Error parsing JSON from chunk:', e, { keyword, text: text.slice(0, 100) });
-          // Not valid JSON, skip
+          // If direct parse fails, try base64 decode then parse
+          try {
+            const base64 = text.replace(/\s/g, '');
+            const decoded = atob(base64);
+            return JSON.parse(decoded);
+          } catch (e2) {
+            console.error('Error parsing JSON from chunk (base64 fallback):', e2, { keyword, text: text.slice(0, 100) });
+            // Not valid JSON/base64, skip
+          }
         }
       }
     }
