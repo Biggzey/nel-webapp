@@ -36,7 +36,7 @@ function AdminRoute({ children }) {
 function ProtectedContent({ addToast }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
-  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters } = useCharacter();
+  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters, isLoading } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
@@ -142,6 +142,12 @@ function ProtectedContent({ addToast }) {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden">
+      {/* Global loading overlay */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
+        </div>
+      )}
       <KeyboardShortcuts
         chatInputRef={chatInputRef}
         onSendMessage={handleSendMessage}

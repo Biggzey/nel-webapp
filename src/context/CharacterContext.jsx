@@ -333,9 +333,11 @@ export function CharacterProvider({ children }) {
   }
 
   let reloadTimeout = null;
+  let last429 = 0;
   async function reloadCharacters() {
     try {
       if (reloadCharacters._reloading) return;
+      if (Date.now() - last429 < 2000) return; // 2s cooldown after 429
       reloadCharacters._reloading = true;
       if (reloadTimeout) {
         clearTimeout(reloadTimeout);
@@ -346,6 +348,7 @@ export function CharacterProvider({ children }) {
         });
         if (res.status === 429) {
           handleRateLimit();
+          last429 = Date.now();
           reloadCharacters._reloading = false;
           return;
         }
