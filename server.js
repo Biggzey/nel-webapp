@@ -1970,6 +1970,158 @@ try {
     }
   });
 
+  // Get system-wide metrics (admin only)
+  app.get("/api/admin/metrics", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      // Get total users
+      const totalUsers = await prisma.user.count();
+      
+      // Get active users (users who have logged in within the last 24 hours)
+      const activeUsers = await prisma.user.count({
+        where: {
+          lastLogin: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          }
+        }
+      });
+
+      // Get new users today
+      const newUsersToday = await prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        }
+      });
+
+      // Get total messages
+      const totalMessages = await prisma.chatMessage.count();
+
+      // Get messages today
+      const messagesToday = await prisma.chatMessage.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        }
+      });
+
+      // Get total characters
+      const totalCharacters = await prisma.character.count();
+
+      // Get characters created today
+      const charactersCreatedToday = await prisma.character.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0))
+          }
+        }
+      });
+
+      // Get average messages per user
+      const avgMessagesPerUser = totalUsers > 0 ? totalMessages / totalUsers : 0;
+
+      // Get average characters per user
+      const avgCharactersPerUser = totalUsers > 0 ? totalCharacters / totalUsers : 0;
+
+      // Get recent activity (last 10 actions)
+      const recentActivity = await prisma.$queryRaw`
+        SELECT 
+          'user' as type,
+          'User registered' as description,
+          u.createdAt as timestamp
+        FROM User u
+        WHERE u.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        UNION ALL
+        SELECT 
+          'message' as type,
+          'Message sent' as description,
+          m.createdAt as timestamp
+        FROM ChatMessage m
+        WHERE m.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ORDER BY timestamp DESC
+        LIMIT 10
+      `;
+
+      res.json({
+        totalUsers,
+        activeUsers,
+        newUsersToday,
+        totalMessages,
+        messagesToday,
+        avgMessagesPerUser,
+        totalCharacters,
+        charactersCreatedToday,
+        avgCharactersPerUser,
+        recentActivity
+      });
+    } catch (error) {
+      console.error("Error fetching system metrics:", error);
+      res.status(500).json({ error: "Failed to fetch system metrics" });
+    }
+  });
+
+  // Get user-specific metrics (admin only)
+  app.get("/api/admin/users/:userId/metrics", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+
+      // Get user's total messages
+      const totalMessages = await prisma.chatMessage.count({
+        where: {
+          character: {
+            userId
+          }
+        }
+      });
+
+      // Get user's characters created
+      const charactersCreated = await prisma.character.count({
+        where: {
+          userId
+        }
+      });
+
+      // Get user's active sessions (characters with messages in last 24 hours)
+      const activeSessions = await prisma.character.count({
+        where: {
+          userId,
+          messages: {
+            some: {
+              createdAt: {
+                gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
+              }
+            }
+          }
+        }
+      });
+
+      // Get user's recent activity
+      const recentActivity = await prisma.$queryRaw`
+        SELECT 
+          'message' as type,
+          'Message sent' as description,
+          m.createdAt as timestamp
+        FROM ChatMessage m
+        JOIN Character c ON m.characterId = c.id
+        WHERE c.userId = ${userId}
+        AND m.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        ORDER BY m.createdAt DESC
+        LIMIT 10
+      `;
+
+      res.json({
+        totalMessages,
+        charactersCreated,
+        activeSessions,
+        recentActivity
+      });
+    } catch (error) {
+      console.error("Error fetching user metrics:", error);
+      res.status(500).json({ error: "Failed to fetch user metrics" });
+    }
+  });
+
   // Start server
   const PORT = process.env.PORT || 3001;
   await testDbConnection(); // Test DB connection before starting server

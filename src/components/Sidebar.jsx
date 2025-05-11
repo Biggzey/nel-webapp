@@ -209,10 +209,13 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     {/* Only show delete for non-Nelliel characters */}
                     {c.name !== 'Nelliel' && (
                       <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleDeleteCharacterWithConfirm(c, i)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCharacterWithConfirm(c, i);
+                        }}
+                        className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                       >
-                        <TrashIcon className="w-4 h-4" />
+                        <i className="fas fa-trash mr-2" /> {t('character.delete')}
                       </button>
                     )}
                   </div>

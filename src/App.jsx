@@ -145,7 +145,7 @@ function ProtectedContent({ addToast }) {
         onShowShortcutHelp={handleShowShortcutHelp}
       />
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
-      {location.pathname !== '/admin' && (
+      {location.pathname !== '/admin' && sidebarVisible && (
         <Sidebar
           className="h-full w-full"
           onSettingsClick={() => setIsSettingsOpen(true)}

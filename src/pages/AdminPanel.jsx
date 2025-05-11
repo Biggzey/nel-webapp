@@ -74,41 +74,55 @@ export default function AdminPanel() {
 
     async function loadSystemStats() {
       try {
-        const res = await fetch('/api/admin/stats', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+        const res = await fetch('/api/admin/metrics', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
         if (!res.ok) throw new Error('Failed to load system stats');
         const data = await res.json();
         setSystemStats(data);
       } catch (error) {
         console.error('Error loading system stats:', error);
-      addToast({
-        type: 'error',
+        addToast({
+          type: 'error',
           message: 'Failed to load system stats',
           duration: 5000
-        });
-        // Mock system stats
-        setSystemStats({
-          totalUsers: 10,
-          activeUsers: 2,
-          newUsersToday: 1,
-          totalMessages: 100,
-          messagesToday: 10,
-          avgMessagesPerUser: 10,
-          totalCharacters: 5,
-          charactersCreatedToday: 1,
-          avgCharactersPerUser: 0.5,
-          recentActivity: [
-            { icon: 'user', color: 'green', description: 'User registered', timestamp: new Date().toISOString() },
-            { icon: 'comment', color: 'blue', description: 'Message sent', timestamp: new Date().toISOString() }
-          ]
         });
       }
     }
 
     loadSystemStats();
+  }, [selectedUserId, token, addToast]);
+
+  // Load user metrics when a user is selected
+  useEffect(() => {
+    if (!selectedUserId) {
+      setUserDetails(prev => prev ? { ...prev, metrics: null } : null);
+      return;
+    }
+
+    async function loadUserMetrics() {
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/metrics`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error('Failed to load user metrics');
+        const data = await res.json();
+        setUserDetails(prev => prev ? { ...prev, metrics: data } : null);
+      } catch (error) {
+        console.error('Error loading user metrics:', error);
+        addToast({
+          type: 'error',
+          message: 'Failed to load user metrics',
+          duration: 5000
+        });
+      }
+    }
+
+    loadUserMetrics();
   }, [selectedUserId, token, addToast]);
 
   return (
@@ -172,19 +186,140 @@ export default function AdminPanel() {
                   <dl className="space-y-3">
                     <div>
                       <dt className="text-sm text-gray-500">Role</dt>
-                      <dd className="font-medium">{userDetails.role}</dd>
+                      <dd className="font-medium">
+                        <select
+                          value={userDetails.role}
+                          onChange={async (e) => {
+                            try {
+                              const res = await fetch(`/api/admin/users/${selectedUserId}/role`, {
+                                method: 'PATCH',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                  Authorization: `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ role: e.target.value })
+                              });
+                              if (!res.ok) throw new Error('Failed to update role');
+                              setUserDetails(prev => ({ ...prev, role: e.target.value }));
+                              addToast({
+                                type: 'success',
+                                message: 'Role updated successfully',
+                                duration: 3000
+                              });
+                            } catch (error) {
+                              console.error('Error updating role:', error);
+                              addToast({
+                                type: 'error',
+                                message: 'Failed to update role',
+                                duration: 5000
+                              });
+                            }
+                          }}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                        >
+                          <option value="USER">User</option>
+                          <option value="MODERATOR">Moderator</option>
+                          <option value="ADMIN">Admin</option>
+                        </select>
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">Status</dt>
                       <dd className="font-medium">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          userDetails.blocked ? 'bg-red-100 text-red-800' :
-                          userDetails.online ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {userDetails.blocked ? 'Blocked' :
-                           userDetails.online ? 'Online' : 'Offline'}
-                      </span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            userDetails.blocked ? 'bg-red-100 text-red-800' :
+                            userDetails.online ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {userDetails.blocked ? 'Blocked' :
+                             userDetails.online ? 'Online' : 'Offline'}
+                          </span>
+                          {userDetails.blocked && userDetails.blockedUntil && (
+                            <span className="text-sm text-gray-500">
+                              until {new Date(userDetails.blockedUntil).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                        {!userDetails.blocked && (
+                          <div className="mt-2">
+                            <select
+                              onChange={async (e) => {
+                                try {
+                                  const res = await fetch(`/api/admin/users/${selectedUserId}/block`, {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      Authorization: `Bearer ${token}`
+                                    },
+                                    body: JSON.stringify({ duration: e.target.value })
+                                  });
+                                  if (!res.ok) throw new Error('Failed to block user');
+                                  const data = await res.json();
+                                  setUserDetails(prev => ({
+                                    ...prev,
+                                    blocked: true,
+                                    blockedUntil: data.blockedUntil
+                                  }));
+                                  addToast({
+                                    type: 'success',
+                                    message: 'User blocked successfully',
+                                    duration: 3000
+                                  });
+                                } catch (error) {
+                                  console.error('Error blocking user:', error);
+                                  addToast({
+                                    type: 'error',
+                                    message: 'Failed to block user',
+                                    duration: 5000
+                                  });
+                                }
+                              }}
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                            >
+                              <option value="">Block user for...</option>
+                              <option value="1h">1 Hour</option>
+                              <option value="24h">24 Hours</option>
+                              <option value="7d">7 Days</option>
+                              <option value="permanent">Permanent</option>
+                            </select>
+                          </div>
+                        )}
+                        {userDetails.blocked && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await fetch(`/api/admin/users/${selectedUserId}/unblock`, {
+                                  method: 'POST',
+                                  headers: {
+                                    Authorization: `Bearer ${token}`
+                                  }
+                                });
+                                if (!res.ok) throw new Error('Failed to unblock user');
+                                setUserDetails(prev => ({
+                                  ...prev,
+                                  blocked: false,
+                                  blockedUntil: null
+                                }));
+                                addToast({
+                                  type: 'success',
+                                  message: 'User unblocked successfully',
+                                  duration: 3000
+                                });
+                              } catch (error) {
+                                console.error('Error unblocking user:', error);
+                                addToast({
+                                  type: 'error',
+                                  message: 'Failed to unblock user',
+                                  duration: 5000
+                                });
+                              }
+                            }}
+                            className="mt-2 text-sm text-red-600 hover:text-red-800"
+                          >
+                            Unblock User
+                          </button>
+                        )}
                       </dd>
                     </div>
                     <div>
@@ -202,35 +337,126 @@ export default function AdminPanel() {
                   </dl>
                 </div>
 
-                {/* Activity Stats */}
+                {/* User Metrics */}
+                {userDetails.metrics && (
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
+                    <h2 className="text-xl font-semibold mb-4">User Metrics</h2>
+                    <dl className="space-y-3">
+                      <div>
+                        <dt className="text-sm text-gray-500">Total Messages</dt>
+                        <dd className="font-medium">{userDetails.metrics.totalMessages}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Characters Created</dt>
+                        <dd className="font-medium">{userDetails.metrics.charactersCreated}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Active Sessions</dt>
+                        <dd className="font-medium">{userDetails.metrics.activeSessions}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
+
+                {/* Recent Activity */}
+                {userDetails.metrics && (
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 md:col-span-2">
+                    <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+                    <div className="space-y-4">
+                      {userDetails.metrics.recentActivity?.map((activity, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center space-x-4 p-3 rounded-lg bg-background-light dark:bg-background-dark"
+                        >
+                          <i className={`fas fa-${activity.type === 'message' ? 'comment' : 'user'} text-primary`} />
+                          <div className="flex-1">
+                            <p className="font-medium">{activity.description}</p>
+                            <p className="text-sm text-gray-500">
+                              {new Date(activity.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        ) : (
+          // System overview
+          systemStats && (
+            <div className="space-y-6">
+              <h1 className="text-2xl font-bold mb-6">System Overview</h1>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* User Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Activity Stats</h2>
+                  <h2 className="text-xl font-semibold mb-4">Users</h2>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Users</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Active Now</dt>
+                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">New Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Message Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
+                  <h2 className="text-xl font-semibold mb-4">Messages</h2>
                   <dl className="space-y-3">
                     <div>
                       <dt className="text-sm text-gray-500">Total Messages</dt>
-                      <dd className="font-medium">{userDetails.stats?.totalMessages || 0}</dd>
+                      <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Characters Created</dt>
-                      <dd className="font-medium">{userDetails.stats?.charactersCreated || 0}</dd>
+                      <dt className="text-sm text-gray-500">Messages Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-gray-500">Active Sessions</dt>
-                      <dd className="font-medium">{userDetails.stats?.activeSessions || 0}</dd>
+                      <dt className="text-sm text-gray-500">Avg per User</dt>
+                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgMessagesPerUser)}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Character Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
+                  <h2 className="text-xl font-semibold mb-4">Characters</h2>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Characters</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Created Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Avg per User</dt>
+                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
                     </div>
                   </dl>
                 </div>
 
                 {/* Recent Activity */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 md:col-span-2">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 md:col-span-3">
                   <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
                   <div className="space-y-4">
-                    {userDetails.activity?.map((activity, index) => (
+                    {systemStats.recentActivity?.map((activity, index) => (
                       <div
                         key={index}
                         className="flex items-center space-x-4 p-3 rounded-lg bg-background-light dark:bg-background-dark"
                       >
-                        <i className={`fas fa-${activity.icon} text-${activity.color}-500`} />
+                        <i className={`fas fa-${activity.type === 'message' ? 'comment' : 'user'} text-primary`} />
                         <div className="flex-1">
                           <p className="font-medium">{activity.description}</p>
                           <p className="text-sm text-gray-500">
@@ -240,145 +466,6 @@ export default function AdminPanel() {
                       </div>
                     ))}
                   </div>
-                </div>
-
-                {/* Permissions Table Placeholder (SUPER_ADMIN only, for ADMIN/MODERATOR users) */}
-                {userDetails && ['ADMIN', 'MODERATOR'].includes(userDetails.role) && (token && JSON.parse(atob(token.split('.')[1])).role === 'SUPER_ADMIN') && (
-                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 mt-4">
-                    <h2 className="text-xl font-semibold mb-4">Permissions (Placeholder)</h2>
-                    <table className="w-full text-left border-collapse">
-                      <thead>
-                        <tr>
-                          <th className="py-2 px-4">Permission</th>
-                          <th className="py-2 px-4">Allow</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {['View Users', 'Edit Users', 'Delete Users', 'Manage Characters', 'View Stats', 'Access Admin Panel'].map(perm => (
-                          <tr key={perm}>
-                            <td className="py-2 px-4">{perm}</td>
-                            <td className="py-2 px-4">
-                              <input type="checkbox" checked readOnly className="accent-primary" />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    <div className="text-xs text-gray-400 mt-2">(Future: You will be able to edit permissions here)</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        ) : (
-          // System stats view
-          systemStats && (
-            <div className="space-y-6">
-              {/* Cleanup Duplicates Button (admin only) */}
-              <button
-                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
-                onClick={async () => {
-                  try {
-                    const res = await fetch('/api/admin/cleanup-duplicates', {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      addToast({
-                        type: 'success',
-                        message: `Removed ${data.totalDeleted} duplicate Nelliel characters`,
-                        duration: 4000
-                      });
-                    } else {
-                      throw new Error(data.error || 'Unknown error');
-                    }
-                  } catch (err) {
-                    addToast({
-                      type: 'error',
-                      message: 'Failed to clean up duplicates: ' + err.message,
-                      duration: 5000
-                    });
-                  }
-                }}
-              >
-                Remove Duplicate Nelliel Characters
-              </button>
-              <h1 className="text-2xl font-bold">{t('admin.systemOverview')}</h1>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* User Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">{t('admin.users')}</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.totalUsers')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.activeNow')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.newToday')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {/* Message Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">{t('admin.messages')}</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.totalMessages')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.createdToday')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.avgMessagesPerUser')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.avgMessagesPerUser}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {/* Character Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">{t('admin.characters')}</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.totalCharacters')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.createdToday')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">{t('admin.avgPerUser')}</dt>
-                      <dd className="text-2xl font-bold">{systemStats.avgCharactersPerUser}</dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-              {/* Recent System Activity */}
-              <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                <h2 className="text-xl font-semibold mb-4">{t('admin.systemActivity')}</h2>
-                <div className="space-y-4">
-                  {systemStats.recentActivity?.map((activity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-4 p-3 rounded-lg bg-background-light dark:bg-background-dark"
-                    >
-                      <i className={`fas fa-${activity.icon} text-${activity.color}-500`} />
-                      <div className="flex-1">
-                        <p className="font-medium">{activity.description}</p>
-                        <p className="text-sm text-gray-500">
-                          {new Date(activity.timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </div>
