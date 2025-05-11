@@ -12,7 +12,7 @@ import { useToast } from "./Toast";
 import { useIsMobile } from '../hooks/useIsMobile';
 import { TrashIcon } from "@heroicons/react/24/outline";
 
-export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey }) {
+export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey, setShowExplore }) {
   const navigate = useNavigate();
   const { isModerator, token } = useAuth();
   const { t } = useLanguage();
@@ -152,6 +152,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             <span className="font-medium text-sm">Import</span>
           </button>
         </div>
+
+        {/* Explore button */}
+        <button
+          className="w-full py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
+          onClick={() => setShowExplore(true)}
+        >
+          Explore Characters
+        </button>
 
         {/* Character list directly on background */}
         <div className="w-full flex-1 space-y-2 mb-6 px-2 overflow-y-auto">

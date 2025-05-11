@@ -116,11 +116,18 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
           } else {
             d = jsonData;
           }
+          // Read the file as a Data URL for persistent avatar storage
+          const avatarDataUrl = await new Promise((resolve, reject) => {
+            const reader2 = new FileReader();
+            reader2.onload = () => resolve(reader2.result);
+            reader2.onerror = reject;
+            reader2.readAsDataURL(file);
+          });
           characterData = {
             spec: jsonData.spec,
             specVersion: jsonData.spec_version || jsonData.specVersion,
             name: d.name,
-            avatar: URL.createObjectURL(file),
+            avatar: avatarDataUrl,
             personality: d.personality || d.description || '',
             description: d.description || '',
             systemPrompt: d.system_prompt || '',

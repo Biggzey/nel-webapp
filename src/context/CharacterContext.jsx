@@ -59,44 +59,7 @@ export function CharacterProvider({ children }) {
           console.error("Failed to load characters, using default.");
         }
 
-        // Find user's Nelliel instance
-        let nelliel = userChars.find(c => c.name === "Nelliel");
-        
-        // If Nelliel doesn't exist for this user, create it
-        if (!nelliel) {
-          try {
-            const createRes = await fetch("/api/characters", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                name: "Nelliel",
-                personality: "Your custom AI companion.",
-                avatar: "/nel-avatar.png",
-                bookmarked: false,
-                systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
-                customInstructions: "",
-                status: "Ready to chat"
-              }),
-            });
-
-            if (createRes.ok) {
-              const defaultChar = await createRes.json();
-              userChars.unshift(defaultChar);
-            } else {
-              // If creation fails, fallback to local default
-              userChars.unshift({ ...defaultCharacters[0] });
-            }
-          } catch (error) {
-            userChars.unshift({ ...defaultCharacters[0] });
-          }
-        }
-        if (!userChars.length) {
-          userChars = [{ ...defaultCharacters[0] }];
-        }
-        setCharacters(userChars);
+        // No longer auto-create Nelliel. If no characters, userChars will be empty.
 
         // Load preferences
         const prefsRes = await fetch("/api/preferences", {
@@ -273,12 +236,6 @@ export function CharacterProvider({ children }) {
     try {
       const charToDelete = characters[idx];
       
-      // Prevent deleting Nelliel
-      if (charToDelete.name === defaultCharacters[0].name) {
-        console.warn("Cannot delete the default character Nelliel");
-        return;
-      }
-
       const res = await fetch(`/api/characters/${charToDelete.id}`, {
         method: "DELETE",
         headers: {

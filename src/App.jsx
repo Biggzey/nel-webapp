@@ -19,6 +19,7 @@ import KeyboardShortcuts from "./components/KeyboardShortcuts";
 import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
 import { useIsMobile } from './hooks/useIsMobile';
+import ExplorePage from './components/ExplorePage';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -48,6 +49,7 @@ function ProtectedContent({ addToast }) {
   const [showShortcutHelp, setShowShortcutHelp] = useState(false);
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
+  const [showExplore, setShowExplore] = useState(false);
 
   // Update visibility when switching between mobile/desktop
   useEffect(() => {
@@ -159,19 +161,23 @@ function ProtectedContent({ addToast }) {
         <Route path="/*" element={
           <>
             <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
-              <ChatWindow 
-                ref={chatWindowRef} 
-                chatInputRef={chatInputRef} 
-                className="flex-1" 
-                chatReloadKey={chatReloadKey}
-                onMenuClick={handleMobileMenuClick}
-                onCharacterPaneClick={handleMobileCharacterPaneClick}
-              />
+              {(!characters || characters.length === 0 || showExplore) ? (
+                <ExplorePage onClose={() => setShowExplore(false)} />
+              ) : (
+                <ChatWindow 
+                  ref={chatWindowRef} 
+                  chatInputRef={chatInputRef} 
+                  className="flex-1" 
+                  chatReloadKey={chatReloadKey}
+                  onMenuClick={handleMobileMenuClick}
+                  onCharacterPaneClick={handleMobileCharacterPaneClick}
+                />
+              )}
             </Suspense>
-            {characterPaneVisible && isMobile && (
+            {characterPaneVisible && isMobile && !showExplore && (
               <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
             )}
-            {characterPaneVisible && (
+            {characterPaneVisible && !showExplore && (
               <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
                 <CharacterPane 
                   className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
