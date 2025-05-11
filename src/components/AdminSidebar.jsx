@@ -148,21 +148,20 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
   return (
     <aside className="w-72 md:w-80 flex-shrink-0 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark">
       {/* Search bar */}
-      <div className="p-4 border-b border-border-light dark:border-border-dark flex items-center space-x-2">
-        <div className="relative flex-1">
+      <div className="p-4 border-b border-border-light dark:border-border-dark flex items-center gap-2">
+        <div className="relative flex-grow flex-shrink">
           <input
             type="text"
             placeholder={t('admin.searchUsers')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 pl-10 pr-8 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-            style={{ maxWidth: '180px' }}
+            className="w-full px-4 py-2 pl-10 pr-8 rounded-lg bg-background-container-light dark:bg-background-container-dark border-2 border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary text-sm text-text-light dark:text-text-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark"
           />
-          <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark" />
         </div>
         {/* Home icon button to return to overview */}
         <button
-          className="ml-2 p-2 rounded-full bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark hover:bg-primary/10 focus:outline-none"
+          className="ml-2 p-2 rounded-full bg-background-container-light dark:bg-background-container-dark border-2 border-container-border-light dark:border-container-border-dark hover:bg-primary/10 focus:outline-none flex items-center justify-center transition-colors"
           title="Return to Overview"
           onClick={() => onUserSelect(null)}
         >

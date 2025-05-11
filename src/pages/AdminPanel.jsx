@@ -125,7 +125,7 @@ export default function AdminPanel() {
             <div className="space-y-6">
               {/* User-specific cleanup button (admin only) */}
               <button
-                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
                 onClick={async () => {
                   try {
                     const res = await fetch(`/api/admin/cleanup-duplicates?userId=${selectedUserId}`, {
@@ -276,7 +276,7 @@ export default function AdminPanel() {
             <div className="space-y-6">
               {/* Cleanup Duplicates Button (admin only) */}
               <button
-                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
                 onClick={async () => {
                   try {
                     const res = await fetch('/api/admin/cleanup-duplicates', {
