@@ -243,6 +243,9 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
                 >
                   <i className="fas fa-trash mr-2" /> {t('admin.deleteUser')}
                 </button>
+                <button className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark">
+                  {t('admin.removeDuplicatesUser')}
+                </button>
               </div>
             )}
           </div>

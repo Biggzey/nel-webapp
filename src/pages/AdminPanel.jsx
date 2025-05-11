@@ -157,7 +157,7 @@ export default function AdminPanel() {
                     if (res.ok) {
                       addToast({
                         type: 'success',
-                        message: t('admin:duplicatesRemoved', { count: data.totalDeleted }),
+                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
                         duration: 4000
                       });
                     } else {
@@ -166,13 +166,13 @@ export default function AdminPanel() {
                   } catch (err) {
                     addToast({
                       type: 'error',
-                      message: t('admin:duplicateCleanupFailed', { error: err.message }),
+                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
                       duration: 5000
                     });
                   }
                 }}
               >
-                {t('admin:removeDuplicatesUser')}
+                {t('admin.removeDuplicatesUser')}
               </button>
               <div className="flex items-center space-x-4">
                 <img
@@ -250,8 +250,8 @@ export default function AdminPanel() {
                             isUserOnline(userDetails) ? 'bg-green-100 text-green-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {userDetails.blocked ? t('admin:blocked') :
-                             isUserOnline(userDetails) ? t('admin:online') : t('admin:offline')}
+                            {userDetails.blocked ? t('admin.blocked') :
+                             isUserOnline(userDetails) ? t('admin.online') : t('admin.offline')}
                           </span>
                           {userDetails.blocked && userDetails.blockedUntil && (
                             <span className="text-sm text-gray-500">
@@ -411,7 +411,7 @@ export default function AdminPanel() {
           // System overview
           systemStats && (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold mb-6">{t('admin:systemOverview')}</h1>
+              <h1 className="text-2xl font-bold mb-6">{t('admin.systemOverview')}</h1>
               {/* Universal cleanup button for all users */}
               <button
                 className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -425,7 +425,7 @@ export default function AdminPanel() {
                     if (res.ok) {
                       addToast({
                         type: 'success',
-                        message: t('admin:duplicatesRemoved', { count: data.totalDeleted }),
+                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
                         duration: 4000
                       });
                     } else {
@@ -434,13 +434,13 @@ export default function AdminPanel() {
                   } catch (err) {
                     addToast({
                       type: 'error',
-                      message: t('admin:duplicateCleanupFailed', { error: err.message }),
+                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
                       duration: 5000
                     });
                   }
                 }}
               >
-                {t('admin:removeDuplicatesAll')}
+                {t('admin.removeDuplicatesAll')}
               </button>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -204,7 +204,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                     >
-                      <i className="fas fa-broom mr-2" /> {t('chat.clearChat')}
+                      <i className="fas fa-trash-alt text-white bg-gray-400 rounded-full p-1 mr-2" /> {t('chat.clearChat')}
                     </button>
                     {/* Only show delete for non-Nelliel characters */}
                     {c.name !== 'Nelliel' && (
@@ -215,7 +215,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         }}
                         className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
                       >
-                        <i className="fas fa-trash mr-2" /> {t('character:delete')}
+                        <i className="fas fa-ban text-red-500 mr-2" /> {t('character.delete')}
                       </button>
                     )}
                   </div>
