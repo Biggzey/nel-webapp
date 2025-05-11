@@ -8,7 +8,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "dev:single": "node scripts/start.js",
     "optimize-images": "node scripts/optimize-images.js",
-    "build": "npm run optimize-images && vite build",
+    "build": "prisma generate && npm run optimize-images && vite build",
     "preview": "vite preview",
     "start": "node server.js",
     "prod": "npm run build && npm run start",
