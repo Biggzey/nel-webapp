@@ -54,9 +54,11 @@ export function CharacterProvider({ children }) {
         let userChars = [];
         if (charsRes.ok) {
           userChars = await charsRes.json();
+          setCharacters(userChars);
         } else {
           // Show error and fallback to default character
           console.error("Failed to load characters, using default.");
+          setCharacters([]);
         }
 
         // No longer auto-create Nelliel. If no characters, userChars will be empty.
@@ -332,11 +334,14 @@ export function CharacterProvider({ children }) {
 
   async function reloadCharacters() {
     try {
+      if (reloadCharacters._reloading) return;
+      reloadCharacters._reloading = true;
       const res = await fetch("/api/characters", {
         headers: { Authorization: token ? `Bearer ${token}` : undefined },
       });
       if (res.status === 429) {
         handleRateLimit();
+        reloadCharacters._reloading = false;
         return;
       }
       if (res.ok) {
@@ -352,8 +357,10 @@ export function CharacterProvider({ children }) {
         }
         setCharacters(uniqueChars);
       }
+      reloadCharacters._reloading = false;
     } catch (err) {
       // Optionally handle error
+      reloadCharacters._reloading = false;
     }
   }
 

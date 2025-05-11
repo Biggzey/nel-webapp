@@ -156,7 +156,9 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         {/* Explore button */}
         <button
           className="w-full py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
-          onClick={() => setShowExplore(true)}
+          onClick={() => {
+            if (typeof setShowExplore === 'function') setShowExplore(true);
+          }}
         >
           Explore Characters
         </button>
@@ -299,11 +301,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               const imported = await res.json();
               // Reload the character list and select the new character
               await reloadCharacters();
-              // Find the new character's index
-              const idx = characters.findIndex(c => c.id === imported.id);
-              if (idx !== -1) setSelectedIndex(idx);
-              setShowImportModal(false);
-              setSidebarReloadKey(prev => prev + 1);
+              setTimeout(() => {
+                setSelectedIndexRaw(characters.length); // select the last character (newly imported)
+                setShowImportModal(false);
+                setSidebarReloadKey(prev => prev + 1);
+              }, 300);
             } catch (error) {
               console.error("Error importing character:", error);
               addToast({
