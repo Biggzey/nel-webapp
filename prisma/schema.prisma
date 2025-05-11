@@ -8,75 +8,75 @@ datasource db {
 }
 
 model User {
-  id             Int         @id @default(autoincrement())
-  email          String      @unique
-  username       String      @unique  // Required for all users
-  displayName    String?     // Optional display name
-  avatar         String?     // Optional avatar URL
-  passwordHash   String
-  role           String      @default("USER")  // Can be "SUPER_ADMIN", "ADMIN", "MODERATOR", or "USER" in descending hierarchy
-  characters     Character[]
-  preferences    UserPreference?
-  blocked        Boolean     @default(false)
-  blockedUntil   DateTime?
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  lastLogin      DateTime?
+  id           Int             @id @default(autoincrement())
+  email        String          @unique
+  username     String          @unique
+  passwordHash String
+  role         String          @default("USER")
+  blocked      Boolean         @default(false)
+  blockedUntil DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  lastLogin    DateTime?
+  displayName  String?
+  avatar       String?
+  characters   Character[]
+  preferences  UserPreference?
 }
 
 model Character {
-  id                Int          @id @default(autoincrement())
-  userId           Int
-  name             String
-  status           String       @default("")
-  personality      String       @default("")
-  avatar           String
-  systemPrompt     String       @default("")
-  customInstructions String     @default("")
-  bookmarked       Boolean      @default(false)
-  age              String?
-  gender           String?
-  race             String?
-  occupation       String?
-  likes            String?
-  dislikes         String?
-  backstory        String?
-  fullImage        String?
-  spec                String?
-  specVersion         String?
-  description         String?
-  firstMessage        String?
-  messageExample      String?
-  scenario            String?
-  creatorNotes        String?
-  alternateGreetings  String[]
-  tags                String[]
-  creator             String?
-  characterVersion    String?
-  extensions          Json?
-  messages         ChatMessage[]
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 Int           @id @default(autoincrement())
+  userId             Int
+  name               String
+  status             String        @default("")
+  personality        String        @default("")
+  avatar             String
+  systemPrompt       String        @default("")
+  customInstructions String        @default("")
+  bookmarked         Boolean       @default(false)
+  age                String?
+  gender             String?
+  race               String?
+  occupation         String?
+  likes              String?
+  dislikes           String?
+  backstory          String?
+  fullImage          String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  spec               String?
+  specVersion        String?
+  description        String?
+  firstMessage       String?
+  messageExample     String?
+  scenario           String?
+  creatorNotes       String?
+  alternateGreetings String[]
+  tags               String[]
+  creator            String?
+  characterVersion   String?
+  extensions         Json?
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages           ChatMessage[]
 }
 
 model ChatMessage {
   id          Int       @id @default(autoincrement())
   characterId Int
-  role        String    // 'user' or 'assistant'
+  role        String
   content     String
-  reactions   Json?     // Store reactions as JSON
+  reactions   Json?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model UserPreference {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @unique
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
   selectedCharId Int
-  chatTheme     String   @default("default")  // Store the user's chat theme preference
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  chatTheme      String   @default("default")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
