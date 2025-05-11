@@ -331,7 +331,9 @@ export default function AdminPanel() {
                     <div>
                       <dt className="text-sm text-gray-500">Last Login</dt>
                       <dd className="font-medium">
-                        {new Date(userDetails.lastLogin).toLocaleDateString()}
+                        {userDetails.lastLogin
+                          ? new Date(userDetails.lastLogin).toLocaleString()
+                          : 'Never'}
                       </dd>
                     </div>
                   </dl>
