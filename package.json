@@ -18,7 +18,7 @@
     "test:e2e": "jest --config jest.config.e2e.js",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
-    "postinstall": "prisma migrate deploy"
+    "postinstall": "prisma db push"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
