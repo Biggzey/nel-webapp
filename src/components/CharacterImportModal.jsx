@@ -205,6 +205,8 @@ async function extractCharacterJsonFromPng(file) {
     const arrayBuffer = await file.arrayBuffer();
     const uint8 = new Uint8Array(arrayBuffer);
     const chunks = extractChunks(uint8);
+    // Debug: log all chunk types and their lengths
+    console.log('PNG chunks:', chunks.map(chunk => ({ name: chunk.name, length: chunk.data.length })));
     // tEXt chunks
     const textChunks = chunks
       .filter(chunk => chunk.name === 'tEXt')

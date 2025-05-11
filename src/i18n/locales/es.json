@@ -55,8 +55,9 @@
     "invalidCredentials": "Correo o contraseña inválidos",
     "serverError": "Ocurrió un error en el servidor",
     "unexpectedError": "Lo sentimos, pero ocurrió algo inesperado. Por favor, intenta actualizar la página.",
-    "rateLimited": "Estás siendo limitado por el servidor (429 Demasiadas solicitudes). Por favor, espera e inténtalo de nuevo más tarde.",
-    "importFailed": "Error al importar la tarjeta del personaje."
+    "rateLimited": "Está siendo limitado por la tasa de solicitudes (429 Demasiadas solicitudes). Por favor, espere y vuelva a intentarlo más tarde.",
+    "importFailed": "Error al importar la tarjeta del personaje.",
+    "unknown": "Ocurrió un error desconocido."
   },
   "profile": {
     "title": "Perfil",
@@ -153,5 +154,14 @@
     "activeNow": "Activos ahora",
     "avgMessagesPerUser": "Prom. por usuario",
     "systemActivity": "Actividad reciente del sistema"
+  },
+  "toasts": {
+    "characterDeleted": "Personaje eliminado",
+    "characterDeleteFailed": "No se pudo eliminar el personaje",
+    "userBlocked": "Usuario bloqueado",
+    "userUnblocked": "Usuario desbloqueado",
+    "userDeleted": "Usuario eliminado",
+    "passwordReset": "Contraseña restablecida",
+    "error": "Ocurrió un error"
   }
 } 

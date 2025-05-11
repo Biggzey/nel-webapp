@@ -123,6 +123,36 @@ export default function AdminPanel() {
           // User details view
           userDetails && (
             <div className="space-y-6">
+              {/* User-specific cleanup button (admin only) */}
+              <button
+                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/admin/cleanup-duplicates?userId=${selectedUserId}`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      addToast({
+                        type: 'success',
+                        message: `Removed ${data.totalDeleted} duplicate Nelliel characters for this user`,
+                        duration: 4000
+                      });
+                    } else {
+                      throw new Error(data.error || 'Unknown error');
+                    }
+                  } catch (err) {
+                    addToast({
+                      type: 'error',
+                      message: 'Failed to clean up duplicates: ' + err.message,
+                      duration: 5000
+                    });
+                  }
+                }}
+              >
+                Remove Duplicate Nelliel Characters (User)
+              </button>
               <div className="flex items-center space-x-4">
                 <img
                   src={userDetails.avatar || '/user-avatar.png'}
@@ -211,6 +241,32 @@ export default function AdminPanel() {
                     ))}
                   </div>
                 </div>
+
+                {/* Permissions Table Placeholder (SUPER_ADMIN only, for ADMIN/MODERATOR users) */}
+                {userDetails && ['ADMIN', 'MODERATOR'].includes(userDetails.role) && (token && JSON.parse(atob(token.split('.')[1])).role === 'SUPER_ADMIN') && (
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 mt-4">
+                    <h2 className="text-xl font-semibold mb-4">Permissions (Placeholder)</h2>
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="py-2 px-4">Permission</th>
+                          <th className="py-2 px-4">Allow</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {['View Users', 'Edit Users', 'Delete Users', 'Manage Characters', 'View Stats', 'Access Admin Panel'].map(perm => (
+                          <tr key={perm}>
+                            <td className="py-2 px-4">{perm}</td>
+                            <td className="py-2 px-4">
+                              <input type="checkbox" checked readOnly className="accent-primary" />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div className="text-xs text-gray-400 mt-2">(Future: You will be able to edit permissions here)</div>
+                  </div>
+                )}
               </div>
             </div>
           )
@@ -218,6 +274,36 @@ export default function AdminPanel() {
           // System stats view
           systemStats && (
             <div className="space-y-6">
+              {/* Cleanup Duplicates Button (admin only) */}
+              <button
+                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary-dark shadow"
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/admin/cleanup-duplicates', {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      addToast({
+                        type: 'success',
+                        message: `Removed ${data.totalDeleted} duplicate Nelliel characters`,
+                        duration: 4000
+                      });
+                    } else {
+                      throw new Error(data.error || 'Unknown error');
+                    }
+                  } catch (err) {
+                    addToast({
+                      type: 'error',
+                      message: 'Failed to clean up duplicates: ' + err.message,
+                      duration: 5000
+                    });
+                  }
+                }}
+              >
+                Remove Duplicate Nelliel Characters
+              </button>
               <h1 className="text-2xl font-bold">{t('admin.systemOverview')}</h1>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* User Stats */}

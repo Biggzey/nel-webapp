@@ -56,7 +56,8 @@
     "serverError": "Server error occurred",
     "unexpectedError": "We're sorry, but something unexpected happened. Please try refreshing the page.",
     "rateLimited": "You are being rate limited (429 Too Many Requests). Please wait and try again later.",
-    "importFailed": "Failed to import character card."
+    "importFailed": "Failed to import character card.",
+    "unknown": "An unknown error occurred."
   },
   "character": {
     "confirmDelete": "Are you sure you want to delete {{name}}? This cannot be undone.",
@@ -154,5 +155,14 @@
     "activeNow": "Active Now",
     "avgMessagesPerUser": "Avg. Per User",
     "systemActivity": "Recent System Activity"
+  },
+  "toasts": {
+    "characterDeleted": "Character deleted",
+    "characterDeleteFailed": "Failed to delete character",
+    "userBlocked": "User blocked",
+    "userUnblocked": "User unblocked",
+    "userDeleted": "User deleted",
+    "passwordReset": "Password reset",
+    "error": "An error occurred"
   }
 } 

@@ -1932,6 +1932,44 @@ try {
     }
   });
 
+  // Cleanup duplicate Nelliel characters (admin only)
+  app.post("/api/admin/cleanup-duplicates", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const { userId } = req.query;
+      // Build query for all users or a specific user
+      const userFilter = userId ? { userId: parseInt(userId) } : {};
+      // Find all Nelliel characters, grouped by user
+      const nelliels = await prisma.character.findMany({
+        where: {
+          name: "Nelliel",
+          ...userFilter
+        },
+        orderBy: { id: 'asc' }
+      });
+      // Group by userId
+      const grouped = {};
+      nelliels.forEach(c => {
+        if (!grouped[c.userId]) grouped[c.userId] = [];
+        grouped[c.userId].push(c);
+      });
+      let totalDeleted = 0;
+      for (const chars of Object.values(grouped)) {
+        if (chars.length > 1) {
+          // Keep the first (oldest), delete the rest
+          const toDelete = chars.slice(1);
+          for (const c of toDelete) {
+            await prisma.character.delete({ where: { id: c.id } });
+            totalDeleted++;
+          }
+        }
+      }
+      res.json({ success: true, totalDeleted });
+    } catch (error) {
+      console.error("Error cleaning up Nelliel duplicates:", error);
+      res.status(500).json({ error: "Failed to clean up duplicates" });
+    }
+  });
+
   // Start server
   const PORT = process.env.PORT || 3001;
   await testDbConnection(); // Test DB connection before starting server

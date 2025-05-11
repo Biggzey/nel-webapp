@@ -10,6 +10,7 @@ import PersonalityModal from "./PersonalityModal";
 import CharacterImportModal from "./CharacterImportModal";
 import { useToast } from "./Toast";
 import { useIsMobile } from '../hooks/useIsMobile';
+import { TrashIcon } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey }) {
   const navigate = useNavigate();
@@ -205,15 +206,13 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     >
                       <i className="fas fa-trash mr-2" /> {t('chat.clearChat')}
                     </button>
-                    {!isNelliel && (
+                    {/* Only show delete for non-Nelliel characters */}
+                    {c.name !== 'Nelliel' && (
                       <button
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          handleDeleteCharacterWithConfirm(c, i);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark text-red-500 transition-colors"
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDeleteCharacterWithConfirm(c, i)}
                       >
-                        <i className="fas fa-user-times mr-2" /> {t('common.delete')}
+                        <TrashIcon className="w-4 h-4" />
                       </button>
                     )}
                   </div>
