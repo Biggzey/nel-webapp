@@ -21,6 +21,7 @@ model User {
   blockedUntil   DateTime?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+  lastLogin      DateTime?
 }
 
 model Character {

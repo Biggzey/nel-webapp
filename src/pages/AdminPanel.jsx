@@ -171,7 +171,7 @@ export default function AdminPanel() {
                 <img
                   src={userDetails.avatar || '/user-avatar.png'}
                   alt=""
-                  className="w-20 h-20 rounded-full object-cover"
+                  className="w-20 h-20 rounded-full object-cover ring-2 ring-primary"
                 />
                 <div>
                   <h1 className="text-2xl font-bold">{userDetails.username}</h1>
@@ -181,7 +181,7 @@ export default function AdminPanel() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Basic Info */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-6">
                   <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
                   <dl className="space-y-3">
                     <div>

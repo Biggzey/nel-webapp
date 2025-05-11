@@ -702,6 +702,12 @@ try {
         return res.status(401).json({ error: "Invalid credentials" });
       }
 
+      // Update lastLogin on successful login
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() }
+      });
+
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
       console.log('Token generated successfully');
       
@@ -2030,15 +2036,15 @@ try {
           'user' as type,
           'User registered' as description,
           u.createdAt as timestamp
-        FROM User u
-        WHERE u.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        FROM "User" u
+        WHERE u.createdAt >= NOW() - INTERVAL '24 HOURS'
         UNION ALL
         SELECT 
           'message' as type,
           'Message sent' as description,
           m.createdAt as timestamp
-        FROM ChatMessage m
-        WHERE m.createdAt >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        FROM "ChatMessage" m
+        WHERE m.createdAt >= NOW() - INTERVAL '24 HOURS'
         ORDER BY timestamp DESC
         LIMIT 10
       `;
@@ -2119,6 +2125,32 @@ try {
     } catch (error) {
       console.error("Error fetching user metrics:", error);
       res.status(500).json({ error: "Failed to fetch user metrics" });
+    }
+  });
+
+  // Add or update this endpoint for admin user details
+  app.get("/api/admin/users/:userId", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          avatar: true,
+          role: true,
+          blocked: true,
+          blockedUntil: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      });
+      if (!user) return res.status(404).json({ error: 'User not found' });
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching admin user details:', error);
+      res.status(500).json({ error: 'Failed to fetch user details' });
     }
   });
 
