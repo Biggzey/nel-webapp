@@ -4,6 +4,7 @@ import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import { CharacterPrompts } from "./CharacterPrompts";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { extractCharacterDetails } from "../utils/characterDetails";
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave }) {
   const { resetCurrentCharacter } = useCharacter();
@@ -12,63 +13,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [form, setForm] = useState(initialData || {});
   const inputRefs = useRef({});
   const modalRef = useRef(null);
-
-  // Function to extract character details from description
-  const extractCharacterDetails = useCallback((description) => {
-    if (!description) return;
-
-    // Common patterns for age
-    const agePatterns = [
-      /(\d+)\s*(?:years? old|yo|y\.o\.|age|aged)/i,
-      /age:\s*(\d+)/i,
-      /aged\s*(\d+)/i,
-      /(\d+)\s*(?:years|yrs)/i
-    ];
-    
-    for (const pattern of agePatterns) {
-      const ageMatch = description.match(pattern);
-      if (ageMatch && !form.age) {
-        setForm(prev => ({ ...prev, age: ageMatch[1] }));
-        break;
-      }
-    }
-
-    // Common patterns for gender
-    const genderMatch = description.match(/\b(male|female|non-binary|transgender|trans|genderfluid|agender|genderqueer|man|woman|boy|girl)\b/i);
-    if (genderMatch && !form.gender) {
-      setForm(prev => ({ ...prev, gender: genderMatch[1] }));
-    }
-
-    // Common patterns for race/species
-    const raceMatch = description.match(/\b(human|elf|dwarf|orc|halfling|dragon|fairy|demon|angel|vampire|werewolf|alien|robot|android|cyborg|ghost|undead|monster|beast|animal|creature|species|race)\b/i);
-    if (raceMatch && !form.race) {
-      setForm(prev => ({ ...prev, race: raceMatch[1] }));
-    }
-
-    // Common patterns for occupation
-    const occupationMatch = description.match(/\b(wizard|warrior|knight|mage|sorcerer|priest|cleric|paladin|ranger|rogue|thief|assassin|bard|druid|monk|barbarian|fighter|archer|hunter|scout|guard|soldier|merchant|noble|royalty|prince|princess|king|queen|emperor|empress|lord|lady|sir|madam|doctor|scientist|engineer|teacher|student|scholar|researcher|explorer|adventurer|traveler|wanderer|mercenary|bounty hunter|pirate|sailor|captain|commander|general|officer|guard|soldier|merchant|trader|shopkeeper|innkeeper|bartender|chef|cook|farmer|miner|blacksmith|carpenter|tailor|weaver|jeweler|alchemist|apothecary|healer|midwife|nurse|doctor|surgeon|priest|monk|nun|cleric|paladin|druid|shaman|witch|warlock|necromancer|summoner|conjurer|illusionist|enchanter|transmuter|diviner|abjurer|evoker|conjurer|necromancer|illusionist|enchanter|transmuter|diviner|abjurer|evoker)\b/i);
-    if (occupationMatch && !form.occupation) {
-      setForm(prev => ({ ...prev, occupation: occupationMatch[1] }));
-    }
-
-    // Extract likes (looking for patterns like "likes:", "enjoys:", "loves:", etc.)
-    const likesMatch = description.match(/(?:likes?|enjoys?|loves?|fond of|interested in)[:]\s*([^.]+)/i);
-    if (likesMatch && !form.likes) {
-      setForm(prev => ({ ...prev, likes: likesMatch[1].trim() }));
-    }
-
-    // Extract dislikes (looking for patterns like "dislikes:", "hates:", "avoids:", etc.)
-    const dislikesMatch = description.match(/(?:dislikes?|hates?|avoids?|not fond of)[:]\s*([^.]+)/i);
-    if (dislikesMatch && !form.dislikes) {
-      setForm(prev => ({ ...prev, dislikes: dislikesMatch[1].trim() }));
-    }
-
-    // Extract first message if it exists in the description
-    const firstMessageMatch = description.match(/(?:first message|greeting|initial message)[:]\s*([^.]+)/i);
-    if (firstMessageMatch && !form.firstMessage) {
-      setForm(prev => ({ ...prev, firstMessage: firstMessageMatch[1].trim() }));
-    }
-  }, [form]);
 
   useEffect(() => {
     setForm(initialData);

@@ -3,6 +3,7 @@ import { useToast } from './Toast';
 import extractChunks from 'png-chunks-extract';
 import PNGText from 'png-chunk-text';
 import pako from 'pako';
+import { extractCharacterDetails } from '../utils/characterDetails';
 
 const FORMATS = [
   { key: 'json', label: 'JSON', accept: '.json', icon: <i className="fas fa-file-code" /> },
@@ -81,6 +82,8 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
           if (!characterData.name || !characterData.avatar) {
             throw new Error('Imported card is missing required fields (name, avatar).');
           }
+          // Extract and populate details from description
+          characterData = extractCharacterDetails(characterData);
         } else if (format === 'png') {
           // Use robust PNG chunk extraction
           let jsonData;
@@ -152,6 +155,8 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
             Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
             return;
           }
+          // Extract and populate details from description
+          characterData = extractCharacterDetails(characterData);
         }
 
         if (!characterData) throw new Error('Could not parse character card.');
