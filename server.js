@@ -1993,8 +1993,10 @@ try {
         grouped[c.userId].push(c);
       });
       let totalDeleted = 0;
+      let hasDuplicates = false;
       for (const chars of Object.values(grouped)) {
         if (chars.length > 1) {
+          hasDuplicates = true;
           // Keep the first (oldest), delete the rest
           const toDelete = chars.slice(1);
           for (const c of toDelete) {
@@ -2003,7 +2005,14 @@ try {
           }
         }
       }
-      res.json({ success: true, totalDeleted });
+      res.json({ 
+        success: true, 
+        totalDeleted,
+        hasDuplicates,
+        message: hasDuplicates ? 
+          `Removed ${totalDeleted} duplicate Nelliel characters.` : 
+          'No duplicate Nelliel characters found.'
+      });
     } catch (error) {
       console.error("Error cleaning up Nelliel duplicates:", error);
       res.status(500).json({ error: "Failed to clean up duplicates" });

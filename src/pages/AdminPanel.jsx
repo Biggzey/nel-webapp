@@ -157,7 +157,7 @@ export default function AdminPanel() {
                     if (res.ok) {
                       addToast({
                         type: 'success',
-                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
+                        message: data.message,
                         duration: 4000
                       });
                     } else {
@@ -425,7 +425,7 @@ export default function AdminPanel() {
                     if (res.ok) {
                       addToast({
                         type: 'success',
-                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
+                        message: data.message,
                         duration: 4000
                       });
                     } else {

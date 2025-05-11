@@ -176,6 +176,10 @@ export function ThemeProvider({ children }) {
   // Effect to handle chat color changes
   useEffect(() => {
     const root = document.documentElement;
+    // Check for GPU compositing support
+    const hasGPUCompositing = window.getComputedStyle(root).getPropertyValue('transform') !== 'none';
+    root.style.setProperty('--gpu-compositing', hasGPUCompositing.toString());
+    
     if (useCustomColor) {
       root.style.setProperty('--chat-user-bg', chatColor);
       // Set text color based on background color brightness

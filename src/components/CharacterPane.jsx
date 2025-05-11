@@ -84,7 +84,11 @@ export default function CharacterPane({ className = "" }) {
             src={current?.fullImage || current?.avatar}
             alt={`${current?.name} full`}
             className="w-full h-auto max-h-full object-contain rounded"
-            style={{ display: 'block' }}
+            style={{ 
+              display: 'block',
+              // Only apply GPU acceleration if supported
+              transform: window.getComputedStyle(document.documentElement).getPropertyValue('--gpu-compositing') === 'true' ? 'translateZ(0)' : 'none'
+            }}
           />
         </div>
       </div>
