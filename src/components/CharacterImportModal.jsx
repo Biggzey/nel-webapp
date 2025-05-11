@@ -22,6 +22,12 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
     setError(null);
     if (format === 'png') {
       console.error('PNG import handler triggered for file:', file);
+      console.log('File details:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        lastModified: file.lastModified
+      });
     }
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -77,9 +83,29 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
           }
         } else if (format === 'png') {
           // Use robust PNG chunk extraction
-          const jsonData = await extractCharacterJsonFromPng(file);
+          let jsonData;
+          try {
+            jsonData = await extractCharacterJsonFromPng(file);
+          } catch (chunkErr) {
+            console.error('Error extracting JSON from PNG:', chunkErr);
+            setError('Failed to extract JSON from PNG: ' + (chunkErr.message || chunkErr.toString()));
+            addToast({
+              type: 'error',
+              message: 'Failed to extract JSON from PNG: ' + (chunkErr.message || chunkErr.toString()),
+              duration: 5000
+            });
+            Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
+            return;
+          }
           if (!jsonData) {
-            throw new Error('No valid character data found in PNG. Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+            setError('No valid character data found in PNG. Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+            addToast({
+              type: 'error',
+              message: 'No valid character data found in PNG. Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.',
+              duration: 5000
+            });
+            Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
+            return;
           }
           let d;
           if (jsonData.spec && jsonData.data) {
@@ -117,7 +143,14 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
             bookmarked: false,
           };
           if (!characterData.name) {
-            throw new Error('Imported PNG card is missing required field (name). Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+            setError('Imported PNG card is missing required field (name). Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.');
+            addToast({
+              type: 'error',
+              message: 'Imported PNG card is missing required field (name). Only PNG cards exported from Character.AI, Janitor.AI, or compatible tools are supported.',
+              duration: 5000
+            });
+            Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
+            return;
           }
         }
 
@@ -134,12 +167,15 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
         onClose();
       } catch (err) {
         console.error('Import error:', err);
-        setError('Failed to import: ' + err.message);
+        setError('Failed to import: ' + (err.message || err.toString()));
         addToast({
           type: 'error',
-          message: 'Failed to import character: ' + err.message,
+          message: 'Failed to import character: ' + (err.message || err.toString()),
           duration: 5000
         });
+        if (err.stack) {
+          console.error('Stack trace:', err.stack);
+        }
         // Disable further import attempts until modal is closed
         Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
       }
@@ -210,15 +246,36 @@ async function extractCharacterJsonFromPng(file) {
     // tEXt chunks
     const textChunks = chunks
       .filter(chunk => chunk.name === 'tEXt')
-      .map(chunk => PNGText.decode(chunk.data));
+      .map(chunk => {
+        try {
+          return PNGText.decode(chunk.data);
+        } catch (e) {
+          console.error('Error decoding tEXt chunk:', e, chunk);
+          return { keyword: 'tEXt', text: '' };
+        }
+      });
     // zTXt chunks (compressed)
     const ztxtChunks = chunks
       .filter(chunk => chunk.name === 'zTXt')
-      .map(chunk => decodeZtxtChunk(chunk.data));
+      .map(chunk => {
+        try {
+          return decodeZtxtChunk(chunk.data);
+        } catch (e) {
+          console.error('Error decoding zTXt chunk:', e, chunk);
+          return { keyword: 'zTXt', text: '' };
+        }
+      });
     // iTXt chunks (optional, not always present)
     const itxtChunks = chunks
       .filter(chunk => chunk.name === 'iTXt')
-      .map(chunk => decodeITXtChunk(chunk.data));
+      .map(chunk => {
+        try {
+          return decodeITXtChunk(chunk.data);
+        } catch (e) {
+          console.error('Error decoding iTXt chunk:', e, chunk);
+          return { keyword: 'iTXt', text: '' };
+        }
+      });
     // Combine all chunks
     const allChunks = [...textChunks, ...ztxtChunks, ...itxtChunks];
     // Debug: log all found keywords and first 100 chars of text
@@ -234,12 +291,14 @@ async function extractCharacterJsonFromPng(file) {
           const json = JSON.parse(text);
           return json;
         } catch (e) {
+          console.error('Error parsing JSON from chunk:', e, { keyword, text: text.slice(0, 100) });
           // Not valid JSON, skip
         }
       }
     }
     return null;
   } catch (e) {
+    console.error('Error in extractCharacterJsonFromPng:', e);
     return null;
   }
 }
