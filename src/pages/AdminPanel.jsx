@@ -157,7 +157,7 @@ export default function AdminPanel() {
                     if (res.ok) {
                       addToast({
                         type: 'success',
-                        message: `Removed ${data.totalDeleted} duplicate Nelliel characters for this user`,
+                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
                         duration: 4000
                       });
                     } else {
@@ -166,13 +166,13 @@ export default function AdminPanel() {
                   } catch (err) {
                     addToast({
                       type: 'error',
-                      message: 'Failed to clean up duplicates: ' + err.message,
+                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
                       duration: 5000
                     });
                   }
                 }}
               >
-                Remove Duplicate Nelliel Characters (User)
+                {t('admin.removeDuplicatesUser')}
               </button>
               <div className="flex items-center space-x-4">
                 <img
@@ -411,7 +411,37 @@ export default function AdminPanel() {
           // System overview
           systemStats && (
             <div className="space-y-6">
-              <h1 className="text-2xl font-bold mb-6">System Overview</h1>
+              <h1 className="text-2xl font-bold mb-6">{t('admin.systemOverview')}</h1>
+              {/* Universal cleanup button for all users */}
+              <button
+                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/admin/cleanup-duplicates`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      addToast({
+                        type: 'success',
+                        message: t('admin.duplicatesRemoved', { count: data.totalDeleted }),
+                        duration: 4000
+                      });
+                    } else {
+                      throw new Error(data.error || 'Unknown error');
+                    }
+                  } catch (err) {
+                    addToast({
+                      type: 'error',
+                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
+                      duration: 5000
+                    });
+                  }
+                }}
+              >
+                {t('admin.removeDuplicatesAll')}
+              </button>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* User Stats */}

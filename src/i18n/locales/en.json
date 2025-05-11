@@ -154,7 +154,15 @@
     "newToday": "New Today",
     "activeNow": "Active Now",
     "avgMessagesPerUser": "Avg. Per User",
-    "systemActivity": "Recent System Activity"
+    "systemActivity": "Recent System Activity",
+    "removeDuplicatesAll": "Remove Duplicate Nelliel Characters (All)",
+    "removeDuplicatesUser": "Remove Duplicate Nelliel Characters (User)",
+    "duplicatesRemoved": "Removed {{count}} duplicate Nelliel characters.",
+    "duplicateCleanupFailed": "Failed to clean up duplicates: {{error}}",
+    "SUPER_ADMIN": "Super Admin",
+    "USER": "User",
+    "MODERATOR": "Moderator",
+    "ADMIN": "Admin"
   },
   "toasts": {
     "characterDeleted": "Character deleted",
