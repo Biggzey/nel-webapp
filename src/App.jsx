@@ -161,7 +161,7 @@ function ProtectedContent({ addToast }) {
         <Route path="/*" element={
           <>
             <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
-              {(!characters || characters.length === 0 || showExplore) ? (
+              {(!characters || characters.length === 0 || !current || showExplore) ? (
                 <ExplorePage onClose={() => setShowExplore(false)} />
               ) : (
                 <ChatWindow 
@@ -174,10 +174,10 @@ function ProtectedContent({ addToast }) {
                 />
               )}
             </Suspense>
-            {characterPaneVisible && isMobile && !showExplore && (
+            {characterPaneVisible && isMobile && !showExplore && current && (
               <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
             )}
-            {characterPaneVisible && !showExplore && (
+            {characterPaneVisible && !showExplore && current && (
               <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
                 <CharacterPane 
                   className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
