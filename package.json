@@ -20,6 +20,7 @@
     "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@prisma/client": "^6.7.0",
     "@vitejs/plugin-react": "^4.4.1",
     "autoprefixer": "^10.4.0",
