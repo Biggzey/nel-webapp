@@ -37,7 +37,7 @@ const translations = {
       typeMessage: 'Type your message...',
       loading: 'Loading messages...',
       noMessages: 'No messages yet. Start a conversation!',
-      clearChat: 'Clear chat',
+      clearChat: 'Clear Chat',
       confirmClear: 'Are you sure you want to clear this conversation? This cannot be undone.',
       chatCleared: 'Chat history cleared successfully',
       noCharacterSelected: 'No character selected. Please select a character first.',
