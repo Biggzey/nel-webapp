@@ -135,15 +135,13 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
       } catch (err) {
         console.error('Import error:', err);
         setError('Failed to import: ' + err.message);
-        if (format === 'png') {
-          // Show error visibly in modal
-          alert('PNG import failed: ' + err.message);
-        }
         addToast({
           type: 'error',
           message: 'Failed to import character: ' + err.message,
           duration: 5000
         });
+        // Disable further import attempts until modal is closed
+        Object.values(fileInputs.current).forEach(input => { if (input) input.disabled = true; });
       }
     };
     if (format === 'png') {
@@ -154,6 +152,8 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
   }
 
   function handleButtonClick(format) {
+    if (error) return; // Prevent import if error is present
+    fileInputs.current[format].disabled = false;
     fileInputs.current[format].click();
   }
 
