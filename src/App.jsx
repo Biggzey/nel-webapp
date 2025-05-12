@@ -36,7 +36,7 @@ function AdminRoute({ children }) {
 function ProtectedContent({ addToast }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
-  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters, isLoading } = useCharacter();
+  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters, isLoading, isImporting } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
@@ -175,8 +175,12 @@ function ProtectedContent({ addToast }) {
         <Route path="/*" element={
           <>
             <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
-              {isLoading ? null :
-                ((!characters || characters.length === 0 || !current || showExplore)
+              {isLoading || isImporting ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
+                </div>
+              ) : (
+                (!characters || characters.length === 0 || !current || showExplore)
                   ? (
                     <ExplorePage onClose={() => {
                       setShowExplore(false);
@@ -192,8 +196,7 @@ function ProtectedContent({ addToast }) {
                       onCharacterPaneClick={handleMobileCharacterPaneClick}
                     />
                   )
-                )
-              }
+              )}
             </Suspense>
             {characterPaneVisible && isMobile && !showExplore && current && (
               <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />

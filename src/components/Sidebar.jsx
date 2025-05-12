@@ -19,6 +19,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
   const isMobile = useIsMobile();
+  const [isImporting, setIsImporting] = useState(false);
   const {
     characters,
     selectedIndex,
@@ -293,6 +294,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onClose={() => setShowImportModal(false)}
           onImport={async (characterData) => {
             try {
+              setIsImporting(true);
               const res = await fetch("/api/characters", {
                 method: "POST",
                 headers: {
@@ -314,6 +316,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 await reloadCharacters();
                 setSelectedIndexRaw(characters.length); // select the last character (newly imported)
                 setSidebarReloadKey(prev => prev + 1);
+                setIsImporting(false);
               }, 300);
             } catch (error) {
               console.error("Error importing character:", error);
@@ -322,6 +325,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 message: "Failed to import character: " + error.message,
                 duration: 5000,
               });
+              setIsImporting(false);
             }
           }}
         />
