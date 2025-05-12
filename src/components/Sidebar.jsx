@@ -37,12 +37,15 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     isLoading,
     isImporting,
     setIsImporting,
+    isReloadingCharacters,
+    setIsReloadingCharacters,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const menuRef = useRef(null);
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
+  const [pendingImportToast, setPendingImportToast] = useState(false);
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -111,6 +114,18 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   useEffect(() => {
     if (sidebarReloadKey > 0) reloadCharacters();
   }, [sidebarReloadKey, reloadCharacters]);
+
+  useEffect(() => {
+    if (pendingImportToast && !isReloadingCharacters) {
+      setIsImporting(false);
+      addToast({
+        type: "success",
+        message: "Character imported successfully!",
+        duration: 3000,
+      });
+      setPendingImportToast(false);
+    }
+  }, [pendingImportToast, isReloadingCharacters, setIsImporting, addToast]);
 
   return (
     <aside className={`${className} w-72 md:w-80 flex-shrink-0 flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
@@ -316,25 +331,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               await reloadCharacters();
               setSelectedIndexRaw(characters.length); // select the last character (newly imported)
               setSidebarReloadKey(prev => prev + 1);
-              
-              // Wait until isReloadingCharacters is false before showing toast and removing spinner
-              const waitForReload = () => {
-                if (typeof window !== 'undefined' && window.requestAnimationFrame) {
-                  if (window.__characterContext && window.__characterContext.isReloadingCharacters === false) {
-                    setIsImporting(false);
-                    addToast({
-                      type: "success",
-                      message: "Character imported successfully!",
-                      duration: 3000,
-                    });
-                  } else {
-                    window.requestAnimationFrame(waitForReload);
-                  }
-                } else {
-                  setTimeout(waitForReload, 50);
-                }
-              };
-              waitForReload();
+              setPendingImportToast(true);
             } catch (error) {
               console.error("Error importing character:", error);
               setIsImporting(false);
@@ -343,6 +340,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 message: "Failed to import character: " + error.message,
                 duration: 5000,
               });
+              setPendingImportToast(false);
             }
           }}
         />
