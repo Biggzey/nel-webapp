@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { nanoid } from 'nanoid';
 import { useToast } from './Toast';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useCharacter } from '../context/CharacterContext';
 
 // Tab components
 function Profile({ user, onSave }) {
@@ -318,6 +319,8 @@ function Preferences() {
   const { addToast } = useToast();
   const { settings, updateSettings } = useSettings();
   const [model, setModel] = useState('openai');
+  const { characters, handleDeleteCharacter, reloadCharacters, setSelectedIndex, setSelectedIndexRaw } = useCharacter();
+  const [advancedOptions, setAdvancedOptions] = useState(false);
 
   const fontOptions = [
     { label: 'Default', value: 'inherit' },
@@ -341,10 +344,100 @@ function Preferences() {
     }
   };
 
+  // Helper: find Nelliel index
+  const nelIndex = characters.findIndex(c => c.name === 'Nelliel');
+  const hasNel = nelIndex !== -1;
+
+  // Delete Nel handler
+  const handleDeleteNel = async () => {
+    if (!hasNel) {
+      addToast({ type: 'error', message: 'No Nel character exists.', duration: 4000 });
+      return;
+    }
+    await handleDeleteCharacter(nelIndex);
+    addToast({ type: 'success', message: 'Nel character deleted.', duration: 3000 });
+    // Optionally reload characters
+    await reloadCharacters();
+    setSelectedIndexRaw(0);
+  };
+
+  // Restore Nel handler
+  const handleRestoreNel = async () => {
+    if (hasNel) {
+      addToast({ type: 'error', message: 'Nel character already exists.', duration: 4000 });
+      return;
+    }
+    // Use default Nelliel definition
+    const defaultNel = {
+      name: "Nelliel",
+      personality: "Your custom AI companion.",
+      avatar: "/nel-avatar.png",
+      bookmarked: false,
+      systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
+      customInstructions: "",
+    };
+    // Create Nel
+    await fetch("/api/characters", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(defaultNel),
+      credentials: 'include',
+    });
+    addToast({ type: 'success', message: 'Nel character restored.', duration: 3000 });
+    await reloadCharacters();
+    setSelectedIndexRaw(characters.length); // select the last character
+  };
+
   return (
     <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
-      
+      {/* Advanced Options Toggle */}
+      <div className="flex items-center space-x-3 mt-2">
+        <label className="block text-sm font-medium">Advanced Options</label>
+        <button
+          type="button"
+          className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${advancedOptions ? 'bg-primary' : 'bg-gray-400'}`}
+          onClick={() => setAdvancedOptions(v => !v)}
+          aria-pressed={advancedOptions}
+        >
+          <span
+            className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${advancedOptions ? 'translate-x-6' : ''}`}
+          />
+        </button>
+      </div>
+      {/* Advanced Options Content */}
+      {advancedOptions && (
+        <div className="space-y-4 border border-container-border-light dark:border-container-border-dark rounded-lg p-4 mt-2 bg-background-container-light dark:bg-background-container-dark">
+          <div className="flex space-x-4 mb-2">
+            <button
+              className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-semibold"
+              onClick={handleDeleteNel}
+            >
+              Delete Nel
+            </button>
+            <button
+              className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-semibold"
+              onClick={handleRestoreNel}
+            >
+              Restore Nel
+            </button>
+          </div>
+          {/* Auto-regenerate after edit toggle */}
+          <div className="flex items-center space-x-3 mt-2">
+            <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
+            <button
+              type="button"
+              className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
+              onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
+              aria-pressed={settings.autoRegenerateAfterEdit}
+            >
+              <span
+                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
+              />
+            </button>
+          </div>
+        </div>
+      )}
       {/* Theme selector */}
       <div className="space-y-2">
         <label className="block text-sm font-medium mb-3">{t('settings.theme')}</label>
@@ -479,20 +572,6 @@ function Preferences() {
             </select>
           </div>
         </div>
-      </div>
-      {/* Auto-regenerate after edit toggle */}
-      <div className="flex items-center space-x-3 mt-4">
-        <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
-        <button
-          type="button"
-          className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
-          onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
-          aria-pressed={settings.autoRegenerateAfterEdit}
-        >
-          <span
-            className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
-          />
-        </button>
       </div>
     </div>
   );
