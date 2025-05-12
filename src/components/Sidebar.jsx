@@ -55,7 +55,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative ${isDragging ? 'shadow-lg' : ''}`}
+      className={`group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative ${isDragging ? 'shadow-lg' : ''} ${isMenuOpen ? 'pointer-events-none' : ''}`}
       {...(!isNelliel ? { ...attributes, ...listeners } : {})}
     >
       <button
@@ -86,7 +86,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
       </button>
       {/* Context menu */}
       {isMenuOpen && (
-        <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
+        <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col pointer-events-auto">
           <button
             onClick={(e) => {
               e.stopPropagation();
