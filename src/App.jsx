@@ -20,6 +20,8 @@ import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
 import { useIsMobile } from './hooks/useIsMobile';
 import ExplorePage from './components/ExplorePage';
+import { OnboardingProvider, useOnboarding } from './context/OnboardingContext';
+import SpotlightOnboarding from './components/SpotlightOnboarding';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -50,6 +52,17 @@ function ProtectedContent({ addToast }) {
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [showExplore, setShowExplore] = useState(false);
+  const [showSpotlightOnboarding, setShowSpotlightOnboarding] = useState(false);
+  const { hasSeenOnboarding, markOnboardingComplete } = useOnboarding();
+  const { user } = useAuth();
+
+  // Placeholder: replace with real user logic after migration
+  const shouldShowOnboarding = showSpotlightOnboarding;
+
+  // For demo/testing: show onboarding on first load
+  useEffect(() => {
+    setShowSpotlightOnboarding(true);
+  }, []);
 
   // Update visibility when switching between mobile/desktop
   useEffect(() => {
@@ -140,6 +153,10 @@ function ProtectedContent({ addToast }) {
     }
   }, [showExplore]);
 
+  const handleSpotlightOnboardingClose = () => {
+    setShowSpotlightOnboarding(false);
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Global loading overlay */}
@@ -195,7 +212,7 @@ function ProtectedContent({ addToast }) {
                 onCharacterPaneClick={handleMobileCharacterPaneClick}
               />
                   )}
-            </Suspense>
+              </Suspense>
             )}
             {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
             {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
@@ -249,6 +266,12 @@ function ProtectedContent({ addToast }) {
             </div>
           </div>
         </div>
+      )}
+      {shouldShowOnboarding && (
+        <SpotlightOnboarding isOpen={shouldShowOnboarding} onClose={handleSpotlightOnboardingClose} />
+      )}
+      {user && hasSeenOnboarding === false && (
+        <SpotlightOnboarding onFinish={markOnboardingComplete} />
       )}
     </div>
   );
@@ -337,7 +360,9 @@ export default function App() {
           <LanguageProvider>
             <SettingsProvider>
               <ToastProvider>
-                <InnerApp />
+                <OnboardingProvider>
+                  <InnerApp />
+                </OnboardingProvider>
               </ToastProvider>
             </SettingsProvider>
           </LanguageProvider>

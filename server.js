@@ -964,6 +964,49 @@ try {
     }
   });
 
+  // Get onboarding status for current user
+  app.get("/api/user/onboarding", authMiddleware, async (req, res) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: { hasSeenOnboarding: true }
+      });
+      if (!user) return res.status(404).json({ error: "User not found" });
+      res.json({ hasSeenOnboarding: user.hasSeenOnboarding });
+    } catch (error) {
+      console.error("Error fetching onboarding status:", error);
+      res.status(500).json({ error: "Failed to fetch onboarding status" });
+    }
+  });
+
+  // Mark onboarding as complete for current user
+  app.post("/api/user/onboarding", authMiddleware, async (req, res) => {
+    try {
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: { hasSeenOnboarding: true }
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating onboarding status:", error);
+      res.status(500).json({ error: "Failed to update onboarding status" });
+    }
+  });
+
+  // Reset onboarding for a user (admin only)
+  app.post("/api/admin/users/:userId/reset-onboarding", authMiddleware, adminMiddleware, async (req, res) => {
+    try {
+      await prisma.user.update({
+        where: { id: parseInt(req.params.userId, 10) },
+        data: { hasSeenOnboarding: false }
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error resetting onboarding status:", error);
+      res.status(500).json({ error: "Failed to reset onboarding status" });
+    }
+  });
+
   // — CHAT ENDPOINTS —
 
   // Get chat messages for a character
