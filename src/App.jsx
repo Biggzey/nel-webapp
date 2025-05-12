@@ -148,7 +148,7 @@ function ProtectedContent({ addToast }) {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden bg-background-container-light dark:bg-background-container-dark">
       {/* Global loading overlay */}
       {(isLoading || isImporting || isReloadingCharacters) && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
