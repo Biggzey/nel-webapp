@@ -62,6 +62,7 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [spotlightRect, setSpotlightRect] = useState(null);
   const tooltipRef = useRef();
+  const [viewport, setViewport] = useState({ width: 1920, height: 1080 });
 
   // Prevent scrollbars when onboarding is open
   useEffect(() => {
@@ -93,6 +94,15 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
     };
   }, [isOpen, currentStep]);
 
+  useEffect(() => {
+    function updateViewport() {
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
+    }
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
+
   if (!isOpen || !spotlightRect) return null;
 
   // Use fixed tooltip position for each step
@@ -106,10 +116,10 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
   // SVG mask for spotlight effect (subtle)
   const maskId = 'onboarding-spotlight-mask';
   const mask = (
-    <svg width="100vw" height="100vh" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: '100vw', height: '100vh' }}>
+    <svg width={viewport.width} height={viewport.height} style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: viewport.width, height: viewport.height }}>
       <defs>
         <mask id={maskId}>
-          <rect x="0" y="0" width="100vw" height="100vh" fill="white" />
+          <rect x={0} y={0} width={viewport.width} height={viewport.height} fill="white" />
           <rect
             x={spotlightRect.left - 8}
             y={spotlightRect.top - 8}
@@ -121,10 +131,10 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
         </mask>
       </defs>
       <rect
-        x="0"
-        y="0"
-        width="100vw"
-        height="100vh"
+        x={0}
+        y={0}
+        width={viewport.width}
+        height={viewport.height}
         fill="rgba(0,0,0,0.25)"
         mask={`url(#${maskId})`}
       />
