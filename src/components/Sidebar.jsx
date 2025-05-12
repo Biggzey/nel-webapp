@@ -330,7 +330,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               // Reload the character list and select the new character
               await reloadCharacters();
               setSelectedIndexRaw(characters.length); // select the last character (newly imported)
-              setSidebarReloadKey(prev => prev + 1);
               setPendingImportToast(true);
             } catch (error) {
               console.error("Error importing character:", error);
