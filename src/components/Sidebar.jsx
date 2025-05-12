@@ -311,13 +311,16 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               const imported = await res.json();
               // Close modal immediately after successful POST
               setShowImportModal(false);
-              // Reload the character list and select the new character after a short delay
-              setTimeout(async () => {
-                await reloadCharacters();
-                setSelectedIndexRaw(characters.length); // select the last character (newly imported)
-                setSidebarReloadKey(prev => prev + 1);
+              
+              // Reload the character list and select the new character
+              await reloadCharacters();
+              setSelectedIndexRaw(characters.length); // select the last character (newly imported)
+              setSidebarReloadKey(prev => prev + 1);
+              
+              // Only set isImporting to false after everything is done
+              setTimeout(() => {
                 setIsImporting(false);
-              }, 300);
+              }, 500); // Give a little extra time for the UI to update
             } catch (error) {
               console.error("Error importing character:", error);
               addToast({
