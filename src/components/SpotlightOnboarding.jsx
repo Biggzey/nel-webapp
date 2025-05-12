@@ -105,13 +105,24 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
 
   if (!isOpen || !spotlightRect) return null;
 
-  // Use fixed tooltip position for each step
-  const tooltipStyle = {
+  // Use fixed tooltip position for each step, but clamp to viewport
+  let tooltipStyle = {
     position: 'fixed',
     zIndex: 10001,
     maxWidth: 320,
     ...steps[currentStep].tooltipPosition,
   };
+  // Clamp left/right
+  if (tooltipStyle.left !== undefined) {
+    tooltipStyle.left = Math.max(16, Math.min(tooltipStyle.left, (viewport.width || window.innerWidth) - 340));
+  }
+  if (tooltipStyle.right !== undefined) {
+    tooltipStyle.right = Math.max(16, Math.min(tooltipStyle.right, (viewport.width || window.innerWidth) - 340));
+  }
+  // Clamp top
+  if (tooltipStyle.top !== undefined) {
+    tooltipStyle.top = Math.max(16, Math.min(tooltipStyle.top, (viewport.height || window.innerHeight) - 180));
+  }
 
   // SVG mask for spotlight effect (subtle)
   const maskId = 'onboarding-spotlight-mask';
