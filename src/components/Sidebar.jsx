@@ -326,31 +326,60 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
             </div>
           ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={characters.map(c => c.id)}
-                strategy={verticalListSortingStrategy}
+            <>
+              {/* Render Nelliel statically at the top if present */}
+              {(() => {
+                const nellielIdx = characters.findIndex(c => c.name === 'Nelliel');
+                if (nellielIdx !== -1) {
+                  const nelliel = characters[nellielIdx];
+                  return (
+                    <SortableCharacterItem
+                      key={nelliel.id}
+                      character={nelliel}
+                      index={nellielIdx}
+                      isSelected={nellielIdx === selectedIndex}
+                      onSelect={setSelectedIndex}
+                      onClearChat={handleClearChat}
+                      onDelete={handleDeleteCharacterWithConfirm}
+                      onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                      isMenuOpen={openMenuIndex === nellielIdx}
+                      menuRef={menuRef}
+                    />
+                  );
+                }
+                return null;
+              })()}
+              {/* Render all other characters in drag-and-drop context */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                {characters.map((c, i) => (
-                  <SortableCharacterItem
-                    key={c.id}
-                    character={c}
-                    index={i}
-                    isSelected={i === selectedIndex}
-                    onSelect={setSelectedIndex}
-                    onClearChat={handleClearChat}
-                    onDelete={handleDeleteCharacterWithConfirm}
-                    onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
-                    isMenuOpen={openMenuIndex === i}
-                    menuRef={menuRef}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
+                <SortableContext
+                  items={characters.filter(c => c.name !== 'Nelliel').map(c => c.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {characters.filter(c => c.name !== 'Nelliel').map((c, i) => {
+                    // The index here is for the filtered list, not the full list
+                    const globalIdx = characters.findIndex(x => x.id === c.id);
+                    return (
+                      <SortableCharacterItem
+                        key={c.id}
+                        character={c}
+                        index={globalIdx}
+                        isSelected={globalIdx === selectedIndex}
+                        onSelect={setSelectedIndex}
+                        onClearChat={handleClearChat}
+                        onDelete={handleDeleteCharacterWithConfirm}
+                        onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                        isMenuOpen={openMenuIndex === globalIdx}
+                        menuRef={menuRef}
+                      />
+                    );
+                  })}
+                </SortableContext>
+              </DndContext>
+            </>
           )}
         </div>
 
