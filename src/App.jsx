@@ -180,7 +180,7 @@ function ProtectedContent({ addToast }) {
                   <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
                 </div>
               ) : (
-                (!characters || characters.length === 0 || !current || showExplore)
+                (!characters || characters.length === 0 || !current || showExplore) && !isImporting
                   ? (
                     <ExplorePage onClose={() => {
                       setShowExplore(false);

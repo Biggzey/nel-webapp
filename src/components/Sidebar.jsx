@@ -320,7 +320,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               // Only set isImporting to false after everything is done
               setTimeout(() => {
                 setIsImporting(false);
-              }, 500); // Give a little extra time for the UI to update
+              }, 1000); // Give more time for the UI to update
             } catch (error) {
               console.error("Error importing character:", error);
               addToast({

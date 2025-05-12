@@ -344,28 +344,28 @@ export function CharacterProvider({ children }) {
         clearTimeout(reloadTimeout);
       }
       reloadTimeout = setTimeout(async () => {
-      const res = await fetch("/api/characters", {
-        headers: { Authorization: token ? `Bearer ${token}` : undefined },
-      });
-      if (res.status === 429) {
-        handleRateLimit();
+        const res = await fetch("/api/characters", {
+          headers: { Authorization: token ? `Bearer ${token}` : undefined },
+        });
+        if (res.status === 429) {
+          handleRateLimit();
           last429 = Date.now();
           reloadCharacters._reloading = false;
-        return;
-      }
-      if (res.ok) {
-        const userChars = await res.json();
-        // Remove duplicates by id
-        const uniqueChars = [];
-        const seenIds = new Set();
-        for (const c of userChars) {
-          if (!seenIds.has(c.id)) {
-            uniqueChars.push(c);
-            seenIds.add(c.id);
-          }
+          return;
         }
-        setCharacters(uniqueChars);
-      }
+        if (res.ok) {
+          const userChars = await res.json();
+          // Remove duplicates by id
+          const uniqueChars = [];
+          const seenIds = new Set();
+          for (const c of userChars) {
+            if (!seenIds.has(c.id)) {
+              uniqueChars.push(c);
+              seenIds.add(c.id);
+            }
+          }
+          setCharacters(uniqueChars);
+        }
         reloadCharacters._reloading = false;
       }, 200);
     } catch (err) {
