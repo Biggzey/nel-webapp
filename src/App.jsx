@@ -143,7 +143,7 @@ function ProtectedContent({ addToast }) {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Global loading overlay */}
-      {isLoading && (
+      {(isLoading || isImporting) && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
           <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
         </div>

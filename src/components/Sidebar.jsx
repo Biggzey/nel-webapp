@@ -19,7 +19,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
   const isMobile = useIsMobile();
-  const [isImporting, setIsImporting] = useState(false);
   const {
     characters,
     selectedIndex,
@@ -36,7 +35,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCharacters,
     reloadCharacters,
     isLoading,
-    setIsLoading,
+    isImporting,
+    setIsImporting,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);

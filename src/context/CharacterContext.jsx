@@ -20,6 +20,7 @@ export function CharacterProvider({ children }) {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [isImporting, setIsImporting] = useState(false);
   
   // Load characters from database
   const [characters, setCharacters] = useState([...defaultCharacters]);
@@ -237,7 +238,7 @@ export function CharacterProvider({ children }) {
   async function handleDeleteCharacter(idx) {
     try {
       const charToDelete = characters[idx];
-      
+
       const res = await fetch(`/api/characters/${charToDelete.id}`, {
         method: "DELETE",
         headers: {
@@ -343,28 +344,28 @@ export function CharacterProvider({ children }) {
         clearTimeout(reloadTimeout);
       }
       reloadTimeout = setTimeout(async () => {
-        const res = await fetch("/api/characters", {
-          headers: { Authorization: token ? `Bearer ${token}` : undefined },
-        });
-        if (res.status === 429) {
-          handleRateLimit();
+      const res = await fetch("/api/characters", {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+      });
+      if (res.status === 429) {
+        handleRateLimit();
           last429 = Date.now();
           reloadCharacters._reloading = false;
-          return;
-        }
-        if (res.ok) {
-          const userChars = await res.json();
-          // Remove duplicates by id
-          const uniqueChars = [];
-          const seenIds = new Set();
-          for (const c of userChars) {
-            if (!seenIds.has(c.id)) {
-              uniqueChars.push(c);
-              seenIds.add(c.id);
-            }
+        return;
+      }
+      if (res.ok) {
+        const userChars = await res.json();
+        // Remove duplicates by id
+        const uniqueChars = [];
+        const seenIds = new Set();
+        for (const c of userChars) {
+          if (!seenIds.has(c.id)) {
+            uniqueChars.push(c);
+            seenIds.add(c.id);
           }
-          setCharacters(uniqueChars);
         }
+        setCharacters(uniqueChars);
+      }
         reloadCharacters._reloading = false;
       }, 200);
     } catch (err) {
@@ -403,6 +404,8 @@ export function CharacterProvider({ children }) {
         toggleBookmark,
         reloadCharacters,
         isLoading,
+        isImporting,
+        setIsImporting,
       }}
     >
       {children}
