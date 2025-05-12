@@ -217,14 +217,17 @@ function Profile({ user, onSave }) {
             <div className="w-24 h-24 rounded-full bg-primary overflow-hidden">
               {formData.avatar ? (
                 <img 
-                  src={formData.avatar} 
+                  src={formData.avatar || '/default-avatar.png'} 
+                  alt={t('profile.profilePicture')} 
+                  className="w-full h-full object-cover"
+                  onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                />
+              ) : (
+                <img 
+                  src={'/default-avatar.png'} 
                   alt={t('profile.profilePicture')} 
                   className="w-full h-full object-cover"
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-4xl font-semibold">
-                  {user?.username?.charAt(0).toUpperCase()}
-                </div>
               )}
             </div>
             <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 group-hover:opacity-100 cursor-pointer rounded-full transition-opacity">

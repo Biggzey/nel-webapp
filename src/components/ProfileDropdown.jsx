@@ -25,12 +25,17 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
                 <div className="w-10 h-10 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white font-semibold text-lg">
                   {user?.avatar ? (
                     <img 
-                      src={user.avatar} 
+                      src={user.avatar || '/default-avatar.png'} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                      onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                    />
+                  ) : (
+                    <img 
+                      src={'/default-avatar.png'} 
                       alt={user.username} 
                       className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <span>{initial}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">

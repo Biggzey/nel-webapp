@@ -109,9 +109,10 @@ export default function ExplorePage({ onClose }) {
             onKeyDown={e => { if (e.key === 'Enter') setModal(character); }}
           >
             <img
-              src={character.avatar}
+              src={character.avatar || '/default-avatar.png'}
               alt={character.name}
               className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-primary/30 group-hover:border-primary shadow-lg transition-all duration-200"
+              onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
             />
             <h2 className="text-xl font-semibold mb-1 text-primary drop-shadow">{character.name}</h2>
             <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
@@ -120,13 +121,8 @@ export default function ExplorePage({ onClose }) {
                 <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
               ))}
             </div>
-            <button
-              className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 bg-primary text-white px-4 py-2 rounded-xl shadow-lg transition-all duration-200 text-sm font-semibold hover:bg-primary/90"
-              onClick={e => { e.stopPropagation(); setModal(character); }}
-              tabIndex={-1}
-            >
-              {t('explore.view', 'View')}
-            </button>
+            {/* Card is now fully clickable, add a tooltip for accessibility */}
+            <span className="sr-only">{t('explore.view', 'View')}</span>
           </div>
         ))}
       </div>
@@ -146,9 +142,10 @@ export default function ExplorePage({ onClose }) {
             </button>
             <div className="flex flex-col items-center">
               <img
-                src={modal.avatar}
+                src={modal.avatar || '/default-avatar.png'}
                 alt={modal.name}
                 className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-primary/30 shadow-lg"
+                onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
               />
               <h2 className="text-2xl font-bold mb-2 text-primary drop-shadow">{modal.name}</h2>
               <div className="text-lg text-text-secondary-light dark:text-text-secondary-dark mb-4">{modal.tagline}</div>

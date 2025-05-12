@@ -166,6 +166,16 @@ const translations = {
       USER: 'User',
       MODERATOR: 'Moderator',
       ADMIN: 'Admin'
+    },
+    explore: {
+      title: 'Explore Characters',
+      subtitle: 'Discover and add new characters created by the community!',
+      search: 'Search characters or tags...',
+      noResults: 'No characters found. Try a different search!',
+      view: 'View',
+      add: 'Add to My Characters',
+      added: '{name} added to your characters!',
+      back: 'Back to Chat'
     }
   },
   es: {
@@ -332,6 +342,16 @@ const translations = {
       USER: 'Usuario',
       MODERATOR: 'Moderador',
       ADMIN: 'Administrador'
+    },
+    explore: {
+      title: 'Explore Characters',
+      subtitle: 'Discover and add new characters created by the community!',
+      search: 'Search characters or tags...',
+      noResults: 'No characters found. Try a different search!',
+      view: 'View',
+      add: 'Add to My Characters',
+      added: '{name} added to your characters!',
+      back: 'Back to Chat'
     }
   }
 };
