@@ -317,15 +317,24 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               setSelectedIndexRaw(characters.length); // select the last character (newly imported)
               setSidebarReloadKey(prev => prev + 1);
               
-              // Only set isImporting to false after everything is done
-              setTimeout(() => {
-                setIsImporting(false);
-                addToast({
-                  type: "success",
-                  message: "Character imported successfully!",
-                  duration: 3000,
-                });
-              }, 1000); // Give more time for the UI to update
+              // Wait until isReloadingCharacters is false before showing toast and removing spinner
+              const waitForReload = () => {
+                if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+                  if (window.__characterContext && window.__characterContext.isReloadingCharacters === false) {
+                    setIsImporting(false);
+                    addToast({
+                      type: "success",
+                      message: "Character imported successfully!",
+                      duration: 3000,
+                    });
+                  } else {
+                    window.requestAnimationFrame(waitForReload);
+                  }
+                } else {
+                  setTimeout(waitForReload, 50);
+                }
+              };
+              waitForReload();
             } catch (error) {
               console.error("Error importing character:", error);
               setIsImporting(false);

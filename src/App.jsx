@@ -36,7 +36,7 @@ function AdminRoute({ children }) {
 function ProtectedContent({ addToast }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [confirmClear, setConfirmClear] = useState(null);
-  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters, isLoading, isImporting } = useCharacter();
+  const { current, handleSaveCharacter, isModalOpen, handleCloseModal, setSelectedIndex, selectedIndex, characters, isLoading, isImporting, isReloadingCharacters } = useCharacter();
   const { clearChat } = useChat();
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
@@ -143,7 +143,7 @@ function ProtectedContent({ addToast }) {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Global loading overlay */}
-      {(isLoading || isImporting) && (
+      {(isLoading || isImporting || isReloadingCharacters) && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
           <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
         </div>
@@ -174,8 +174,8 @@ function ProtectedContent({ addToast }) {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            {/* Only show spinner during loading/importing, nothing else */}
-            {(isLoading || isImporting) ? (
+            {/* Only show spinner during loading/importing/reloading, nothing else */}
+            {(isLoading || isImporting || isReloadingCharacters) ? (
               null
             ) : (
               <Suspense fallback={null}>
@@ -197,11 +197,11 @@ function ProtectedContent({ addToast }) {
                   )}
               </Suspense>
             )}
-            {/* CharacterPane should also only show when not loading/importing and not showing ExplorePage */}
-            {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && (
+            {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
+            {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
               <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
             )}
-            {characterPaneVisible && !showExplore && current && !isLoading && !isImporting && (
+            {characterPaneVisible && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
               <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
                 <CharacterPane 
                   className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 

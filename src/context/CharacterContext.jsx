@@ -26,6 +26,7 @@ export function CharacterProvider({ children }) {
   const [characters, setCharacters] = useState([...defaultCharacters]);
   const [selectedIndex, _setSelectedIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReloadingCharacters, setIsReloadingCharacters] = useState(false);
 
   // Load characters and preferences on mount
   useEffect(() => {
@@ -340,6 +341,7 @@ export function CharacterProvider({ children }) {
       if (reloadCharacters._reloading) return;
       if (Date.now() - last429 < 2000) return; // 2s cooldown after 429
       reloadCharacters._reloading = true;
+      setIsReloadingCharacters(true);
       if (reloadTimeout) {
         clearTimeout(reloadTimeout);
       }
@@ -351,6 +353,7 @@ export function CharacterProvider({ children }) {
           handleRateLimit();
           last429 = Date.now();
           reloadCharacters._reloading = false;
+          setIsReloadingCharacters(false);
           return;
         }
         if (res.ok) {
@@ -367,10 +370,12 @@ export function CharacterProvider({ children }) {
           setCharacters(uniqueChars);
         }
         reloadCharacters._reloading = false;
+        setIsReloadingCharacters(false);
       }, 200);
     } catch (err) {
       // Optionally handle error
       reloadCharacters._reloading = false;
+      setIsReloadingCharacters(false);
     }
   }
 
@@ -406,6 +411,8 @@ export function CharacterProvider({ children }) {
         isLoading,
         isImporting,
         setIsImporting,
+        isReloadingCharacters,
+        setIsReloadingCharacters,
       }}
     >
       {children}
