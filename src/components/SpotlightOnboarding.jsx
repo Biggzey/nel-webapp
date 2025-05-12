@@ -11,7 +11,7 @@ const steps = [
     selector: '.sidebar',
     getTooltipStyle: (rect) => ({
       left: rect.left + 16,
-      top: rect.top + 120, // below Nelliel (default character)
+      top: rect.top + 180, // much lower, below Nelliel
       width: rect.width - 32,
       maxWidth: rect.width - 32,
     })
@@ -23,7 +23,7 @@ const steps = [
     selector: '.sidebar .explore-button',
     getTooltipStyle: (rect) => ({
       left: rect.left + 16,
-      top: rect.bottom + 8, // just below the search bar
+      top: rect.bottom + 8,
       width: rect.width - 32,
       maxWidth: rect.width - 32,
     })
@@ -35,7 +35,7 @@ const steps = [
     selector: '.sidebar .new-character-button',
     getTooltipStyle: (rect) => ({
       left: rect.left + 16,
-      top: rect.bottom + 8, // just below the Explore Characters button
+      top: rect.bottom + 8,
       width: Math.max(rect.width - 32, 220),
       maxWidth: Math.max(rect.width - 32, 220),
     })
@@ -59,7 +59,7 @@ const steps = [
     selector: '.character-pane .character-info',
     getTooltipStyle: (rect) => ({
       left: rect.left + 16,
-      top: rect.bottom + 8, // just below the info container
+      top: rect.bottom + 8,
       width: rect.width - 32,
       maxWidth: rect.width - 32,
     })
@@ -73,7 +73,7 @@ function getRect(selector) {
   return rect;
 }
 
-const SpotlightOnboarding = ({ onFinish }) => {
+const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
@@ -147,14 +147,16 @@ const SpotlightOnboarding = ({ onFinish }) => {
 
   function handleSkip() {
     setActive(false);
-    onFinish();
+    if (markOnboardingComplete) markOnboardingComplete();
+    if (onFinish) onFinish();
   }
 
   function handleNext() {
     if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
     else {
       setActive(false);
-      onFinish();
+      if (markOnboardingComplete) markOnboardingComplete();
+      if (onFinish) onFinish();
     }
   }
 
@@ -185,7 +187,7 @@ const SpotlightOnboarding = ({ onFinish }) => {
             onClick={handleNext}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
-            {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+            {currentStep === steps.length - 1 ? 'End' : 'Next'}
           </button>
         </div>
       </motion.div>
