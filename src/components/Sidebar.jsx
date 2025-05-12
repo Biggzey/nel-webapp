@@ -365,7 +365,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       {/* Content container with backdrop blur */}
       <div className="relative w-full h-full flex flex-col items-center">
         {/* Top controls section */}
-        <div className="w-full flex flex-row space-x-2 mb-6">
+        <div className="w-full flex flex-row space-x-2 mb-6 mt-4">
           {/* New Character button (50%) */}
           <button
             onClick={() => {
@@ -497,7 +497,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
         {/* Bottom controls in container */}
         <div className="w-full mt-auto">
-          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex flex-col space-y-1">
             {isModerator && (
               <button
                 onClick={() => navigate('/admin')}
