@@ -365,8 +365,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       {/* Content container with backdrop blur */}
       <div className="relative w-full h-full flex flex-col items-center">
         {/* Top controls section */}
-        <div className="w-full flex flex-row space-x-2 mb-6 mt-4">
-          {/* New Character button (50%) */}
+        <div className="w-full px-2 flex flex-row gap-x-2 mb-6 mt-4">
           <button
             onClick={() => {
               handleNewCharacter();
@@ -379,7 +378,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             </span>
             <span className="font-medium text-sm">{t('sidebar.newCharacter')}</span>
           </button>
-          {/* Import Character button (50%) */}
           <button
             onClick={() => setShowImportModal(true)}
             className="w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
@@ -392,14 +390,16 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         </div>
 
         {/* Explore button */}
-        <button
-          className="explore-button w-full py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
-          onClick={() => {
-            if (typeof setShowExplore === 'function') setShowExplore(true);
-          }}
-        >
-          Explore Characters
-        </button>
+        <div className="w-full px-2 mb-4">
+          <button
+            className="explore-button w-full py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
+            onClick={() => {
+              if (typeof setShowExplore === 'function') setShowExplore(true);
+            }}
+          >
+            Explore Characters
+          </button>
+        </div>
 
         {/* Search/filter bar */}
         <div className="w-full px-2 mb-2">
@@ -496,12 +496,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         </div>
 
         {/* Bottom controls in container */}
-        <div className="w-full mt-auto">
-          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex flex-col space-y-1">
+        <div className="w-full mt-auto px-2">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex flex-col space-y-1">
             {isModerator && (
               <button
                 onClick={() => navigate('/admin')}
-                className="w-full flex items-center space-x-2 px-3 py-3 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <span className="text-primary group-hover:scale-110 transition-transform">
                   <i className="fas fa-shield-alt" />
@@ -514,7 +514,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="w-full flex items-center justify-between px-3 py-3 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <div className="flex items-center space-x-2">
                   <span className="text-primary group-hover:scale-110 transition-transform">
