@@ -320,15 +320,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               // Only set isImporting to false after everything is done
               setTimeout(() => {
                 setIsImporting(false);
+                addToast({
+                  type: "success",
+                  message: "Character imported successfully!",
+                  duration: 3000,
+                });
               }, 1000); // Give more time for the UI to update
             } catch (error) {
               console.error("Error importing character:", error);
+              setIsImporting(false);
               addToast({
                 type: "error",
                 message: "Failed to import character: " + error.message,
                 duration: 5000,
               });
-              setIsImporting(false);
             }
           }}
         />

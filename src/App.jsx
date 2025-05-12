@@ -174,13 +174,9 @@ function ProtectedContent({ addToast }) {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="loader" /></div>}>
-              {isLoading || isImporting ? (
-                <div className="flex-1 flex items-center justify-center">
-                  <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
-                </div>
-              ) : (
-                (!characters || characters.length === 0 || !current || showExplore) && !isImporting
+            <Suspense fallback={null}>
+              {isLoading || isImporting ? null : (
+                (!characters || characters.length === 0 || !current || showExplore)
                   ? (
                     <ExplorePage onClose={() => {
                       setShowExplore(false);
