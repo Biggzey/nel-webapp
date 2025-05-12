@@ -20,7 +20,7 @@ import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
 import { useIsMobile } from './hooks/useIsMobile';
 import ExplorePage from './components/ExplorePage';
-import OnboardingOverlay from "./components/OnboardingOverlay";
+import SpotlightOnboarding from './components/SpotlightOnboarding';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -51,13 +51,18 @@ function ProtectedContent({ addToast }) {
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [showExplore, setShowExplore] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showSpotlightOnboarding, setShowSpotlightOnboarding] = useState(false);
 
   // Update visibility when switching between mobile/desktop
   useEffect(() => {
     setSidebarVisible(!isMobile);
     setCharacterPaneVisible(!isMobile);
   }, [isMobile]);
+
+  useEffect(() => {
+    const hasSeen = localStorage.getItem('hasSeenSpotlightOnboarding');
+    if (!hasSeen) setShowSpotlightOnboarding(true);
+  }, []);
 
   // Add mobile sidebar toggle handler
   const handleMobileMenuClick = () => {
@@ -142,17 +147,9 @@ function ProtectedContent({ addToast }) {
     }
   }, [showExplore]);
 
-  // Show onboarding for new users
-  useEffect(() => {
-    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    if (!hasSeenOnboarding) {
-      setShowOnboarding(true);
-    }
-  }, []);
-
-  const handleOnboardingClose = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('hasSeenOnboarding', 'true');
+  const handleSpotlightOnboardingClose = () => {
+    setShowSpotlightOnboarding(false);
+    localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
   };
 
   return (
@@ -265,7 +262,7 @@ function ProtectedContent({ addToast }) {
           </div>
         </div>
       )}
-      <OnboardingOverlay isOpen={showOnboarding} onClose={handleOnboardingClose} />
+      <SpotlightOnboarding isOpen={showSpotlightOnboarding} onClose={handleSpotlightOnboardingClose} />
     </div>
   );
 }
