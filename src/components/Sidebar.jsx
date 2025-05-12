@@ -420,7 +420,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Search characters..."
-              className="w-full px-4 py-2 rounded-lg bg-background-container-light dark:bg-background-container-dark border-2 border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary text-sm text-text-light dark:text-text-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark pr-10"
+              className="w-full pl-10 pr-10 py-2 rounded-lg bg-background-container-light dark:bg-background-container-dark border-2 border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary text-sm text-text-light dark:text-text-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark"
               aria-label="Search characters"
             />
             {searchQuery && (
