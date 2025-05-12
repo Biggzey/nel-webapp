@@ -321,6 +321,8 @@ function Preferences() {
   const [model, setModel] = useState('openai');
   const { characters, handleDeleteCharacter, reloadCharacters, setSelectedIndex, setSelectedIndexRaw } = useCharacter();
   const [advancedOptions, setAdvancedOptions] = useState(false);
+  const [showDeleteNelConfirm, setShowDeleteNelConfirm] = useState(false);
+  const [showRestoreNelConfirm, setShowRestoreNelConfirm] = useState(false);
 
   const fontOptions = [
     { label: 'Default', value: 'inherit' },
@@ -352,19 +354,21 @@ function Preferences() {
   const handleDeleteNel = async () => {
     if (!hasNel) {
       addToast({ type: 'error', message: 'No Nel character exists.', duration: 4000 });
+      setShowDeleteNelConfirm(false);
       return;
     }
     await handleDeleteCharacter(nelIndex);
     addToast({ type: 'success', message: 'Nel character deleted.', duration: 3000 });
-    // Optionally reload characters
     await reloadCharacters();
     setSelectedIndexRaw(0);
+    setShowDeleteNelConfirm(false);
   };
 
   // Restore Nel handler
   const handleRestoreNel = async () => {
     if (hasNel) {
       addToast({ type: 'error', message: 'Nel character already exists.', duration: 4000 });
+      setShowRestoreNelConfirm(false);
       return;
     }
     // Use default Nelliel definition
@@ -376,65 +380,118 @@ function Preferences() {
       systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
       customInstructions: "",
     };
-    // Create Nel
-    await fetch("/api/characters", {
+    // Create Nel at the top of the list
+    const res = await fetch("/api/characters", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(defaultNel),
       credentials: 'include',
     });
+    if (!res.ok) {
+      addToast({ type: 'error', message: 'Failed to restore Nel.', duration: 4000 });
+      setShowRestoreNelConfirm(false);
+      return;
+    }
     addToast({ type: 'success', message: 'Nel character restored.', duration: 3000 });
     await reloadCharacters();
-    setSelectedIndexRaw(characters.length); // select the last character
+    // After reload, select Nel at the top
+    setSelectedIndexRaw(0);
+    setShowRestoreNelConfirm(false);
   };
 
   return (
     <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
       <h2 className="text-2xl font-semibold">{t('settings.preferences')}</h2>
       {/* Advanced Options Toggle */}
-      <div className="flex items-center space-x-3 mt-2">
-        <label className="block text-sm font-medium">Advanced Options</label>
-        <button
-          type="button"
-          className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${advancedOptions ? 'bg-primary' : 'bg-gray-400'}`}
-          onClick={() => setAdvancedOptions(v => !v)}
-          aria-pressed={advancedOptions}
-        >
-          <span
-            className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${advancedOptions ? 'translate-x-6' : ''}`}
-          />
-        </button>
-      </div>
-      {/* Advanced Options Content */}
-      {advancedOptions && (
-        <div className="space-y-4 border border-container-border-light dark:border-container-border-dark rounded-lg p-4 mt-2 bg-background-container-light dark:bg-background-container-dark">
-          <div className="flex space-x-4 mb-2">
-            <button
-              className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-semibold"
-              onClick={handleDeleteNel}
-            >
-              Delete Nel
-            </button>
-            <button
-              className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-semibold"
-              onClick={handleRestoreNel}
-            >
-              Restore Nel
-            </button>
+      <div className="mt-8">
+        <div className="flex items-center space-x-3 mt-2">
+          <label className="block text-sm font-medium">Advanced Options</label>
+          <button
+            type="button"
+            className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${advancedOptions ? 'bg-primary' : 'bg-gray-400'}`}
+            onClick={() => setAdvancedOptions(v => !v)}
+            aria-pressed={advancedOptions}
+          >
+            <span
+              className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${advancedOptions ? 'translate-x-6' : ''}`}
+            />
+          </button>
+        </div>
+        {/* Advanced Options Content */}
+        {advancedOptions && (
+          <div className="space-y-4 border border-container-border-light dark:border-container-border-dark rounded-lg p-4 mt-2 bg-background-container-light dark:bg-background-container-dark">
+            <div className="flex space-x-4 mb-2">
+              <button
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors font-semibold"
+                onClick={() => setShowDeleteNelConfirm(true)}
+              >
+                Delete Nel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors font-semibold"
+                onClick={() => setShowRestoreNelConfirm(true)}
+              >
+                Restore Nel
+              </button>
+            </div>
+            {/* Auto-regenerate after edit toggle */}
+            <div className="flex items-center space-x-3 mt-2">
+              <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
+              <button
+                type="button"
+                className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
+                onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
+                aria-pressed={settings.autoRegenerateAfterEdit}
+              >
+                <span
+                  className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
+                />
+              </button>
+            </div>
           </div>
-          {/* Auto-regenerate after edit toggle */}
-          <div className="flex items-center space-x-3 mt-2">
-            <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
-            <button
-              type="button"
-              className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
-              onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
-              aria-pressed={settings.autoRegenerateAfterEdit}
-            >
-              <span
-                className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
-              />
-            </button>
+        )}
+      </div>
+      {/* Delete Nel Confirmation Modal */}
+      {showDeleteNelConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">Are you sure you want to delete Nel?</h3>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteNelConfirm(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteNel}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Restore Nel Confirmation Modal */}
+      {showRestoreNelConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold mb-4">Are you sure you want to restore Nel?</h3>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowRestoreNelConfirm(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRestoreNel}
+                className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+              >
+                Restore
+              </button>
+            </div>
           </div>
         </div>
       )}
