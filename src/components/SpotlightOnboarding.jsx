@@ -88,26 +88,15 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
     ...steps[currentStep].tooltipPosition,
   };
 
-  function handleSkip() {
-    localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
-    onClose();
-  }
-
-  function handleNext() {
-    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
-    else {
-      localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
-      onClose();
-    }
-  }
-
   // SVG mask for spotlight effect (subtle)
   const maskId = 'onboarding-spotlight-mask';
+  const svgWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  const svgHeight = typeof window !== 'undefined' ? window.innerHeight : 1080;
   const mask = (
-    <svg width="100vw" height="100vh" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: '100vw', height: '100vh' }}>
+    <svg width={svgWidth} height={svgHeight} style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: '100%', height: '100%' }}>
       <defs>
         <mask id={maskId}>
-          <rect x="0" y="0" width="100vw" height="100vh" fill="white" />
+          <rect x="0" y="0" width={svgWidth} height={svgHeight} fill="white" />
           <rect
             x={spotlightRect.left - 8}
             y={spotlightRect.top - 8}
@@ -121,13 +110,26 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
       <rect
         x="0"
         y="0"
-        width="100vw"
-        height="100vh"
+        width={svgWidth}
+        height={svgHeight}
         fill="rgba(0,0,0,0.25)"
         mask={`url(#${maskId})`}
       />
     </svg>
   );
+
+  function handleSkip() {
+    localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
+    onClose();
+  }
+
+  function handleNext() {
+    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+    else {
+      localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
+      onClose();
+    }
+  }
 
   return createPortal(
     <>
