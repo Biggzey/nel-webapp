@@ -21,7 +21,7 @@ export default function CharacterPane({ className = "" }) {
 
   return (
     <aside className={`character-pane ${className} flex flex-col h-full w-characterpane bg-background-container-light dark:bg-background-container-dark border-l border-container-border-light dark:border-container-border-dark p-4 overflow-y-auto`}>
-      <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3">
+      <div className="flex items-center justify-between mb-4 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 character-name-onboarding-anchor">
         <h2 className="text-2xl font-semibold text-text-light dark:text-text-dark">
           {current?.name}
         </h2>

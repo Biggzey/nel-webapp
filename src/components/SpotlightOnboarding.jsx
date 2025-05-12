@@ -7,7 +7,7 @@ const steps = [
   {
     id: 'nelliel-row',
     title: 'Meet Nelliel',
-    description: 'This is Nelliel, your default AI companion. She is always at the top of your character list. Click her to start chatting!',
+    description: 'This is where all your characters will appear. You can reorder them, delete, clear chat, and manage your companions. Nelliel is your default AI companion and always appears at the top.',
     selector: '.nelliel-row-onboarding-anchor',
     getTooltipStyle: (rect) => ({
       left: rect.left,
@@ -56,7 +56,7 @@ const steps = [
     id: 'character-pane-info',
     title: 'Character Details',
     description: 'View and edit your character\'s details, such as age, gender, and personality. This pane gives you full control over your companion.',
-    selector: '.character-pane .character-info-onboarding-anchor',
+    selector: '.character-pane .character-name-onboarding-anchor',
     getTooltipStyle: (rect) => ({
       left: rect.left,
       top: rect.bottom + 8,
