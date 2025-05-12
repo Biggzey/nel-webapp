@@ -174,9 +174,12 @@ function ProtectedContent({ addToast }) {
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/*" element={
           <>
-            <Suspense fallback={null}>
-              {isLoading || isImporting ? null : (
-                (!characters || characters.length === 0 || !current || showExplore)
+            {/* Only show spinner during loading/importing, nothing else */}
+            {(isLoading || isImporting) ? (
+              null
+            ) : (
+              <Suspense fallback={null}>
+                {(!characters || characters.length === 0 || !current || showExplore)
                   ? (
                     <ExplorePage onClose={() => {
                       setShowExplore(false);
@@ -191,13 +194,14 @@ function ProtectedContent({ addToast }) {
                       onMenuClick={handleMobileMenuClick}
                       onCharacterPaneClick={handleMobileCharacterPaneClick}
                     />
-                  )
-              )}
-            </Suspense>
-            {characterPaneVisible && isMobile && !showExplore && current && (
+                  )}
+              </Suspense>
+            )}
+            {/* CharacterPane should also only show when not loading/importing and not showing ExplorePage */}
+            {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && (
               <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
             )}
-            {characterPaneVisible && !showExplore && current && (
+            {characterPaneVisible && !showExplore && current && !isLoading && !isImporting && (
               <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
                 <CharacterPane 
                   className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
