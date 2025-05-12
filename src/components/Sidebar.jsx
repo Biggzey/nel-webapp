@@ -35,6 +35,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCharacters,
     reloadCharacters,
     isLoading,
+    setIsLoading,
   } = useCharacter();
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -292,6 +293,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onClose={() => setShowImportModal(false)}
           onImport={async (characterData) => {
             try {
+              // Set loading state immediately
+              setIsLoading(true);
               const res = await fetch("/api/characters", {
                 method: "POST",
                 headers: {
@@ -308,11 +311,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               const imported = await res.json();
               // Reload the character list and select the new character
               await reloadCharacters();
-              setTimeout(() => {
-                setSelectedIndexRaw(characters.length); // select the last character (newly imported)
-                setShowImportModal(false);
-                setSidebarReloadKey(prev => prev + 1);
-              }, 300);
+              setSelectedIndexRaw(characters.length); // select the last character (newly imported)
+              setShowImportModal(false);
+              setSidebarReloadKey(prev => prev + 1);
+              // Set loading state to false after everything is done
+              setIsLoading(false);
             } catch (error) {
               console.error("Error importing character:", error);
               addToast({
@@ -320,6 +323,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 message: "Failed to import character: " + error.message,
                 duration: 5000,
               });
+              // Ensure loading state is reset on error
+              setIsLoading(false);
             }
           }}
         />
