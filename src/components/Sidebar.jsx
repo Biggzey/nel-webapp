@@ -227,6 +227,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
   const [pendingImportToast, setPendingImportToast] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef();
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -339,6 +341,22 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     }
   }, [pendingImportToast, isReloadingCharacters, setIsImporting, addToast]);
 
+  // Filter characters by search query (case-insensitive, match any part of name)
+  const filteredCharacters = characters.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
+  );
+
+  // Handle Escape to clear search
+  useEffect(() => {
+    function handleKey(e) {
+      if (document.activeElement === searchInputRef.current && e.key === "Escape") {
+        setSearchQuery("");
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
   return (
     <aside className={`${className} w-72 md:w-80 flex-shrink-0 flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
       {/* Decorative background patterns */}
@@ -393,6 +411,32 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           Explore Characters
         </button>
 
+        {/* Search/filter bar */}
+        <div className="w-full px-2 mb-2">
+          <div className="relative">
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search characters..."
+              className="w-full px-4 py-2 rounded-lg bg-background-container-light dark:bg-background-container-dark border-2 border-container-border-light dark:border-container-border-dark focus:outline-none focus:ring-2 focus:ring-primary text-sm text-text-light dark:text-text-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark pr-10"
+              aria-label="Search characters"
+            />
+            {searchQuery && (
+              <button
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-primary focus:outline-none"
+                onClick={() => setSearchQuery("")}
+                tabIndex={0}
+                aria-label="Clear search"
+              >
+                <i className="fas fa-times-circle" />
+              </button>
+            )}
+            <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark" />
+          </div>
+        </div>
+
         {/* Character list with dnd-kit */}
         <div className="w-full flex-1 space-y-2 mb-6 px-2 overflow-y-auto">
           <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">
@@ -405,40 +449,40 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             </div>
           ) : (
             <>
-              {/* Render Nelliel statically at the top if present */}
+              {/* Render Nelliel statically at the top if present and matches search */}
               {(() => {
-                const nellielIdx = characters.findIndex(c => c.name === 'Nelliel');
+                const nellielIdx = filteredCharacters.findIndex(c => c.name === 'Nelliel');
                 if (nellielIdx !== -1) {
-                  const nelliel = characters[nellielIdx];
+                  const nelliel = filteredCharacters[nellielIdx];
                   return (
                     <SortableCharacterItem
                       key={nelliel.id}
                       character={nelliel}
-                      index={nellielIdx}
-                      isSelected={nellielIdx === selectedIndex}
+                      index={characters.findIndex(c => c.id === nelliel.id)}
+                      isSelected={characters.findIndex(c => c.id === nelliel.id) === selectedIndex}
                       onSelect={setSelectedIndex}
                       onClearChat={handleClearChat}
                       onDelete={handleDeleteCharacterWithConfirm}
                       onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
-                      isMenuOpen={openMenuIndex === nellielIdx}
+                      isMenuOpen={openMenuIndex === characters.findIndex(c => c.id === nelliel.id)}
                       menuRef={menuRef}
                     />
                   );
                 }
                 return null;
               })()}
-              {/* Render all other characters in drag-and-drop context */}
+              {/* Render all other characters in drag-and-drop context, filtered */}
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
                 onDragEnd={handleDragEnd}
               >
                 <SortableContext
-                  items={characters.filter(c => c.name !== 'Nelliel').map(c => c.id)}
+                  items={filteredCharacters.filter(c => c.name !== 'Nelliel').map(c => c.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {characters.filter(c => c.name !== 'Nelliel').map((c, i) => {
-                    // The index here is for the filtered list, not the full list
+                  {filteredCharacters.filter(c => c.name !== 'Nelliel').map((c, i) => {
+                    // The index here is for the full list
                     const globalIdx = characters.findIndex(x => x.id === c.id);
                     return (
                       <SortableCharacterItem
