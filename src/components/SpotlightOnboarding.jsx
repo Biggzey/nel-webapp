@@ -5,15 +5,15 @@ import { motion } from 'framer-motion';
 // Onboarding steps with selectors and custom tooltip placement logic
 const steps = [
   {
-    id: 'sidebar-characters',
-    title: 'Your Characters',
-    description: 'Browse and select from your collection of AI characters. Use the search bar to quickly find a character. This is where you manage your companions.',
-    selector: '.sidebar',
+    id: 'nelliel-row',
+    title: 'Meet Nelliel',
+    description: 'This is Nelliel, your default AI companion. She is always at the top of your character list. Click her to start chatting!',
+    selector: '.nelliel-row-onboarding-anchor',
     getTooltipStyle: (rect) => ({
-      left: rect.left + 16,
-      top: rect.top + 180, // much lower, below Nelliel
-      width: rect.width - 32,
-      maxWidth: rect.width - 32,
+      left: rect.left,
+      top: rect.bottom + 8,
+      width: rect.width,
+      maxWidth: rect.width,
     })
   },
   {
@@ -53,16 +53,17 @@ const steps = [
     })
   },
   {
-    id: 'character-pane',
+    id: 'character-pane-info',
     title: 'Character Details',
     description: 'View and edit your character\'s details, such as age, gender, and personality. This pane gives you full control over your companion.',
-    selector: '.character-pane .character-info',
+    selector: '.character-pane .character-info-onboarding-anchor',
     getTooltipStyle: (rect) => ({
-      left: rect.left + 16,
+      left: rect.left,
       top: rect.bottom + 8,
-      width: rect.width - 32,
-      maxWidth: rect.width - 32,
-    })
+      width: rect.width,
+      maxWidth: rect.width,
+    }),
+    isFinal: true
   }
 ];
 
@@ -183,12 +184,21 @@ const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
           >
             Skip
           </button>
-          <button
-            onClick={handleNext}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            {currentStep === steps.length - 1 ? 'End' : 'Next'}
-          </button>
+          {steps[currentStep].isFinal ? (
+            <button
+              onClick={handleNext}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              End
+            </button>
+          ) : (
+            <button
+              onClick={handleNext}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Next
+            </button>
+          )}
         </div>
       </motion.div>
     </>,

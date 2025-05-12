@@ -445,18 +445,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 if (nellielIdx !== -1) {
                   const nelliel = filteredCharacters[nellielIdx];
                   return (
-                    <SortableCharacterItem
-                      key={nelliel.id}
-                      character={nelliel}
-                      index={characters.findIndex(c => c.id === nelliel.id)}
-                      isSelected={characters.findIndex(c => c.id === nelliel.id) === selectedIndex}
-                      onSelect={setSelectedIndex}
-                      onClearChat={handleClearChat}
-                      onDelete={handleDeleteCharacterWithConfirm}
-                      onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
-                      isMenuOpen={openMenuIndex === characters.findIndex(c => c.id === nelliel.id)}
-                      menuRef={menuRef}
-                    />
+                    <div className="nelliel-row-onboarding-anchor">
+                      <SortableCharacterItem
+                        key={nelliel.id}
+                        character={nelliel}
+                        index={characters.findIndex(c => c.id === nelliel.id)}
+                        isSelected={characters.findIndex(c => c.id === nelliel.id) === selectedIndex}
+                        onSelect={setSelectedIndex}
+                        onClearChat={handleClearChat}
+                        onDelete={handleDeleteCharacterWithConfirm}
+                        onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                        isMenuOpen={openMenuIndex === characters.findIndex(c => c.id === nelliel.id)}
+                        menuRef={menuRef}
+                      />
+                    </div>
                   );
                 }
                 return null;

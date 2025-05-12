@@ -35,7 +35,7 @@ export default function CharacterPane({ className = "" }) {
       </div>
       
       {/* Character Info Section - Now using grid for dynamic sizing */}
-      <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden">
+      <div className="flex-1 grid grid-rows-[auto_1fr] overflow-hidden character-info-onboarding-anchor">
         {/* Metadata section that will push the image down */}
         {hasInfo && (
           <div className="space-y-3 text-sm bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-3 mb-4">
