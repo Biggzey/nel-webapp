@@ -186,16 +186,16 @@ function ProtectedContent({ addToast }) {
                       if (current) setCharacterPaneVisible(true);
                     }} />
                   ) : (
-                    <ChatWindow 
-                      ref={chatWindowRef} 
-                      chatInputRef={chatInputRef} 
-                      className="flex-1" 
-                      chatReloadKey={chatReloadKey}
-                      onMenuClick={handleMobileMenuClick}
-                      onCharacterPaneClick={handleMobileCharacterPaneClick}
-                    />
+              <ChatWindow 
+                ref={chatWindowRef} 
+                chatInputRef={chatInputRef} 
+                className="flex-1" 
+                chatReloadKey={chatReloadKey}
+                onMenuClick={handleMobileMenuClick}
+                onCharacterPaneClick={handleMobileCharacterPaneClick}
+              />
                   )}
-              </Suspense>
+            </Suspense>
             )}
             {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
             {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (

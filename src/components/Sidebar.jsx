@@ -11,6 +11,108 @@ import CharacterImportModal from "./CharacterImportModal";
 import { useToast } from "./Toast";
 import { useIsMobile } from '../hooks/useIsMobile';
 import { TrashIcon } from "@heroicons/react/24/outline";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+// Sortable character item component
+function SortableCharacterItem({ character, index, isSelected, onSelect, onClearChat, onDelete, onMenuClick, isMenuOpen, menuRef }) {
+  const isNelliel = character.name === "Nelliel";
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: character.id,
+    disabled: isNelliel, // Disable dragging for Nelliel
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1 : 0,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative ${isDragging ? 'shadow-lg' : ''}`}
+      {...(!isNelliel ? { ...attributes, ...listeners } : {})}
+    >
+      <button
+        onClick={() => onSelect(index)}
+        className={`flex-1 text-left flex items-center space-x-3 ${
+          isSelected
+            ? "text-text-light dark:text-text-dark"
+            : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
+        }`}
+      >
+        <img
+          src={character.avatar}
+          alt=""
+          className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
+        />
+        <span className="font-medium">{character.name}</span>
+      </button>
+      {/* Ellipsis/context menu for all characters */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onMenuClick(index);
+        }}
+        className="ml-2 p-2 text-gray-400 hover:text-primary focus:outline-none"
+        title="More options"
+      >
+        <i className="fas fa-ellipsis-v" />
+      </button>
+      {/* Context menu */}
+      {isMenuOpen && (
+        <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClearChat(character);
+            }}
+            className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+          >
+            <i className="fas fa-trash-alt text-white mr-2" /> Clear Chat
+          </button>
+          {/* Only show delete for non-Nelliel characters */}
+          {!isNelliel && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(character, index);
+              }}
+              className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+            >
+              <i className="fas fa-ban text-red-500 mr-2" /> Delete
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey, setShowExplore }) {
   const navigate = useNavigate();
@@ -34,6 +136,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     setCurrent,
     setCharacters,
     reloadCharacters,
+    reorderCharacters,
     isLoading,
     isImporting,
     setIsImporting,
@@ -46,6 +149,37 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const { addToast } = useToast();
   const [showImportModal, setShowImportModal] = useState(false);
   const [pendingImportToast, setPendingImportToast] = useState(false);
+
+  // Configure sensors for drag and drop
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      const oldIndex = characters.findIndex((c) => c.id === active.id);
+      const newIndex = characters.findIndex((c) => c.id === over.id);
+      
+      // Don't allow moving characters above Nelliel if she exists
+      const nellielIndex = characters.findIndex(c => c.name === 'Nelliel');
+      if (nellielIndex !== -1 && newIndex < nellielIndex) {
+        return;
+      }
+
+      const newOrder = arrayMove(characters, oldIndex, newIndex);
+      reorderCharacters(newOrder);
+    }
+  }
 
   const isBookmarked = bookmarks.includes(selectedIndex);
 
@@ -181,81 +315,42 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           Explore Characters
         </button>
 
-        {/* Character list directly on background */}
+        {/* Character list with dnd-kit */}
         <div className="w-full flex-1 space-y-2 mb-6 px-2 overflow-y-auto">
-          {/* Time indicator */}
-          <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">{t('sidebar.characters')}</div>
+          <div className="text-xl font-bold text-white-500 dark:text-white-500 px-2 mb-4 [text-shadow:0.1px_0.1px_0_#000,0_0.1px_0_#000,0.1px_0_0_#000,0_-0.1px_0_#000]">
+            {t('sidebar.characters')}
+          </div>
           
           {isLoading ? (
             <div className="flex items-center justify-center h-32">
               <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
             </div>
           ) : (
-            characters.map((c, i) => {
-              const isNelliel = c.name === "Nelliel";
-              return (
-                <div
-                  key={c.id}
-                  className="group flex items-center justify-between px-3 py-3 rounded-lg bg-background-container-hover-light/20 dark:bg-background-container-hover-dark/20 transition-all duration-200 hover:bg-background-container-hover-light/100 dark:hover:bg-background-container-hover-dark/100 relative"
-                >
-                  <button
-                    onClick={() => {
-                      setSelectedIndex(i);
-                      onLinkClick();
-                    }}
-                    className={`flex-1 text-left flex items-center space-x-3 ${
-                      i === selectedIndex
-                        ? "text-text-light dark:text-text-dark"
-                        : "text-text-light/80 dark:text-text-dark/80 hover:text-text-light dark:hover:text-text-dark"
-                    }`}
-                  >
-                    <img
-                      src={c.avatar}
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
-                    />
-                    <span className="font-medium">{c.name}</span>
-                  </button>
-                  {/* Ellipsis/context menu for all characters */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuIndex(openMenuIndex === i ? null : i);
-                    }}
-                    className="ml-2 p-2 text-gray-400 hover:text-primary focus:outline-none"
-                    title={t('common.more')}
-                  >
-                    <i className="fas fa-ellipsis-v" />
-                  </button>
-                  {/* Context menu */}
-                  {openMenuIndex === i && (
-                    <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClearChat(c);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
-                      >
-                        <i className="fas fa-trash-alt text-white mr-2" /> {t('chat.clearChat')}
-                      </button>
-                      {/* Only show delete for non-Nelliel characters */}
-                      {c.name !== 'Nelliel' && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCharacterWithConfirm(c, i);
-                          }}
-                          className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
-                        >
-                          <i className="fas fa-ban text-red-500 mr-2" /> {t('character.delete')}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={characters.map(c => c.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {characters.map((c, i) => (
+                  <SortableCharacterItem
+                    key={c.id}
+                    character={c}
+                    index={i}
+                    isSelected={i === selectedIndex}
+                    onSelect={setSelectedIndex}
+                    onClearChat={handleClearChat}
+                    onDelete={handleDeleteCharacterWithConfirm}
+                    onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                    isMenuOpen={openMenuIndex === i}
+                    menuRef={menuRef}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           )}
         </div>
 

@@ -396,6 +396,27 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  // Reorder characters and persist to backend
+  async function reorderCharacters(newOrder) {
+    // newOrder: array of character objects in new order
+    const orderedIds = newOrder.map(c => c.id);
+    setCharacters(newOrder); // Optimistic update
+    try {
+      await fetch("/api/characters/order", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderedIds }),
+      });
+    } catch (error) {
+      console.error("Error reordering characters:", error);
+      // Optionally reload from backend if error
+      reloadCharacters();
+    }
+  }
+
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -418,6 +439,7 @@ export function CharacterProvider({ children }) {
         resetCurrentCharacter,
         toggleBookmark,
         reloadCharacters,
+        reorderCharacters,
         isLoading,
         isImporting,
         setIsImporting,

@@ -1419,12 +1419,45 @@ try {
     try {
       const characters = await prisma.character.findMany({
         where: { userId: req.user.id },
-        orderBy: { createdAt: 'asc' }
+        orderBy: { order: 'asc' }
       });
       res.json(characters);
     } catch (error) {
       console.error("Error fetching characters:", error);
       res.status(500).json({ error: "Failed to fetch characters" });
+    }
+  });
+
+  // PATCH endpoint to update character order
+  app.patch("/api/characters/order", authMiddleware, async (req, res) => {
+    try {
+      const { orderedIds } = req.body;
+      if (!Array.isArray(orderedIds)) {
+        return res.status(400).json({ error: "orderedIds must be an array" });
+      }
+      // Fetch all character IDs for this user
+      const userCharacters = await prisma.character.findMany({
+        where: { userId: req.user.id },
+        select: { id: true }
+      });
+      const userCharIds = userCharacters.map(c => c.id);
+      // Only allow reordering of user's own characters
+      if (!orderedIds.every(id => userCharIds.includes(id))) {
+        return res.status(403).json({ error: "Invalid character IDs" });
+      }
+      // Update each character's order
+      await Promise.all(
+        orderedIds.map((id, idx) =>
+          prisma.character.update({
+            where: { id },
+            data: { order: idx }
+          })
+        )
+      );
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating character order:", error);
+      res.status(500).json({ error: "Failed to update character order" });
     }
   });
 

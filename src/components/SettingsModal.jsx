@@ -573,21 +573,21 @@ function Preferences() {
               >
                 Restore Nel
               </button>
-            </div>
-            {/* Auto-regenerate after edit toggle */}
+      </div>
+      {/* Auto-regenerate after edit toggle */}
             <div className="flex items-center space-x-3 mt-2">
-              <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
-              <button
-                type="button"
-                className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
-                onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
-                aria-pressed={settings.autoRegenerateAfterEdit}
-              >
-                <span
-                  className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
-                />
-              </button>
-            </div>
+        <label className="block text-sm font-medium">Auto-regenerate AI response after editing user message</label>
+        <button
+          type="button"
+          className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${settings.autoRegenerateAfterEdit ? 'bg-primary' : 'bg-gray-400'}`}
+          onClick={() => updateSettings({ autoRegenerateAfterEdit: !settings.autoRegenerateAfterEdit })}
+          aria-pressed={settings.autoRegenerateAfterEdit}
+        >
+          <span
+            className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${settings.autoRegenerateAfterEdit ? 'translate-x-6' : ''}`}
+          />
+        </button>
+      </div>
           </div>
         )}
       </div>
