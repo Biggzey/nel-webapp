@@ -74,17 +74,21 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
 
   if (!isOpen || !spotlightRect) return null;
 
-  // Calculate tooltip position (right or below the spotlight, fallback to center)
+  // Clamp tooltip position to always be fully visible in the viewport
+  let tooltipTop = spotlightRect.top + spotlightRect.height + 16;
+  let tooltipLeft = spotlightRect.left;
+  const tooltipHeight = 180; // estimated height of tooltip
+  const tooltipWidth = 340; // estimated width of tooltip
+  if (tooltipTop + tooltipHeight > window.innerHeight) {
+    tooltipTop = Math.max(window.innerHeight - tooltipHeight - 16, 16);
+  }
+  if (tooltipLeft + tooltipWidth > window.innerWidth) {
+    tooltipLeft = Math.max(window.innerWidth - tooltipWidth - 16, 16);
+  }
   let tooltipStyle = {
     position: 'fixed',
-    top: Math.min(
-      Math.max(spotlightRect.top + spotlightRect.height + 16, 16),
-      window.innerHeight - 200
-    ),
-    left: Math.min(
-      Math.max(spotlightRect.left, 16),
-      window.innerWidth - 340
-    ),
+    top: tooltipTop,
+    left: tooltipLeft,
     zIndex: 10001,
     maxWidth: 320,
   };
