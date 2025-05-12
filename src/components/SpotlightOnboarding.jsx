@@ -6,21 +6,21 @@ const steps = [
   {
     id: 'sidebar',
     title: 'Character Selection',
-    description: 'Choose from your AI companions or create new ones here.',
-    position: 'left',
+    description: 'Browse and select from our collection of AI characters. Each has a unique personality and backstory.',
+    position: 'left'
   },
   {
     id: 'chat',
     title: 'Chat Interface',
-    description: 'Engage in conversations with your AI companions in this space.',
-    position: 'center',
+    description: 'Engage in natural conversations with your chosen character. The chat history is automatically saved.',
+    position: 'right'
   },
   {
-    id: 'character-pane',
+    id: 'character',
     title: 'Character Details',
-    description: 'View and customize your AI companion\'s personality and settings.',
-    position: 'right',
-  },
+    description: 'View and customize your character\'s personality, appearance, and background story.',
+    position: 'right'
+  }
 ];
 
 const SpotlightOnboarding = ({ onFinish }) => {
@@ -36,32 +36,18 @@ const SpotlightOnboarding = ({ onFinish }) => {
       setTargetElement(element);
       const rect = element.getBoundingClientRect();
       setMaskPosition({
-        x: rect.x,
-        y: rect.y,
+        x: rect.left,
+        y: rect.top,
         width: rect.width,
-        height: rect.height,
+        height: rect.height
       });
 
-      // Calculate tooltip position based on step position
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      let x, y;
+      // Calculate tooltip position
+      const position = steps[currentStep].position;
+      const tooltipX = position === 'left' ? rect.left - 300 : rect.right + 20;
+      const tooltipY = rect.top + (rect.height / 2);
 
-      switch (steps[currentStep].position) {
-        case 'left':
-          x = Math.min(rect.right + 20, viewportWidth - 300);
-          y = Math.min(rect.top + rect.height / 2, viewportHeight - 100);
-          break;
-        case 'right':
-          x = Math.max(rect.left - 320, 20);
-          y = Math.min(rect.top + rect.height / 2, viewportHeight - 100);
-          break;
-        default: // center
-          x = Math.max(20, Math.min(rect.left + rect.width / 2 - 150, viewportWidth - 320));
-          y = Math.min(rect.bottom + 20, viewportHeight - 100);
-      }
-
-      setTooltipPosition({ x, y });
+      setTooltipPosition({ x: tooltipX, y: tooltipY });
     }
   }, [currentStep]);
 
@@ -85,17 +71,14 @@ const SpotlightOnboarding = ({ onFinish }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50"
-        style={{
-          background: 'rgba(0, 0, 0, 0.75)',
-          backdropFilter: 'blur(4px)',
-        }}
       >
+        <div className="absolute inset-0 bg-black/50" />
         <svg
           className="absolute inset-0 w-full h-full"
           style={{ pointerEvents: 'none' }}
         >
           <defs>
-            <mask id="spotlight-mask">
+            <mask id="spotlight">
               <rect width="100%" height="100%" fill="white" />
               <rect
                 x={maskPosition.x}
@@ -110,8 +93,9 @@ const SpotlightOnboarding = ({ onFinish }) => {
           <rect
             width="100%"
             height="100%"
-            fill="rgba(0, 0, 0, 0.75)"
-            mask="url(#spotlight-mask)"
+            fill="black"
+            mask="url(#spotlight)"
+            opacity="0.5"
           />
         </svg>
 
@@ -119,28 +103,32 @@ const SpotlightOnboarding = ({ onFinish }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="absolute bg-white rounded-lg shadow-xl p-6 max-w-sm"
+          className="absolute"
           style={{
             left: tooltipPosition.x,
             top: tooltipPosition.y,
             transform: 'translateY(-50%)',
+            maxWidth: '280px',
+            zIndex: 51
           }}
         >
-          <h3 className="text-lg font-semibold mb-2">{steps[currentStep].title}</h3>
-          <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
-          <div className="flex justify-between items-center">
-            <button
-              onClick={handleSkip}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Skip
-            </button>
-            <button
-              onClick={handleNext}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-            >
-              {currentStep < steps.length - 1 ? 'Next' : 'Finish'}
-            </button>
+          <div className="bg-white rounded-lg shadow-xl p-4">
+            <h3 className="text-lg font-semibold mb-2">{steps[currentStep].title}</h3>
+            <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
+            <div className="flex justify-between items-center">
+              <button
+                onClick={handleSkip}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>

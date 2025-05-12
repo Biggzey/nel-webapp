@@ -43,7 +43,6 @@ function ProtectedContent({ addToast }) {
   const { t } = useLanguage();
   const [chatReloadKey, setChatReloadKey] = useState(0);
   const isMobile = useIsMobile();
-  // Set initial state based on mobile/desktop
   const [sidebarVisible, setSidebarVisible] = useState(!isMobile);
   const [characterPaneVisible, setCharacterPaneVisible] = useState(!isMobile);
   const chatInputRef = useRef(null);
@@ -52,17 +51,8 @@ function ProtectedContent({ addToast }) {
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [showExplore, setShowExplore] = useState(false);
-  const [showSpotlightOnboarding, setShowSpotlightOnboarding] = useState(false);
   const { hasSeenOnboarding, markOnboardingComplete } = useOnboarding();
   const { user } = useAuth();
-
-  // Placeholder: replace with real user logic after migration
-  const shouldShowOnboarding = showSpotlightOnboarding;
-
-  // For demo/testing: show onboarding on first load
-  useEffect(() => {
-    setShowSpotlightOnboarding(true);
-  }, []);
 
   // Update visibility when switching between mobile/desktop
   useEffect(() => {
@@ -154,7 +144,7 @@ function ProtectedContent({ addToast }) {
   }, [showExplore]);
 
   const handleSpotlightOnboardingClose = () => {
-    setShowSpotlightOnboarding(false);
+    markOnboardingComplete();
   };
 
   return (
@@ -179,7 +169,7 @@ function ProtectedContent({ addToast }) {
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
       {location.pathname !== '/admin' && sidebarVisible && (
         <Sidebar
-          className="h-full w-full"
+          className="h-full"
           onSettingsClick={() => setIsSettingsOpen(true)}
           onClearChat={handleClearChat}
           sidebarReloadKey={sidebarReloadKey}
@@ -266,9 +256,6 @@ function ProtectedContent({ addToast }) {
             </div>
           </div>
         </div>
-      )}
-      {shouldShowOnboarding && (
-        <SpotlightOnboarding isOpen={shouldShowOnboarding} onClose={handleSpotlightOnboardingClose} />
       )}
       {user && hasSeenOnboarding === false && (
         <SpotlightOnboarding onFinish={markOnboardingComplete} />
