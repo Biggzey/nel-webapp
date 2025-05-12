@@ -174,6 +174,36 @@ export default function AdminPanel() {
               >
                 {t('admin.removeDuplicatesUser')}
               </button>
+              {/* Reset Onboarding button */}
+              <button
+                className="mb-4 px-4 py-2 rounded-lg bg-blue-500 text-white shadow transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/admin/users/${selectedUserId}/reset-onboarding`, {
+                      method: 'POST',
+                      headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                      addToast({
+                        type: 'success',
+                        message: 'Onboarding reset successfully',
+                        duration: 4000
+                      });
+                    } else {
+                      const data = await res.json();
+                      throw new Error(data.error || 'Unknown error');
+                    }
+                  } catch (err) {
+                    addToast({
+                      type: 'error',
+                      message: 'Failed to reset onboarding: ' + err.message,
+                      duration: 5000
+                    });
+                  }
+                }}
+              >
+                Reset Onboarding
+              </button>
               <div className="flex items-center space-x-4">
                 <img
                   src={userDetails.avatar || '/user-avatar.png'}

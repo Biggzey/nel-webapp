@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // Onboarding steps with selectors and custom tooltip placement logic
 const steps = [
@@ -77,11 +77,13 @@ const SpotlightOnboarding = ({ onFinish }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [active, setActive] = useState(true);
   const prevHtmlOverflow = useRef();
   const prevBodyOverflow = useRef();
 
   // Only set overflow: hidden when overlay is visible, and always clean up
   useEffect(() => {
+    if (!active) return;
     prevHtmlOverflow.current = document.documentElement.style.overflow;
     prevBodyOverflow.current = document.body.style.overflow;
     document.documentElement.style.overflow = 'hidden';
@@ -90,10 +92,11 @@ const SpotlightOnboarding = ({ onFinish }) => {
       document.documentElement.style.overflow = prevHtmlOverflow.current || '';
       document.body.style.overflow = prevBodyOverflow.current || '';
     };
-  }, []);
+  }, [active]);
 
   // Update rect and viewport on step change/resize/scroll
   useEffect(() => {
+    if (!active) return;
     function update() {
       const r = getRect(steps[currentStep].selector);
       setRect(r);
@@ -106,8 +109,9 @@ const SpotlightOnboarding = ({ onFinish }) => {
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
     };
-  }, [currentStep]);
+  }, [currentStep, active]);
 
+  if (!active) return null;
   if (!rect) return null;
 
   // SVG mask for spotlight effect
@@ -142,12 +146,16 @@ const SpotlightOnboarding = ({ onFinish }) => {
   const tooltipStyle = steps[currentStep].getTooltipStyle(rect);
 
   function handleSkip() {
+    setActive(false);
     onFinish();
   }
 
   function handleNext() {
     if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
-    else onFinish();
+    else {
+      setActive(false);
+      onFinish();
+    }
   }
 
   return createPortal(
