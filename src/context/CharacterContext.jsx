@@ -337,41 +337,39 @@ export function CharacterProvider({ children }) {
   let reloadTimeout = null;
   let last429 = 0;
   async function reloadCharacters() {
+    setIsReloadingCharacters(true);
     try {
       if (reloadCharacters._reloading) return;
       if (Date.now() - last429 < 2000) return; // 2s cooldown after 429
       reloadCharacters._reloading = true;
-      setIsReloadingCharacters(true);
       if (reloadTimeout) {
         clearTimeout(reloadTimeout);
       }
-      reloadTimeout = setTimeout(async () => {
-        const res = await fetch("/api/characters", {
-          headers: { Authorization: token ? `Bearer ${token}` : undefined },
-        });
-        if (res.status === 429) {
-          handleRateLimit();
-          last429 = Date.now();
-          reloadCharacters._reloading = false;
-          setIsReloadingCharacters(false);
-          return;
-        }
-        if (res.ok) {
-          const userChars = await res.json();
-          // Remove duplicates by id
-          const uniqueChars = [];
-          const seenIds = new Set();
-          for (const c of userChars) {
-            if (!seenIds.has(c.id)) {
-              uniqueChars.push(c);
-              seenIds.add(c.id);
-            }
-          }
-          setCharacters(uniqueChars);
-        }
+      const res = await fetch("/api/characters", {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+      });
+      if (res.status === 429) {
+        handleRateLimit();
+        last429 = Date.now();
         reloadCharacters._reloading = false;
         setIsReloadingCharacters(false);
-      }, 200);
+        return;
+      }
+      if (res.ok) {
+        const userChars = await res.json();
+        // Remove duplicates by id
+        const uniqueChars = [];
+        const seenIds = new Set();
+        for (const c of userChars) {
+          if (!seenIds.has(c.id)) {
+            uniqueChars.push(c);
+            seenIds.add(c.id);
+          }
+        }
+        setCharacters(uniqueChars);
+      }
+      reloadCharacters._reloading = false;
+      setIsReloadingCharacters(false);
     } catch (err) {
       // Optionally handle error
       reloadCharacters._reloading = false;
