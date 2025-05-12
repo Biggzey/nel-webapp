@@ -56,6 +56,12 @@ export function CharacterProvider({ children }) {
         let userChars = [];
         if (charsRes.ok) {
           userChars = await charsRes.json();
+          // Sort so Nelliel is always first if she exists
+          userChars.sort((a, b) => {
+            if (a.name === 'Nelliel') return -1;
+            if (b.name === 'Nelliel') return 1;
+            return 0;
+          });
           setCharacters(userChars);
         } else {
           // Show error and fallback to default character
