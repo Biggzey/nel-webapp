@@ -20,6 +20,7 @@ import ShortcutHelpModal from "./components/ShortcutHelpModal";
 import ChatSearch from "./components/ChatSearch";
 import { useIsMobile } from './hooks/useIsMobile';
 import ExplorePage from './components/ExplorePage';
+import OnboardingOverlay from "./components/OnboardingOverlay";
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -50,6 +51,7 @@ function ProtectedContent({ addToast }) {
   const [showChatSearch, setShowChatSearch] = useState(false);
   const [sidebarReloadKey, setSidebarReloadKey] = useState(0);
   const [showExplore, setShowExplore] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Update visibility when switching between mobile/desktop
   useEffect(() => {
@@ -140,6 +142,19 @@ function ProtectedContent({ addToast }) {
     }
   }, [showExplore]);
 
+  // Show onboarding for new users
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    localStorage.setItem('hasSeenOnboarding', 'true');
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       {/* Global loading overlay */}
@@ -195,7 +210,7 @@ function ProtectedContent({ addToast }) {
                 onCharacterPaneClick={handleMobileCharacterPaneClick}
               />
                   )}
-            </Suspense>
+              </Suspense>
             )}
             {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
             {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
@@ -250,6 +265,7 @@ function ProtectedContent({ addToast }) {
           </div>
         </div>
       )}
+      <OnboardingOverlay isOpen={showOnboarding} onClose={handleOnboardingClose} />
     </div>
   );
 }

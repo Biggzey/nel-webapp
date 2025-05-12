@@ -18,7 +18,7 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
           />
           
           {/* Dropdown menu */}
-          <div className="absolute bottom-full mb-2 right-0 w-56 rounded-xl bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark shadow-lg z-50 overflow-hidden">
+          <div className="profile-button absolute bottom-full mb-2 right-0 w-56 rounded-xl bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark shadow-lg z-50 overflow-hidden">
             {/* Profile section */}
             <div className="p-3 border-b border-container-border-light/10 dark:border-container-border-dark/10">
               <div className="flex items-center space-x-3">

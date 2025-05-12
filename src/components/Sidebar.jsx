@@ -358,7 +358,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }, []);
 
   return (
-    <aside className={`${className} w-72 md:w-80 flex-shrink-0 flex flex-col items-center p-4 relative overflow-hidden bg-gradient-to-b from-background-gradient-light-start via-background-gradient-light-mid to-background-gradient-light-end dark:from-background-gradient-dark-start dark:via-background-gradient-dark-mid dark:to-background-gradient-dark-end text-text-light dark:text-text-dark border-r border-border-light dark:border-border-dark`}>
+    <div className={`sidebar flex flex-col h-full w-full bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark ${className}`}>
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70">
         {/* Top right decorative circle */}
@@ -382,7 +382,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               handleNewCharacter();
               onLinkClick();
             }}
-            className="w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
+            className="new-character-button w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
           >
             <span className="text-primary mr-1 text-base">
               <i className="fas fa-plus" />
@@ -403,7 +403,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
         {/* Explore button */}
         <button
-          className="w-full py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
+          className="explore-button w-full py-2 mb-4 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 font-semibold"
           onClick={() => {
             if (typeof setShowExplore === 'function') setShowExplore(true);
           }}
@@ -613,6 +613,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           </div>
         </div>
       )}
-    </aside>
+    </div>
   );
 }
