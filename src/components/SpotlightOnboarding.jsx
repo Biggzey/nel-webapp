@@ -7,36 +7,42 @@ const steps = [
     title: 'Character Management',
     description: 'Here you\'ll find all your characters. Nelliel is your default companion, and you can create or import more characters here.',
     selector: '.sidebar',
+    tooltipPosition: { left: 32, bottom: 32 }, // bottom left
   },
   {
     id: 'newCharacter',
     title: 'Create & Import',
     description: 'Create new characters or import existing ones from various formats.',
     selector: '.new-character-button',
+    tooltipPosition: { left: 180, top: 32 }, // top left, below new character button
   },
   {
     id: 'explore',
     title: 'Explore',
     description: 'Discover trending characters and find new companions to chat with.',
     selector: '.explore-button',
+    tooltipPosition: { left: 180, top: 80 }, // below explore button
   },
   {
     id: 'chat',
     title: 'Chat Window',
     description: 'This is where the magic happens! Chat with your characters and build meaningful connections.',
     selector: '.chat-window',
+    tooltipPosition: { left: 400, top: 200 }, // center of chat window
   },
   {
     id: 'characterPane',
     title: 'Character Details',
     description: 'View and edit your character\'s personality, likes, dislikes, and more.',
     selector: '.character-pane',
+    tooltipPosition: { right: 32, top: 100 }, // top right, near character pane
   },
   {
     id: 'profile',
     title: 'Your Profile',
     description: 'Access your settings, preferences, and account information.',
     selector: '.profile-button',
+    tooltipPosition: { right: 32, top: 32 }, // top right
   },
 ];
 
@@ -74,23 +80,12 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
 
   if (!isOpen || !spotlightRect) return null;
 
-  // Clamp tooltip position to always be fully visible in the viewport
-  let tooltipTop = spotlightRect.top + spotlightRect.height + 16;
-  let tooltipLeft = spotlightRect.left;
-  const tooltipHeight = 180; // estimated height of tooltip
-  const tooltipWidth = 340; // estimated width of tooltip
-  if (tooltipTop + tooltipHeight > window.innerHeight) {
-    tooltipTop = Math.max(window.innerHeight - tooltipHeight - 16, 16);
-  }
-  if (tooltipLeft + tooltipWidth > window.innerWidth) {
-    tooltipLeft = Math.max(window.innerWidth - tooltipWidth - 16, 16);
-  }
-  let tooltipStyle = {
+  // Use fixed tooltip position for each step
+  const tooltipStyle = {
     position: 'fixed',
-    top: tooltipTop,
-    left: tooltipLeft,
     zIndex: 10001,
     maxWidth: 320,
+    ...steps[currentStep].tooltipPosition,
   };
 
   function handleSkip() {
