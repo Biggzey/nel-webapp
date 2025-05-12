@@ -31,20 +31,57 @@ import { CSS } from '@dnd-kit/utilities';
 import ReactDOM from "react-dom";
 
 // Portal component for context menu
-function ContextMenuPortal({ anchorRef, isOpen, children }) {
+function ContextMenuPortal({ anchorRef, isOpen, children, onClose }) {
   const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
   const menuRef = useRef(null);
 
   useEffect(() => {
     if (isOpen && anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
+      // Clamp left to sidebar (assume sidebar is at left: 0)
+      const sidebar = document.querySelector('.w-72, .md\\:w-80');
+      let sidebarLeft = 0;
+      let sidebarWidth = 320; // fallback
+      if (sidebar) {
+        const sidebarRect = sidebar.getBoundingClientRect();
+        sidebarLeft = sidebarRect.left + window.scrollX;
+        sidebarWidth = sidebarRect.width;
+      }
+      let left = rect.left + window.scrollX;
+      // Clamp right edge to sidebar right edge
+      const menuWidth = 200; // min width
+      if (left + menuWidth > sidebarLeft + sidebarWidth) {
+        left = sidebarLeft + sidebarWidth - menuWidth - 8; // 8px padding
+      }
+      if (left < sidebarLeft) left = sidebarLeft + 8;
       setPosition({
         top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
+        left,
         width: rect.width,
       });
     }
   }, [isOpen, anchorRef]);
+
+  // Click-away and Escape handling
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        onClose && onClose();
+      }
+    }
+    function handleKey(e) {
+      if (e.key === 'Escape') {
+        onClose && onClose();
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -88,6 +125,11 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
   // Ref for the menu button (anchor)
   const buttonRef = useRef();
 
+  // Handler to close menu
+  const handleCloseMenu = () => {
+    if (isMenuOpen) onMenuClick(null);
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -123,7 +165,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
         <i className="fas fa-ellipsis-v" />
       </button>
       {/* Context menu rendered in a portal */}
-      <ContextMenuPortal anchorRef={buttonRef} isOpen={isMenuOpen}>
+      <ContextMenuPortal anchorRef={buttonRef} isOpen={isMenuOpen} onClose={handleCloseMenu}>
         <button
           onClick={(e) => {
             e.stopPropagation();
