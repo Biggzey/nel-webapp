@@ -7,7 +7,7 @@ const steps = [
     title: 'Character Management',
     description: 'Here you\'ll find all your characters. Nelliel is your default companion, and you can create or import more characters here.',
     selector: '.sidebar',
-    tooltipPosition: { left: 32, bottom: 32 }, // bottom left
+    tooltipPosition: { left: 32, top: 32 }, // top left
   },
   {
     id: 'newCharacter',
@@ -62,6 +62,21 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [spotlightRect, setSpotlightRect] = useState(null);
   const tooltipRef = useRef();
+
+  // Prevent scrollbars when onboarding is open
+  useEffect(() => {
+    if (isOpen) {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
