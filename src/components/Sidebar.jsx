@@ -360,17 +360,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   return (
     <div className={`sidebar flex flex-col h-full w-sidebar bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark ${className}`}>
       {/* Decorative background patterns */}
-      <div className="absolute inset-0 opacity-70">
-        {/* Top right decorative circle */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent-primary-light dark:bg-accent-primary-dark blur-3xl" />
-        {/* Bottom left decorative circle */}
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-accent-secondary-light dark:bg-accent-secondary-dark blur-3xl" />
-        {/* Animated dots pattern */}
-        <div className="absolute inset-0" style={{ 
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(123, 104, 238, 0.05) 1px, transparent 0)`,
-          backgroundSize: '24px 24px'
-        }} />
-      </div>
+      
 
       {/* Content container with backdrop blur */}
       <div className="relative w-full h-full flex flex-col items-center">

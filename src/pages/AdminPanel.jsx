@@ -145,65 +145,66 @@ export default function AdminPanel() {
           userDetails && (
             <div className="space-y-6">
               {/* User-specific cleanup button (admin only) */}
-              <button
-                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/admin/cleanup-duplicates?userId=${selectedUserId}`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      addToast({
-                        type: 'success',
-                        message: data.message,
-                        duration: 4000
+              <div className="flex flex-col space-y-2 mb-4">
+                <button
+                  className="px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/admin/cleanup-duplicates?userId=${selectedUserId}`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
                       });
-                    } else {
-                      throw new Error(data.error || 'Unknown error');
-                    }
-                  } catch (err) {
-                    addToast({
-                      type: 'error',
-                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
-                      duration: 5000
-                    });
-                  }
-                }}
-              >
-                {t('admin.removeDuplicatesUser')}
-              </button>
-              {/* Reset Onboarding button */}
-              <button
-                className="mb-4 px-4 py-2 rounded-lg bg-blue-500 text-white shadow transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/admin/users/${selectedUserId}/reset-onboarding`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    if (res.ok) {
-                      addToast({
-                        type: 'success',
-                        message: 'Onboarding reset successfully',
-                        duration: 4000
-                      });
-                    } else {
                       const data = await res.json();
-                      throw new Error(data.error || 'Unknown error');
+                      if (res.ok) {
+                        addToast({
+                          type: 'success',
+                          message: data.message,
+                          duration: 4000
+                        });
+                      } else {
+                        throw new Error(data.error || 'Unknown error');
+                      }
+                    } catch (err) {
+                      addToast({
+                        type: 'error',
+                        message: t('admin.duplicateCleanupFailed', { error: err.message }),
+                        duration: 5000
+                      });
                     }
-                  } catch (err) {
-                    addToast({
-                      type: 'error',
-                      message: 'Failed to reset onboarding: ' + err.message,
-                      duration: 5000
-                    });
-                  }
-                }}
-              >
-                Reset Onboarding
-              </button>
+                  }}
+                >
+                  {t('admin.removeDuplicatesUser')}
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-blue-500 text-white shadow transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/admin/users/${selectedUserId}/reset-onboarding`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
+                      });
+                      if (res.ok) {
+                        addToast({
+                          type: 'success',
+                          message: 'Onboarding reset successfully',
+                          duration: 4000
+                        });
+                      } else {
+                        const data = await res.json();
+                        throw new Error(data.error || 'Unknown error');
+                      }
+                    } catch (err) {
+                      addToast({
+                        type: 'error',
+                        message: 'Failed to reset onboarding: ' + err.message,
+                        duration: 5000
+                      });
+                    }
+                  }}
+                >
+                  Reset Onboarding
+                </button>
+              </div>
               <div className="flex items-center space-x-4">
                 <img
                   src={userDetails.avatar || '/user-avatar.png'}

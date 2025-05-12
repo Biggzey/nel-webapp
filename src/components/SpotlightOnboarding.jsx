@@ -36,8 +36,8 @@ const steps = [
     getTooltipStyle: (rect) => ({
       left: rect.left + 16,
       top: rect.bottom + 8, // just below the Explore Characters button
-      width: rect.width - 32,
-      maxWidth: rect.width - 32,
+      width: Math.max(rect.width - 32, 220),
+      maxWidth: Math.max(rect.width - 32, 220),
     })
   },
   {
