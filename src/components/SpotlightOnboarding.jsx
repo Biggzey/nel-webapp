@@ -2,137 +2,182 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Onboarding steps with selectors and custom tooltip placement logic
 const steps = [
   {
-    id: 'sidebar',
-    title: 'Character Selection',
-    description: 'Browse and select from our collection of AI characters. Each has a unique personality and backstory.',
-    position: 'left'
+    id: 'sidebar-characters',
+    title: 'Your Characters',
+    description: 'Browse and select from your collection of AI characters. Use the search bar to quickly find a character. This is where you manage your companions.',
+    selector: '.sidebar',
+    getTooltipStyle: (rect) => ({
+      left: rect.left + 16,
+      top: rect.top + 120, // below Nelliel (default character)
+      width: rect.width - 32,
+      maxWidth: rect.width - 32,
+    })
   },
   {
-    id: 'chat',
-    title: 'Chat Interface',
-    description: 'Engage in natural conversations with your chosen character. The chat history is automatically saved.',
-    position: 'right'
+    id: 'explore-button',
+    title: 'Explore Characters',
+    description: 'Discover trending and new characters. Click here to explore more AI companions.',
+    selector: '.sidebar .explore-button',
+    getTooltipStyle: (rect) => ({
+      left: rect.left + 16,
+      top: rect.bottom + 8, // just below the search bar
+      width: rect.width - 32,
+      maxWidth: rect.width - 32,
+    })
   },
   {
-    id: 'character',
+    id: 'new-character',
+    title: 'Create or Import',
+    description: 'Create a new character or import one from a file. Use these buttons to expand your collection.',
+    selector: '.sidebar .new-character-button',
+    getTooltipStyle: (rect) => ({
+      left: rect.left + 16,
+      top: rect.bottom + 8, // just below the Explore Characters button
+      width: rect.width - 32,
+      maxWidth: rect.width - 32,
+    })
+  },
+  {
+    id: 'chat-window',
+    title: 'Chat Window',
+    description: 'This is where you chat with your selected character. Type your message below and press send.',
+    selector: '.chat-window',
+    getTooltipStyle: (rect) => ({
+      left: rect.left + rect.width / 2 - 180,
+      top: rect.top + rect.height / 2 - 80,
+      width: 360,
+      maxWidth: 360,
+    })
+  },
+  {
+    id: 'character-pane',
     title: 'Character Details',
-    description: 'View and customize your character\'s personality, appearance, and background story.',
-    position: 'right'
+    description: 'View and edit your character\'s details, such as age, gender, and personality. This pane gives you full control over your companion.',
+    selector: '.character-pane .character-info',
+    getTooltipStyle: (rect) => ({
+      left: rect.left + 16,
+      top: rect.bottom + 8, // just below the info container
+      width: rect.width - 32,
+      maxWidth: rect.width - 32,
+    })
   }
 ];
 
+function getRect(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return null;
+  const rect = el.getBoundingClientRect();
+  return rect;
+}
+
 const SpotlightOnboarding = ({ onFinish }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [targetElement, setTargetElement] = useState(null);
-  const [maskPosition, setMaskPosition] = useState({ x: 0, y: 0, width: 0, height: 0 });
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
-  const overlayRef = useRef(null);
+  const [rect, setRect] = useState(null);
+  const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
 
+  // Prevent scrollbars when onboarding is open
   useEffect(() => {
-    const element = document.getElementById(steps[currentStep].id);
-    if (element) {
-      setTargetElement(element);
-      const rect = element.getBoundingClientRect();
-      setMaskPosition({
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height
-      });
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    };
+  }, []);
 
-      // Calculate tooltip position
-      const position = steps[currentStep].position;
-      const tooltipX = position === 'left' ? rect.left - 300 : rect.right + 20;
-      const tooltipY = rect.top + (rect.height / 2);
-
-      setTooltipPosition({ x: tooltipX, y: tooltipY });
+  // Update rect and viewport on step change/resize/scroll
+  useEffect(() => {
+    function update() {
+      const r = getRect(steps[currentStep].selector);
+      setRect(r);
+      setViewport({ width: window.innerWidth, height: window.innerHeight });
     }
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', update, true);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', update, true);
+    };
   }, [currentStep]);
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      onFinish();
-    }
-  };
+  if (!rect) return null;
 
-  const handleSkip = () => {
+  // SVG mask for spotlight effect
+  const maskId = 'onboarding-spotlight-mask';
+  const mask = (
+    <svg width={viewport.width} height={viewport.height} style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: viewport.width, height: viewport.height }}>
+      <defs>
+        <mask id={maskId}>
+          <rect x={0} y={0} width={viewport.width} height={viewport.height} fill="white" />
+          <rect
+            x={rect.left - 8}
+            y={rect.top - 8}
+            width={rect.width + 16}
+            height={rect.height + 16}
+            rx={12}
+            fill="black"
+          />
+        </mask>
+      </defs>
+      <rect
+        x={0}
+        y={0}
+        width={viewport.width}
+        height={viewport.height}
+        fill="rgba(0,0,0,0.25)"
+        mask={`url(#${maskId})`}
+      />
+    </svg>
+  );
+
+  // Tooltip style for this step
+  const tooltipStyle = steps[currentStep].getTooltipStyle(rect);
+
+  function handleSkip() {
     onFinish();
-  };
+  }
+
+  function handleNext() {
+    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+    else onFinish();
+  }
 
   return createPortal(
-    <AnimatePresence>
+    <>
+      {mask}
       <motion.div
-        ref={overlayRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        className="fixed z-[10001] bg-white dark:bg-gray-900 border border-primary/40 shadow-2xl rounded-xl p-6"
+        style={{
+          ...tooltipStyle,
+          position: 'fixed',
+          boxSizing: 'border-box',
+        }}
       >
-        <div className="absolute inset-0 bg-black/50" />
-        <svg
-          className="absolute inset-0 w-full h-full"
-          style={{ pointerEvents: 'none' }}
-        >
-          <defs>
-            <mask id="spotlight">
-              <rect width="100%" height="100%" fill="white" />
-              <rect
-                x={maskPosition.x}
-                y={maskPosition.y}
-                width={maskPosition.width}
-                height={maskPosition.height}
-                fill="black"
-                rx="8"
-              />
-            </mask>
-          </defs>
-          <rect
-            width="100%"
-            height="100%"
-            fill="black"
-            mask="url(#spotlight)"
-            opacity="0.5"
-          />
-        </svg>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="absolute"
-          style={{
-            left: tooltipPosition.x,
-            top: tooltipPosition.y,
-            transform: 'translateY(-50%)',
-            maxWidth: '280px',
-            zIndex: 51
-          }}
-        >
-          <div className="bg-white rounded-lg shadow-xl p-4">
-            <h3 className="text-lg font-semibold mb-2">{steps[currentStep].title}</h3>
-            <p className="text-gray-600 mb-4">{steps[currentStep].description}</p>
-            <div className="flex justify-between items-center">
-              <button
-                onClick={handleSkip}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Skip
-              </button>
-              <button
-                onClick={handleNext}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-              >
-                {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
-              </button>
-            </div>
-          </div>
-        </motion.div>
+        <h3 className="text-xl font-bold mb-2">{steps[currentStep].title}</h3>
+        <p className="mb-6 text-gray-700 dark:text-gray-200">{steps[currentStep].description}</p>
+        <div className="flex justify-between items-center">
+          <button
+            onClick={handleSkip}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            Skip
+          </button>
+          <button
+            onClick={handleNext}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
+          </button>
+        </div>
       </motion.div>
-    </AnimatePresence>,
+    </>,
     document.body
   );
 };
