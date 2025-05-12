@@ -366,6 +366,12 @@ export function CharacterProvider({ children }) {
             seenIds.add(c.id);
           }
         }
+        // Sort so Nelliel is always first if she exists
+        uniqueChars.sort((a, b) => {
+          if (a.name === 'Nelliel') return -1;
+          if (b.name === 'Nelliel') return 1;
+          return 0;
+        });
         setCharacters(uniqueChars);
       }
       reloadCharacters._reloading = false;
