@@ -89,6 +89,19 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
     maxWidth: 320,
   };
 
+  function handleSkip() {
+    localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
+    onClose();
+  }
+
+  function handleNext() {
+    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+    else {
+      localStorage.setItem('hasSeenSpotlightOnboarding', 'true');
+      onClose();
+    }
+  }
+
   // SVG mask for spotlight effect (subtle)
   const maskId = 'onboarding-spotlight-mask';
   const mask = (
@@ -125,7 +138,7 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
         <p className="mb-6 text-text-light/80 dark:text-text-dark/80">{steps[currentStep].description}</p>
         <div className="flex justify-between items-center">
           <button
-            onClick={onClose}
+            onClick={handleSkip}
             className="text-text-light/60 dark:text-text-dark/60 hover:text-text-light dark:hover:text-text-dark transition-colors"
           >
             Skip
@@ -144,10 +157,7 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
               ))}
             </div>
             <button
-              onClick={() => {
-                if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
-                else onClose();
-              }}
+              onClick={handleNext}
               className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors"
             >
               {currentStep === steps.length - 1 ? 'Finish' : 'Next'}

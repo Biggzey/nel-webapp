@@ -358,7 +358,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   }, []);
 
   return (
-    <div className={`sidebar flex flex-col h-full w-full bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark ${className}`}>
+    <div className={`sidebar flex flex-col h-full w-sidebar bg-background-container-light dark:bg-background-container-dark border-r border-container-border-light dark:border-container-border-dark ${className}`}>
       {/* Decorative background patterns */}
       <div className="absolute inset-0 opacity-70">
         {/* Top right decorative circle */}

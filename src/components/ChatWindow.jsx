@@ -390,7 +390,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
   }));
 
   return (
-    <div className="chat-window flex flex-col h-full w-full overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
+    <div className="chat-window flex flex-col h-full flex-1 overflow-hidden bg-chatwindow-light dark:bg-chatwindow-dark font-sans">
       {/* Mobile Header */}
       {isMobile && (
         <div className="flex items-center justify-between px-4 py-2 bg-background-container-light dark:bg-background-container-dark border-b border-container-border-light dark:border-container-border-dark">

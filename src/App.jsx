@@ -174,7 +174,7 @@ function ProtectedContent({ addToast }) {
       <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
       {location.pathname !== '/admin' && sidebarVisible && (
         <Sidebar
-          className="h-full w-full"
+          className="h-full"
           onSettingsClick={() => setIsSettingsOpen(true)}
           onClearChat={handleClearChat}
           sidebarReloadKey={sidebarReloadKey}
