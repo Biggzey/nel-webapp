@@ -168,13 +168,6 @@ export default function CharacterImportModal({ open, onClose, onImport }) {
 
         if (!characterData) throw new Error('Could not parse character card.');
         
-        // Show success toast
-        addToast({
-          type: 'success',
-          message: `Successfully imported ${characterData.name}`,
-          duration: 3000
-        });
-        
         onImport(characterData);
         onClose();
       } catch (err) {
