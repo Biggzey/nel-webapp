@@ -49,7 +49,7 @@ const AdminPanel = () => {
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleResetOnboarding(user.id)}
-                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                    className="ml-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                   >
                     Reset Onboarding
                   </button>

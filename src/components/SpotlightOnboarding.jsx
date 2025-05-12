@@ -77,14 +77,18 @@ const SpotlightOnboarding = ({ onFinish }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [rect, setRect] = useState(null);
   const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const prevHtmlOverflow = useRef();
+  const prevBodyOverflow = useRef();
 
-  // Prevent scrollbars when onboarding is open
+  // Only set overflow: hidden when overlay is visible, and always clean up
   useEffect(() => {
+    prevHtmlOverflow.current = document.documentElement.style.overflow;
+    prevBodyOverflow.current = document.body.style.overflow;
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = prevHtmlOverflow.current || '';
+      document.body.style.overflow = prevBodyOverflow.current || '';
     };
   }, []);
 
