@@ -28,6 +28,40 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import ReactDOM from "react-dom";
+
+// Portal component for context menu
+function ContextMenuPortal({ anchorRef, isOpen, children }) {
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen && anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }, [isOpen, anchorRef]);
+
+  if (!isOpen) return null;
+
+  return ReactDOM.createPortal(
+    <div
+      ref={menuRef}
+      className="z-[9999] min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col fixed"
+      style={{
+        top: position.top,
+        left: position.left,
+      }}
+    >
+      {children}
+    </div>,
+    document.body
+  );
+}
 
 // Sortable character item component
 function SortableCharacterItem({ character, index, isSelected, onSelect, onClearChat, onDelete, onMenuClick, isMenuOpen, menuRef }) {
@@ -50,6 +84,9 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
   };
+
+  // Ref for the menu button (anchor)
+  const buttonRef = useRef();
 
   return (
     <div
@@ -75,6 +112,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
       </button>
       {/* Ellipsis/context menu for all characters */}
       <button
+        ref={buttonRef}
         onClick={(e) => {
           e.stopPropagation();
           onMenuClick(index);
@@ -84,32 +122,30 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
       >
         <i className="fas fa-ellipsis-v" />
       </button>
-      {/* Context menu */}
-      {isMenuOpen && (
-        <div ref={menuRef} className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2 flex flex-col pointer-events-auto">
+      {/* Context menu rendered in a portal */}
+      <ContextMenuPortal anchorRef={buttonRef} isOpen={isMenuOpen}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClearChat(character);
+          }}
+          className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+        >
+          <i className="fas fa-trash-alt text-white mr-2" /> Clear Chat
+        </button>
+        {/* Only show delete for non-Nelliel characters */}
+        {!isNelliel && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onClearChat(character);
+              onDelete(character, index);
             }}
-            className="w-full text-left px-4 py-3 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
+            className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
           >
-            <i className="fas fa-trash-alt text-white mr-2" /> Clear Chat
+            <i className="fas fa-ban text-red-500 mr-2" /> Delete
           </button>
-          {/* Only show delete for non-Nelliel characters */}
-          {!isNelliel && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(character, index);
-              }}
-              className="w-full text-left px-4 py-3 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors"
-            >
-              <i className="fas fa-ban text-red-500 mr-2" /> Delete
-            </button>
-          )}
-        </div>
-      )}
+        )}
+      </ContextMenuPortal>
     </div>
   );
 }
