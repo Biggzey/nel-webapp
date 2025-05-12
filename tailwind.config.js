@@ -125,8 +125,8 @@ export default {
         'fade-in-up': 'fade-in-up 0.3s ease-out'
       },
       width: {
-        'sidebar': '21rem', // 336px, w-84
-        'characterpane': '21rem', // 336px, w-84
+        'sidebar': '18rem', // 288px, w-72
+        'characterpane': '18rem', // 288px, w-72
         'adminsidebar': '20rem', // 320px, for admin panel
       },
     },
