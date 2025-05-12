@@ -339,7 +339,6 @@ export function CharacterProvider({ children }) {
       if (reloadCharacters._reloading) return;
       if (Date.now() - last429 < 2000) return; // 2s cooldown after 429
       reloadCharacters._reloading = true;
-      setIsLoading(true); // Set loading state to true at the start
       if (reloadTimeout) {
         clearTimeout(reloadTimeout);
       }
@@ -351,7 +350,6 @@ export function CharacterProvider({ children }) {
           handleRateLimit();
           last429 = Date.now();
           reloadCharacters._reloading = false;
-          setIsLoading(false); // Reset loading state on rate limit
           return;
         }
         if (res.ok) {
@@ -368,12 +366,10 @@ export function CharacterProvider({ children }) {
           setCharacters(uniqueChars);
         }
         reloadCharacters._reloading = false;
-        setIsLoading(false); // Set loading state to false at the end
       }, 200);
     } catch (err) {
       // Optionally handle error
       reloadCharacters._reloading = false;
-      setIsLoading(false); // Reset loading state on error
     }
   }
 
