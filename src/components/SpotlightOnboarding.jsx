@@ -76,28 +76,26 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
 
   // Calculate tooltip position (right or below the spotlight, fallback to center)
   let tooltipStyle = {
-    position: 'absolute',
-    top: spotlightRect.top + spotlightRect.height + 16,
-    left: spotlightRect.left,
+    position: 'fixed',
+    top: Math.min(
+      Math.max(spotlightRect.top + spotlightRect.height + 16, 16),
+      window.innerHeight - 200
+    ),
+    left: Math.min(
+      Math.max(spotlightRect.left, 16),
+      window.innerWidth - 340
+    ),
     zIndex: 10001,
     maxWidth: 320,
   };
-  // If not enough space below, show above
-  if (spotlightRect.top + spotlightRect.height + 180 > window.innerHeight) {
-    tooltipStyle.top = spotlightRect.top - 140;
-  }
-  // If not enough space right, align left
-  if (spotlightRect.left + 340 > window.innerWidth) {
-    tooltipStyle.left = window.innerWidth - 340;
-  }
 
-  // SVG mask for spotlight effect
+  // SVG mask for spotlight effect (subtle)
   const maskId = 'onboarding-spotlight-mask';
   const mask = (
-    <svg width={window.innerWidth} height={window.innerHeight} style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000 }}>
+    <svg width="100vw" height="100vh" style={{ position: 'fixed', top: 0, left: 0, pointerEvents: 'none', zIndex: 10000, width: '100vw', height: '100vh' }}>
       <defs>
         <mask id={maskId}>
-          <rect x="0" y="0" width={window.innerWidth} height={window.innerHeight} fill="white" />
+          <rect x="0" y="0" width="100vw" height="100vh" fill="white" />
           <rect
             x={spotlightRect.left - 8}
             y={spotlightRect.top - 8}
@@ -111,9 +109,9 @@ export default function SpotlightOnboarding({ isOpen, onClose }) {
       <rect
         x="0"
         y="0"
-        width={window.innerWidth}
-        height={window.innerHeight}
-        fill="rgba(0,0,0,0.7)"
+        width="100vw"
+        height="100vh"
+        fill="rgba(0,0,0,0.25)"
         mask={`url(#${maskId})`}
       />
     </svg>
