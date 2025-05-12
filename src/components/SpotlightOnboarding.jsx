@@ -7,7 +7,7 @@ const steps = [
   {
     id: 'nelliel-row',
     title: 'Meet Nelliel',
-    description: 'This is where all your characters will appear. You can reorder them, delete, clear chat, and manage your companions. Nelliel is your default AI companion and always appears at the top.',
+    description: 'Nelliel is your default AI companion and always appears at the top.This is also where all your characters will appear. You can reorder them, delete, clear chat, and manage your companions.',
     selector: '.nelliel-row-onboarding-anchor',
     getTooltipStyle: (rect) => ({
       left: rect.left,

@@ -129,6 +129,9 @@ export default {
         'characterpane': '18rem', // 288px, w-72
         'adminsidebar': '20rem', // 320px, for admin panel
       },
+      boxShadow: {
+        'purple-glow': '0 0 32px 0 rgba(123,104,238,0.18), 0 2px 8px 0 rgba(123,104,238,0.10)',
+      },
     },
   },
   plugins: [],
