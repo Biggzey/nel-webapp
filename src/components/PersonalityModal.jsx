@@ -122,23 +122,30 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         isPublic: publicOnly ? true : confirmPublic,
       };
       const saved = await onSave(payload);
-      if ((publicOnly ? true : confirmPublic) && saved && saved.id && typeof submitForReview === 'function') {
-        try {
-          await submitForReview(saved.id);
-        } catch (reviewError) {
-          console.error('Error submitting for review:', reviewError);
-          addToast && addToast({ 
-            type: 'error', 
-            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
-            duration: 4000 
-          });
-          // Don't throw here, as the character was still created successfully
+      
+      // Only proceed with review submission if character was saved successfully
+      if (saved && saved.id) {
+        if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
+          try {
+            await submitForReview(saved.id);
+          } catch (reviewError) {
+            console.error('Error submitting for review:', reviewError);
+            addToast && addToast({ 
+              type: 'error', 
+              message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
+              duration: 4000 
+            });
+            // Don't throw here, as the character was still created successfully
+          }
         }
+        // Only close modals and show success if character was created successfully
+        setLoading(false);
+        setShowConfirm(false);
+        onClose();
+        addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
+      } else {
+        throw new Error('Failed to create character - no response data');
       }
-      setLoading(false);
-      setShowConfirm(false);
-      onClose();
-      addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
       setLoading(false);
       console.error('Error creating character:', error);
@@ -146,7 +153,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
       // Don't close modals on error
-      return;
+      setShowConfirm(true);
     }
   }
 
