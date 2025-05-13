@@ -135,9 +135,15 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     const errors = {};
     if (!form.name || form.name.trim() === '') errors.name = t('character.fields.nameRequired', 'Name is required');
     if (!form.description || form.description.trim() === '') errors.description = t('character.fields.descriptionRequired', 'Description is required');
-    if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
     if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
+    if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
     if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
+    if (!form.customInstructions || form.customInstructions.trim() === '') errors.customInstructions = t('character.fields.customInstructionsRequired', 'Custom instructions are required');
+    // Tags: required, min 3
+    const tagsArr = Array.isArray(form.tags) ? form.tags : (typeof form.tags === 'string' ? form.tags.split(/,\s*/) : []);
+    if (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim())) {
+      errors.tags = t('character.fields.tagsRequired', 'At least 3 tags are required (comma separated)');
+    }
     return errors;
   }
 
@@ -221,6 +227,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   // Field configurations with custom widths and placeholders
   const fields = [
     { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
+    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -396,7 +403,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         value={form.systemPrompt || ""}
                         onChange={handleChange}
                         rows={2}
-                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.systemPrompt ? ' border-red-500' : ''}`}
+                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.systemPrompt ? ' border-red-500' : ''}`}
                         placeholder={t('character.personality.systemPromptPlaceholder')}
                       />
                       {attemptedSubmit && fieldErrors.systemPrompt && (
@@ -411,15 +418,19 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.personality.customInstructions')}
+                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <textarea
                         name="customInstructions"
                         value={form.customInstructions || ""}
                         onChange={handleChange}
                         rows={2}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.customInstructions ? ' border-red-500' : ''}`}
                         placeholder={t('character.personality.customInstructionsPlaceholder')}
                       />
+                      {attemptedSubmit && fieldErrors.customInstructions && (
+                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.customInstructions}</p>
+                      )}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.customInstructionsHelp')}
                       </p>
@@ -487,41 +498,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         name="tags"
                         value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
                         onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
-                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
                         placeholder="tag1, tag2, tag3"
-                      />
-                      <label className="block mb-1 text-sm font-medium">Creator</label>
-                      <input
-                        name="creator"
-                        value={form.creator || ""}
-                        onChange={handleChange}
-                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="Creator name"
-                      />
-                      <label className="block mb-1 text-sm font-medium">Character Version</label>
-                      <input
-                        name="characterVersion"
-                        value={form.characterVersion || ""}
-                        onChange={handleChange}
-                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="main, v2, etc."
-                      />
-                      <label className="block mb-1 text-sm font-medium">Extensions (JSON)</label>
-                      <textarea
-                        name="extensions"
-                        value={typeof form.extensions === 'string' ? form.extensions : JSON.stringify(form.extensions || {}, null, 2)}
-                        onChange={e => {
-                          let val = e.target.value;
-                          try {
-                            val = JSON.parse(val);
-                          } catch {
-                            // keep as string if not valid JSON
-                          }
-                          handleChange({ target: { name: "extensions", value: val } });
-                        }}
-                        rows={2}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono"
-                        placeholder={'{\n  "chub": { ... }\n}'}
                       />
                     </div>
                     {/* --- End new card fields --- */}

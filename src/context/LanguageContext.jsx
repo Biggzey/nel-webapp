@@ -70,7 +70,9 @@ const translations = {
         systemPromptHelp: "This is the initial system message that defines your character's core personality and behavior.",
         customInstructions: 'Custom Instructions',
         customInstructionsPlaceholder: 'Add any additional instructions or guidelines...',
-        customInstructionsHelp: 'Additional instructions that will be appended to the system message to further customize behavior.'
+        customInstructionsHelp: 'Additional instructions that will be appended to the system message to further customize behavior.',
+        customInstructionsRequired: 'Custom instructions are required',
+        tagsRequired: 'At least 3 tags are required (comma separated)'
       },
       fields: {
         name: 'Name',
@@ -100,7 +102,9 @@ const translations = {
         personality: 'Personality',
         personalityPlaceholder: 'Describe the character\'s personality...',
         personalityRequired: 'Personality is required',
-        descriptionRequired: 'Description is required'
+        descriptionRequired: 'Description is required',
+        customInstructionsRequired: 'Custom instructions are required',
+        tagsRequired: 'At least 3 tags are required (comma separated)'
       },
       actions: {
         resetDefaults: 'Reset to Defaults',
@@ -124,7 +128,9 @@ const translations = {
       createError: 'Failed to create character',
       createFailed: 'Failed to create character',
       submittedForApproval: 'Character submitted for approval!',
-      addedToPrivate: 'Character added to private collection!'
+      addedToPrivate: 'Character added to private collection!',
+      customInstructionsRequired: 'Custom instructions are required',
+      tagsRequired: 'At least 3 tags are required (comma separated)'
     },
     sidebar: {
       characters: 'Characters',
@@ -302,7 +308,9 @@ const translations = {
         systemPromptHelp: "Este es el mensaje inicial del sistema que define la personalidad y el comportamiento principal de tu personaje.",
         customInstructions: 'Instrucciones Personalizadas',
         customInstructionsPlaceholder: 'Agrega instrucciones o pautas adicionales...',
-        customInstructionsHelp: 'Instrucciones adicionales que se agregarán al mensaje del sistema para personalizar aún más el comportamiento.'
+        customInstructionsHelp: 'Instrucciones adicionales que se agregarán al mensaje del sistema para personalizar aún más el comportamiento.',
+        customInstructionsRequired: 'Las instrucciones personalizadas son obligatorias',
+        tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)'
       },
       fields: {
         name: 'Nombre',
@@ -332,7 +340,9 @@ const translations = {
         personality: 'Personalidad',
         personalityPlaceholder: 'Describe la personalidad del personaje...',
         personalityRequired: 'La personalidad es obligatoria',
-        descriptionRequired: 'La descripción es obligatoria'
+        descriptionRequired: 'La descripción es obligatoria',
+        customInstructionsRequired: 'Las instrucciones personalizadas son obligatorias',
+        tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)'
       },
       actions: {
         resetDefaults: 'Restablecer Valores',
@@ -356,7 +366,9 @@ const translations = {
       createError: 'No se pudo crear el personaje',
       createFailed: 'No se pudo crear el personaje',
       submittedForApproval: '¡Personaje enviado para aprobación!',
-      addedToPrivate: '¡Personaje añadido a la colección privada!'
+      addedToPrivate: '¡Personaje añadido a la colección privada!',
+      customInstructionsRequired: 'Las instrucciones personalizadas son obligatorias',
+      tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)'
     },
     sidebar: {
       characters: 'Personajes',
