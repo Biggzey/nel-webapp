@@ -38,7 +38,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
 
   // Fetch users again when refreshKey changes
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, [refreshKey]);
 
   // Filter users based on search

@@ -217,7 +217,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   // Field configurations with custom widths and placeholders
   const fields = [
     { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
-    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -345,8 +344,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     {/* Description (replacing Personality) */}
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
-                        {t('character.personality.traits')}
-                        {publicOnly && <span className="text-red-500 ml-1">*</span>}
+                        {t('character.fields.description')}
+                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <textarea
                         name="description"
@@ -354,7 +353,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         onChange={handleChange}
                         rows={2}
                         className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.description ? ' border-red-500' : ''}`}
-                        placeholder={t('character.personality.traitsPlaceholder')}
+                        placeholder={t('character.fields.descriptionPlaceholder')}
                       />
                       {fieldErrors.description && <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
@@ -385,6 +384,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       systemPromptRequired={publicOnly}
                       systemPromptError={fieldErrors.systemPrompt}
                     />
+                    {publicOnly && fieldErrors.systemPrompt && (
+                      <p className="text-red-500 text-xs mt-1">{fieldErrors.systemPrompt}</p>
+                    )}
 
                     {/* --- New Card Fields --- */}
                     <div className="mt-4 space-y-2">
