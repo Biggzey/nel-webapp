@@ -602,7 +602,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg font-semibold text-text-light dark:text-text-dark transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <span className="flex items-center gap-2">
-                  <i className="fas fa-shield-alt text-2xl" />
+                  <i className="fas fa-shield-alt text-2xl text-primary" />
                   <span>Admin Panel</span>
                 </span>
               </button>
@@ -615,7 +615,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 className="w-full flex items-center justify-between px-3 py-2 rounded-lg font-semibold text-text-light dark:text-text-dark transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <span className="flex items-center gap-2">
-                  <i className="fas fa-user-circle text-2xl" />
+                  <i className="fas fa-user-circle text-2xl text-primary" />
                   <span>{t('settings.profile', 'Profile')}</span>
                 </span>
                 <span className="flex items-center ml-auto gap-2">

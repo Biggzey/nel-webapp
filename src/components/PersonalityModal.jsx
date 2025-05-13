@@ -54,6 +54,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     setForm(prev => sanitizeForm({
@@ -129,26 +130,36 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     reader.readAsDataURL(file);
   }
 
+  function validateRequiredFields() {
+    const errors = {};
+    if (!form.name || form.name.trim() === '') errors.name = t('character.fields.nameRequired', 'Name is required');
+    if (publicOnly) {
+      if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
+      if (!form.description || form.description.trim() === '') errors.description = t('character.fields.descriptionRequired', 'Description is required');
+      if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
+    }
+    return errors;
+  }
+
   async function handleSubmit(e) {
-    console.log('PersonalityModal handleSubmit called with form:', form);
     e.preventDefault();
-    if (!form.name || form.name.trim() === '') {
-      setNameError(t('character.fields.nameRequired', 'Name is required'));
-      addToast && addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
+    const errors = validateRequiredFields();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
       return;
     }
     setShowConfirm(true);
   }
 
   async function handleConfirm() {
-    console.log('PersonalityModal handleConfirm called with form:', form);
-    setNameError('');
-    if (!form.name || form.name.trim() === '') {
-      setNameError(t('character.fields.nameRequired', 'Name is required'));
-      addToast && addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
+    setFieldErrors({});
+    const errors = validateRequiredFields();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
       return;
     }
-
     setLoading(true);
     try {
       // Create the character first
@@ -283,14 +294,15 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                 <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
                   <div className="space-y-4">
                     <div>
-                      <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}</label>
+                      <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}{publicOnly && <span className="text-red-500 ml-1">*</span>}</label>
                       <input
                         name="avatar"
                         value={form.avatar || ""}
                         onChange={handleChange}
                         placeholder={t('character.fields.avatarPlaceholder')}
-                        className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        className={`w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.avatar ? ' border-red-500' : ''}`}
                       />
+                      {fieldErrors.avatar && <p className="text-red-500 text-xs mt-1">{fieldErrors.avatar}</p>}
                       <input
                         type="file"
                         accept="image/*"
@@ -328,15 +340,16 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <div className="flex-1 flex flex-col">
                     {/* Description (replacing Personality) */}
                     <div className="mb-2">
-                      <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}</label>
+                      <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}{publicOnly && <span className="text-red-500 ml-1">*</span>}</label>
                       <textarea
                         name="description"
                         value={form.description || ""}
                         onChange={handleChange}
                         rows={2}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.description ? ' border-red-500' : ''}`}
                         placeholder={t('character.personality.traitsPlaceholder')}
                       />
+                      {fieldErrors.description && <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.traitsHelp')}
                       </p>
@@ -362,6 +375,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       systemPrompt={form.systemPrompt || ""}
                       customInstructions={form.customInstructions || ""}
                       onChange={(field, value) => handleChange({ target: { name: field, value } })}
+                      systemPromptRequired={publicOnly}
+                      systemPromptError={fieldErrors.systemPrompt}
                     />
 
                     {/* --- New Card Fields --- */}
@@ -477,6 +492,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <button
                       type="submit"
                       className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 hover:scale-105 transform"
+                      disabled={publicOnly && Object.keys(validateRequiredFields()).length > 0}
                     >
                       {t('character.actions.save')}
                     </button>

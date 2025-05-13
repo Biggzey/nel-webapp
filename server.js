@@ -1516,12 +1516,30 @@ try {
         return res.status(401).json({ error: "User no longer exists" });
       }
 
-      // Validate required fields
+      // Validate required fields for all characters
       if (!req.body.name || req.body.name.trim() === '') {
         return res.status(400).json({ error: "Character name is required" });
       }
+      // Validate avatar
+      if (!req.body.avatar || req.body.avatar.trim() === '') {
+        return res.status(400).json({ error: "Character avatar is required" });
+      }
 
-      // Ensure avatar is set
+      // If public, validate additional required fields
+      const isPublic = req.body.isPublic === true || req.body.isPublic === 'true';
+      if (isPublic) {
+        if (!req.body.description || req.body.description.trim() === '') {
+          return res.status(400).json({ error: "Description is required for public characters" });
+        }
+        if (!req.body.systemPrompt || req.body.systemPrompt.trim() === '') {
+          return res.status(400).json({ error: "System prompt is required for public characters" });
+        }
+        if (!req.body.personality || req.body.personality.trim() === '') {
+          return res.status(400).json({ error: "Personality is required for public characters" });
+        }
+      }
+
+      // Ensure avatar and userId are set
       const characterData = {
         ...req.body,
         avatar: req.body.avatar || '/assets/default-avatar.png',
@@ -2367,6 +2385,20 @@ try {
       if (character.userId !== userId) {
         console.log('[submit-for-review] Not authorized. Character userId:', character.userId, 'Request userId:', userId);
         return res.status(403).json({ error: "Not authorized to modify this character" });
+      }
+
+      // Additional validation: check required fields
+      if (!character.name || !character.avatar) {
+        console.log('[submit-for-review] Validation failed: missing name or avatar', { name: character.name, avatar: character.avatar });
+        return res.status(400).json({ error: "Character must have a name and avatar" });
+      }
+      if (character.reviewStatus === 'pending') {
+        console.log('[submit-for-review] Validation failed: already pending review');
+        return res.status(400).json({ error: "Character is already pending review" });
+      }
+      if (character.reviewStatus === 'approved') {
+        console.log('[submit-for-review] Validation failed: already approved');
+        return res.status(400).json({ error: "Character is already approved" });
       }
 
       const updated = await prisma.character.update({
