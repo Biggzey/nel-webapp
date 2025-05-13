@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { useToast } from '../context/ToastContext';
 import { useNotifications } from '../context/NotificationContext';
+import { useToast } from './Toast';
 
 export default function Notifications({ modalMode = false }) {
   const { t } = useLanguage();
-  const { addToast } = useToast();
   const { notifications, loading, markAsRead, markAllAsRead, deleteNotification, fetchNotifications } = useNotifications();
   const [localLoading, setLocalLoading] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (modalMode) fetchNotifications();
@@ -20,6 +20,39 @@ export default function Notifications({ modalMode = false }) {
     : notifications;
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Wrapper for markAsRead with toast
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markAsRead(id);
+      addToast({ type: 'success', message: t('notifications.markedRead', 'Notification marked as read') });
+    } catch (error) {
+      addToast({ type: 'error', message: t('notifications.markReadError', 'Failed to mark notification as read') });
+    }
+  };
+
+  // Wrapper for markAllAsRead with toast
+  const handleMarkAllAsRead = async () => {
+    setLocalLoading(true);
+    try {
+      await markAllAsRead();
+      addToast({ type: 'success', message: t('notifications.allRead', 'All notifications marked as read') });
+    } catch (error) {
+      addToast({ type: 'error', message: t('notifications.markAllReadError', 'Failed to mark all notifications as read') });
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  // Wrapper for deleteNotification with toast
+  const handleDeleteNotification = async (id) => {
+    try {
+      await deleteNotification(id);
+      addToast({ type: 'success', message: t('notifications.deleted', 'Notification deleted') });
+    } catch (error) {
+      addToast({ type: 'error', message: t('notifications.deleteError', 'Failed to delete notification') });
+    }
+  };
 
   return (
     <div className={modalMode ? 'w-full max-w-lg' : 'relative'}>
@@ -35,11 +68,7 @@ export default function Notifications({ modalMode = false }) {
             <h3 className="text-lg font-semibold">{t('notifications.title', 'Notifications')}</h3>
             {notifications.length > 0 && (
               <button
-                onClick={async () => {
-                  setLocalLoading(true);
-                  await markAllAsRead();
-                  setLocalLoading(false);
-                }}
+                onClick={handleMarkAllAsRead}
                 className="text-sm text-blue-600 hover:text-blue-800"
                 disabled={localLoading}
               >
@@ -75,7 +104,7 @@ export default function Notifications({ modalMode = false }) {
                   <div className="flex space-x-2 ml-4">
                     {!notification.read && (
                       <button
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={() => handleMarkAsRead(notification.id)}
                         className="text-blue-600 hover:text-blue-800"
                         title={t('notifications.markAsRead', 'Mark as read')}
                       >
@@ -83,7 +112,7 @@ export default function Notifications({ modalMode = false }) {
                       </button>
                     )}
                     <button
-                      onClick={() => deleteNotification(notification.id)}
+                      onClick={() => handleDeleteNotification(notification.id)}
                       className="text-red-600 hover:text-red-800"
                       title={t('notifications.delete', 'Delete')}
                     >
