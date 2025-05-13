@@ -13,7 +13,40 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
   const isMobile = useIsMobile();
-  const [form, setForm] = useState(initialData || {});
+  // Defensive: ensure initialData is always an object
+  const safeInitialData = typeof initialData === 'object' && initialData !== null ? initialData : {};
+  // Defensive: ensure all fields are strings or arrays as expected
+  function sanitizeForm(data) {
+    const safe = { ...data };
+    if (typeof safe.name !== 'string') safe.name = '';
+    if (typeof safe.age !== 'string') safe.age = '';
+    if (typeof safe.gender !== 'string') safe.gender = '';
+    if (typeof safe.race !== 'string') safe.race = '';
+    if (typeof safe.occupation !== 'string') safe.occupation = '';
+    if (typeof safe.likes !== 'string') safe.likes = '';
+    if (typeof safe.dislikes !== 'string') safe.dislikes = '';
+    if (typeof safe.avatar !== 'string') safe.avatar = DEFAULT_AVATAR;
+    if (typeof safe.fullImage !== 'string') safe.fullImage = '';
+    if (typeof safe.description !== 'string') safe.description = '';
+    if (typeof safe.backstory !== 'string') safe.backstory = '';
+    if (typeof safe.systemPrompt !== 'string') safe.systemPrompt = '';
+    if (typeof safe.customInstructions !== 'string') safe.customInstructions = '';
+    if (!Array.isArray(safe.alternateGreetings)) safe.alternateGreetings = typeof safe.alternateGreetings === 'string' ? safe.alternateGreetings.split(/,\s*/) : [];
+    if (!Array.isArray(safe.tags)) safe.tags = typeof safe.tags === 'string' ? safe.tags.split(/,\s*/) : [];
+    if (typeof safe.creator !== 'string') safe.creator = '';
+    if (typeof safe.characterVersion !== 'string') safe.characterVersion = '';
+    if (typeof safe.extensions !== 'string') {
+      try {
+        safe.extensions = JSON.stringify(safe.extensions || {}, null, 2);
+      } catch {
+        safe.extensions = '{}';
+      }
+    }
+    return safe;
+  }
+  // Log initialData and form
+  console.log('Rendering PersonalityModal', { isOpen, initialData: safeInitialData });
+  const [form, setForm] = useState(() => sanitizeForm(safeInitialData));
   const inputRefs = useRef({});
   const modalRef = useRef(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -23,13 +56,13 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [nameError, setNameError] = useState('');
 
   useEffect(() => {
-    setForm(prev => ({
-      ...initialData,
-      avatar: initialData.avatar || DEFAULT_AVATAR
+    setForm(prev => sanitizeForm({
+      ...safeInitialData,
+      avatar: safeInitialData.avatar || DEFAULT_AVATAR
     }));
     setShowConfirm(false);
     setConfirmPublic(false);
-  }, [initialData, isOpen]);
+  }, [safeInitialData, isOpen]);
 
   // Add keyboard event listener for ESC key
   useEffect(() => {
