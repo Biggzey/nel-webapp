@@ -7,6 +7,8 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
 import { useToast } from './Toast';
 
+const DEFAULT_AVATAR = '/assets/default-avatar.png'; // Adjust path as needed
+
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
   const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
@@ -93,13 +95,15 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!form.name || form.name.trim() === '') {
+      setNameError(t('character.fields.nameRequired', 'Name is required'));
+      addToast && addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
+      return;
+    }
     setShowConfirm(true);
   }
 
   async function handleConfirm() {
-    console.log('handleConfirm called', { form, confirmPublic, publicOnly });
-    console.log('addToast:', addToast);
-    window.alert('Saving!');
     setNameError('');
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));
@@ -108,18 +112,23 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     }
     setLoading(true);
     try {
-      const saved = await onSave({ ...form, isPublic: publicOnly ? true : confirmPublic });
-      if ((publicOnly ? true : confirmPublic) && saved && saved.id) {
+      // Always include avatar
+      const payload = {
+        ...form,
+        avatar: form.avatar || DEFAULT_AVATAR,
+        isPublic: publicOnly ? true : confirmPublic,
+      };
+      const saved = await onSave(payload);
+      if ((publicOnly ? true : confirmPublic) && saved && saved.id && typeof submitForReview === 'function') {
         await submitForReview(saved.id);
       }
+      setLoading(false);
       setShowConfirm(false);
       onClose();
       addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
-      addToast && addToast({ type: 'error', message: error.message || t('character.createFailed', 'Failed to create character'), duration: 4000 });
-      console.error('Error saving character:', error);
-    } finally {
       setLoading(false);
+      addToast && addToast({ type: 'error', message: t('character.createError', 'Failed to create character'), duration: 4000 });
     }
   }
 
@@ -130,7 +139,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   // Field configurations with custom widths and placeholders
   const fields = [
-    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder') },
+    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -171,9 +180,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {fields.map(({ label, field, placeholder, multiline }) => (
+                    {fields.map(({ label, field, placeholder, multiline, required }) => (
                       <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
-                        <label className="block mb-1 text-sm font-medium">{label}</label>
+                        <label className="block mb-1 text-sm font-medium">
+                          {label}
+                          {required && <span className="text-red-500 ml-1">*</span>}
+                        </label>
                         {multiline ? (
                           <textarea
                             ref={el => inputRefs.current[field] = el}
@@ -181,7 +193,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className="w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden"
+                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${field === 'name' && !form[field] ? 'border-red-500' : ''}`}
                             rows={1}
                           />
                         ) : (
@@ -190,8 +202,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                            className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${field === 'name' && !form[field] ? 'border-red-500' : ''}`}
                           />
+                        )}
+                        {field === 'name' && !form[field] && (
+                          <p className="text-red-500 text-xs mt-1">{t('character.fields.nameRequired', 'Name is required')}</p>
                         )}
                       </div>
                     ))}
@@ -442,7 +457,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     </button>
                     <button
                       className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold flex items-center justify-center min-w-[80px]"
-                      onClick={async () => { console.log('Save button clicked'); await handleConfirm(); }}
+                      onClick={async () => { await handleConfirm(); }}
                       type="button"
                       disabled={loading}
                     >

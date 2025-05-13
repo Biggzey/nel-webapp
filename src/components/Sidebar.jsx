@@ -231,6 +231,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const searchInputRef = useRef();
   const [showNewCharacterModal, setShowNewCharacterModal] = useState(false);
   const [newCharacterInitialData, setNewCharacterInitialData] = useState({ name: '', isPublic: false });
+  const DEFAULT_AVATAR = '/assets/default-avatar.png'; // Adjust path as needed
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -616,36 +617,37 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           initialData={newCharacterInitialData}
           onClose={() => setShowNewCharacterModal(false)}
           onSave={async (form) => {
+            const { addToast } = useToast();
             try {
-              // Always create a private character for the user
+              // Always create a private character for the user, always include avatar
               const res = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 },
-                body: JSON.stringify({ ...form, isPublic: false })
+                body: JSON.stringify({ ...form, avatar: form.avatar || DEFAULT_AVATAR, isPublic: false })
               });
               if (!res.ok) throw new Error('Failed to create character');
               const character = await res.json();
               // If public, also submit a copy for review
               if (form.isPublic) {
-                await fetch('/api/characters', {
+                const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
                   method: 'POST',
                   headers: {
-                    'Content-Type': 'application/json',
                     Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                  },
-                  body: JSON.stringify({ ...form, isPublic: true })
+                  }
                 });
+                if (!reviewRes.ok) throw new Error('Failed to submit for review');
               }
-              await reloadCharacters();
-              setSelectedIndexRaw(characters.length); // select the new character
-              addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+              addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+              // Refresh sidebar/character list here (call your refresh function or context)
+              setShowNewCharacterModal(false);
               return character;
-            } catch (err) {
-              addToast({ type: 'error', message: err.message || 'Failed to create character', duration: 4000 });
-              throw err;
+            } catch (error) {
+              addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
+              // Keep modal open
+              throw error;
             }
           }}
           publicOnly={false}
