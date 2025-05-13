@@ -24,6 +24,7 @@ model User {
   preferences  UserPreference?
   hasSeenOnboarding Boolean    @default(false)
   notifications Notification[]
+  pendingCharacters PendingCharacter[]
 }
 
 model Character {
@@ -56,7 +57,7 @@ model Character {
   reviewStatus    String    @default("private") // "private", "pending", "approved", "rejected"
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages        ChatMessage[]
-  pendingSubmission PendingCharacter? // Link to pending submission if exists
+  pendingSubmission PendingCharacter? @relation("PendingSubmission")
 }
 
 model ChatMessage {
