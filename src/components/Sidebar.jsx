@@ -29,6 +29,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ReactDOM from "react-dom";
+import PrivatePersonalityModal from './PrivatePersonalityModal';
 
 // Portal component for context menu
 function ContextMenuPortal({ anchorRef, isOpen, children, onClose }) {
@@ -612,7 +613,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
       {/* Render PersonalityModal for new character */}
       {showNewCharacterModal && (
-        <PersonalityModal
+        <PrivatePersonalityModal
           isOpen={showNewCharacterModal}
           initialData={newCharacterInitialData}
           onClose={() => setShowNewCharacterModal(false)}
@@ -650,7 +651,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               throw error;
             }
           }}
-          publicOnly={false}
         />
       )}
     </div>

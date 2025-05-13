@@ -104,7 +104,15 @@ const translations = {
       delete: 'Delete Character',
       deleted: 'Character deleted.',
       deleteFailed: 'Failed to delete character.',
-      confirmDelete: 'Are you sure you want to delete this character? This cannot be undone.'
+      confirmDelete: 'Are you sure you want to delete this character? This cannot be undone.',
+      confirmCreate: 'Confirm Character Creation',
+      confirmCreateDesc: 'Are you sure you want to create this character?',
+      confirmCreatePublic: 'Submit Public Character',
+      confirmCreatePublicDesc: 'This character will be submitted for public review and, if approved, will be visible to all users.',
+      reviewError: 'Character created but failed to submit for review. You can try submitting it later.',
+      created: 'Character created!',
+      createError: 'Failed to create character',
+      createFailed: 'Failed to create character'
     },
     sidebar: {
       characters: 'Characters',
@@ -302,7 +310,15 @@ const translations = {
       delete: 'Eliminar personaje',
       deleted: 'Personaje eliminado.',
       deleteFailed: 'No se pudo eliminar el personaje.',
-      confirmDelete: '¿Estás seguro de que deseas eliminar este personaje? Esto no se puede deshacer.'
+      confirmDelete: '¿Estás seguro de que deseas eliminar este personaje? Esto no se puede deshacer.',
+      confirmCreate: 'Confirmar creación de personaje',
+      confirmCreateDesc: '¿Estás seguro de que deseas crear este personaje?',
+      confirmCreatePublic: 'Enviar personaje público',
+      confirmCreatePublicDesc: 'Este personaje será enviado para revisión pública y, si es aprobado, será visible para todos los usuarios.',
+      reviewError: 'Personaje creado pero no se pudo enviar para revisión. Puedes intentar enviarlo más tarde.',
+      created: '¡Personaje creado!',
+      createError: 'No se pudo crear el personaje',
+      createFailed: 'No se pudo crear el personaje'
     },
     sidebar: {
       characters: 'Personajes',

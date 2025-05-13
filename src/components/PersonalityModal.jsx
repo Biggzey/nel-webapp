@@ -122,37 +122,33 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         isPublic: publicOnly ? true : confirmPublic,
       };
       const saved = await onSave(payload);
-      
-      // Only proceed with review submission if character was saved successfully
-      if (saved && saved.id) {
-        if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
-          try {
-            await submitForReview(saved.id);
-          } catch (reviewError) {
-            console.error('Error submitting for review:', reviewError);
-            addToast && addToast({ 
-              type: 'error', 
-              message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
-              duration: 4000 
-            });
-            // Don't throw here, as the character was still created successfully
-          }
+      if (!saved || !saved.id) throw new Error('Failed to create character - no response data');
+      // If publicOnly or confirmPublic, submit for review
+      if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
+        try {
+          const reviewRes = await submitForReview(saved.id);
+          if (reviewRes && reviewRes.error) throw new Error(reviewRes.error);
+        } catch (reviewError) {
+          setLoading(false);
+          console.error('Error submitting for review:', reviewError);
+          addToast && addToast({ 
+            type: 'error', 
+            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
+            duration: 4000 
+          });
+          setShowConfirm(true);
+          return;
         }
-        // Only close modals and show success if character was created successfully
-        setLoading(false);
-        setShowConfirm(false);
-        onClose();
-        addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
-      } else {
-        throw new Error('Failed to create character - no response data');
       }
+      setLoading(false);
+      setShowConfirm(false);
+      onClose();
+      addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
       setLoading(false);
       console.error('Error creating character:', error);
-      // Show more specific error message if available
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
-      // Don't close modals on error
       setShowConfirm(true);
     }
   }
@@ -447,8 +443,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             {showConfirm && (
               <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={e => e.stopPropagation()}>
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
-                  <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreate', 'Confirm Character Creation')}</h2>
-                  <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreateDesc', 'Are you sure you want to create this character?')}</p>
+                  <h2 className="text-xl font-bold mb-4 text-primary">{publicOnly ? t('character.confirmCreatePublic', 'Submit Public Character') : t('character.confirmCreate', 'Confirm Character Creation')}</h2>
+                  <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{publicOnly ? t('character.confirmCreatePublicDesc', 'This character will be submitted for public review and, if approved, will be visible to all users.') : t('character.confirmCreateDesc', 'Are you sure you want to create this character?')}</p>
                   {!publicOnly && (
                     <>
                       <div className="flex items-center gap-2 mb-2">
