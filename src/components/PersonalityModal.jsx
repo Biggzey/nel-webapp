@@ -407,6 +407,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     checked={confirmPublic}
                     onChange={e => setConfirmPublic(e.target.checked)}
                     className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary"
+                    tabIndex={0}
                   />
                   <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer">
                     {t('character.public.title', 'Make Public')}
