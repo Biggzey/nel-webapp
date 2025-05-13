@@ -178,7 +178,8 @@ const translations = {
     },
     explore: {
       title: 'Explore Characters',
-      description: 'Discover and add characters created by the community',
+      subtitle: 'Discover and add new characters created by the community!',
+      description: 'Discover and add new characters created by the community!',
       create: 'Create Public Character',
       add: 'Add to My Characters',
       added: 'Added to My Characters',
@@ -194,7 +195,9 @@ const translations = {
       submitSuccess: 'Character submitted for review',
       submitError: 'Error submitting character',
       addSuccess: 'Character added to your collection',
-      addError: 'Error adding character to collection'
+      addError: 'Error adding character to collection',
+      back: 'Back to Chat',
+      view: 'View',
     }
   },
   es: {
@@ -373,7 +376,8 @@ const translations = {
     },
     explore: {
       title: 'Explore Characters',
-      description: 'Discover and add characters created by the community',
+      subtitle: 'Discover and add new characters created by the community!',
+      description: 'Discover and add new characters created by the community!',
       create: 'Create Public Character',
       add: 'Add to My Characters',
       added: 'Added to My Characters',
@@ -389,7 +393,9 @@ const translations = {
       submitSuccess: 'Character submitted for review',
       submitError: 'Error submitting character',
       addSuccess: 'Character added to your collection',
-      addError: 'Error adding character to collection'
+      addError: 'Error adding character to collection',
+      back: 'Back to Chat',
+      view: 'View',
     }
   }
 };

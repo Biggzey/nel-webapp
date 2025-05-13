@@ -1,131 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCharacter } from '../context/CharacterContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
-
-// Mock static character data
-const MOCK_CHARACTERS = [
-  {
-    id: 1,
-    name: 'Nelliel',
-    avatar: '/nel-avatar.png',
-    tagline: 'Your friendly AI companion',
-    description: 'Nelliel is always here to help you with anything you need. She is smart, empathetic, and fun to chat with!',
-    tags: ['friendly', 'helpful', 'default'],
-  },
-  {
-    id: 2,
-    name: 'Reiko',
-    avatar: '/reiko-avatar.png',
-    tagline: 'Anime bestie',
-    description: 'Reiko loves anime, games, and making new friends. She is energetic and always up for an adventure!',
-    tags: ['anime', 'energetic', 'fun'],
-  },
-  {
-    id: 3,
-    name: 'Professor Sage',
-    avatar: '/sage-avatar.png',
-    tagline: 'Wise and witty mentor',
-    description: 'Professor Sage can answer your toughest questions and teach you something new every day.',
-    tags: ['mentor', 'wise', 'educational'],
-  },
-  {
-    id: 4,
-    name: 'Luna',
-    avatar: '/luna-avatar.png',
-    tagline: 'Dreamy night owl',
-    description: 'Luna is a gentle soul who loves poetry, stargazing, and late-night chats about the universe.',
-    tags: ['dreamy', 'gentle', 'night owl'],
-  },
-  {
-    id: 5,
-    name: 'Bolt',
-    avatar: '/bolt-avatar.png',
-    tagline: 'Tech whiz',
-    description: 'Bolt is a fast-talking, tech-savvy AI who can help you with coding, gadgets, and all things digital.',
-    tags: ['tech', 'coding', 'fast'],
-  },
-  {
-    id: 6,
-    name: 'Mimi',
-    avatar: '/mimi-avatar.png',
-    tagline: 'Cute and quirky',
-    description: 'Mimi is playful, quirky, and always ready to make you smile with her jokes and stories.',
-    tags: ['cute', 'quirky', 'funny'],
-  },
-];
+import PersonalityModal from './PersonalityModal';
 
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
-  const { setSelectedIndex, characters } = useCharacter();
+  const { addToCollection } = useCharacter();
   const { addToast } = useToast();
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null);
+  const [characters, setCharacters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+
+  // Fetch public/explore characters
+  useEffect(() => {
+    async function fetchCharacters() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/explore/characters', {
+          headers: { 'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined }
+        });
+        if (!res.ok) throw new Error('Failed to fetch characters');
+        const data = await res.json();
+        setCharacters(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCharacters();
+  }, []);
 
   // Filter characters by search
-  const filtered = MOCK_CHARACTERS.filter(c =>
+  const filtered = characters.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()))
+    (c.tags || []).some(tag => tag.toLowerCase().includes(search.toLowerCase()))
   );
 
-  // Add character handler (mock)
-  function handleAdd(character) {
-    addToast({
-      type: 'success',
-      message: t('explore.added', { name: character.name }) || `${character.name} added to your characters!`,
-      duration: 3000,
-    });
-    setModal(null);
+  // Add character handler
+  async function handleAdd(character) {
+    try {
+      await addToCollection(character.id);
+      addToast({
+        type: 'success',
+        message: t('explore.added', { name: character.name }) || `${character.name} added to your characters!`,
+        duration: 3000,
+      });
+      setModal(null);
+    } catch (err) {
+      addToast({
+        type: 'error',
+        message: t('explore.addError'),
+        duration: 3000,
+      });
+    }
   }
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-b from-primary/10 via-background-light to-background-container-light dark:from-primary/20 dark:via-background-dark dark:to-background-container-dark px-2 py-8 animate-fade-in-up">
-      <h1 className="text-4xl font-bold mb-4 text-primary drop-shadow-lg">{t('explore.title', 'Explore Characters')}</h1>
+      <h1 className="text-4xl font-bold mb-4 text-primary drop-shadow-lg">{t('explore.title')}</h1>
       <p className="mb-8 text-lg max-w-xl text-center text-text-secondary-light dark:text-text-secondary-dark">
-        {t('explore.subtitle', 'Discover and add new characters created by the community!')}
+        {t('explore.description')}
       </p>
+      {/* Create Public Character Button */}
+      <button
+        className="mb-6 px-6 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg font-semibold shadow-md"
+        onClick={() => setShowCreate(true)}
+      >
+        {t('explore.create')}
+      </button>
       {/* Search bar */}
       <div className="w-full max-w-md mb-8">
         <input
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder={t('explore.search', 'Search characters or tags...')}
+          placeholder={t('explore.search')}
           className="w-full px-5 py-3 rounded-2xl border-2 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary bg-background-container-light dark:bg-background-container-dark text-lg transition-all duration-200 shadow-md focus:shadow-lg outline-none"
         />
       </div>
       {/* Character grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
-        {filtered.length === 0 ? (
-          <div className="col-span-full text-center text-xl text-text-secondary-light dark:text-text-secondary-dark py-12">
-            {t('explore.noResults', 'No characters found. Try a different search!')}
-          </div>
-        ) : filtered.map(character => (
-          <div
-            key={character.id}
-            className="group relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-xl transition-all duration-200 flex flex-col items-center p-6 cursor-pointer hover:scale-[1.03] focus-within:scale-[1.03]"
-            tabIndex={0}
-            onClick={() => setModal(character)}
-            onKeyDown={e => { if (e.key === 'Enter') setModal(character); }}
-          >
-            <img
-              src={character.avatar || '/default-avatar.png'}
-              alt={character.name}
-              className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-primary/30 group-hover:border-primary shadow-lg transition-all duration-200"
-              onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-            />
-            <h2 className="text-xl font-semibold mb-1 text-primary drop-shadow">{character.name}</h2>
-            <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
-            <div className="flex flex-wrap gap-2 justify-center mb-2">
-              {character.tags.map(tag => (
-                <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
-              ))}
+      {loading ? (
+        <div className="text-xl text-text-secondary-light dark:text-text-secondary-dark py-12">{t('explore.loading')}</div>
+      ) : error ? (
+        <div className="text-xl text-red-500 py-12">{t('explore.error')}</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 w-full max-w-5xl">
+          {filtered.length === 0 ? (
+            <div className="col-span-full text-center text-xl text-text-secondary-light dark:text-text-secondary-dark py-12">
+              {t('explore.noResults')}
             </div>
-            {/* Card is now fully clickable, add a tooltip for accessibility */}
-            <span className="sr-only">{t('explore.view', 'View')}</span>
-          </div>
-        ))}
-      </div>
+          ) : filtered.map(character => (
+            <div
+              key={character.id}
+              className="group relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 hover:border-primary shadow-md hover:shadow-xl transition-all duration-200 flex flex-col items-center p-6 cursor-pointer hover:scale-[1.03] focus-within:scale-[1.03]"
+              tabIndex={0}
+              onClick={() => setModal(character)}
+              onKeyDown={e => { if (e.key === 'Enter') setModal(character); }}
+            >
+              <img
+                src={character.avatar || '/default-avatar.png'}
+                alt={character.name}
+                className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-primary/30 group-hover:border-primary shadow-lg transition-all duration-200"
+                onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+              />
+              <h2 className="text-xl font-semibold mb-1 text-primary drop-shadow">{character.name}</h2>
+              <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
+              <div className="flex flex-wrap gap-2 justify-center mb-2">
+                {(character.tags || []).map(tag => (
+                  <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                ))}
+              </div>
+              {/* Status badge if not approved */}
+              {character.reviewStatus && character.reviewStatus !== 'approved' && (
+                <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${character.reviewStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                  {t(`explore.${character.reviewStatus}`)}
+                </span>
+              )}
+              <span className="sr-only">{t('explore.view')}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {/* Modal for character details */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up" onClick={() => setModal(null)}>
@@ -136,7 +137,7 @@ export default function ExplorePage({ onClose }) {
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-primary text-2xl focus:outline-none"
               onClick={() => setModal(null)}
-              title={t('common.close', 'Close')}
+              title={t('common.close')}
             >
               <i className="fas fa-times" />
             </button>
@@ -151,7 +152,7 @@ export default function ExplorePage({ onClose }) {
               <div className="text-lg text-text-secondary-light dark:text-text-secondary-dark mb-4">{modal.tagline}</div>
               <div className="mb-4 text-base text-center text-text-light dark:text-text-dark">{modal.description}</div>
               <div className="flex flex-wrap gap-2 justify-center mb-6">
-                {modal.tags.map(tag => (
+                {(modal.tags || []).map(tag => (
                   <span key={tag} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
                 ))}
               </div>
@@ -159,23 +160,20 @@ export default function ExplorePage({ onClose }) {
                 className="bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90"
                 onClick={() => handleAdd(modal)}
               >
-                {t('explore.add', 'Add to My Characters')}
+                {t('explore.add')}
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* Back to Chat button */}
-      {characters && characters.length > 0 && (
-        <button
-          className="mt-12 px-6 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg font-semibold shadow-md"
-          onClick={() => {
-            setSelectedIndex(0);
-            onClose && onClose();
-          }}
-        >
-          {t('explore.back', 'Back to Chat')}
-        </button>
+      {/* Create Public Character Modal */}
+      {showCreate && (
+        <PersonalityModal
+          isOpen={showCreate}
+          initialData={{ name: '', isPublic: true }}
+          onClose={() => setShowCreate(false)}
+          onSave={() => { setShowCreate(false); }}
+        />
       )}
     </div>
   );
