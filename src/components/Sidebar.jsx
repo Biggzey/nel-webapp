@@ -632,10 +632,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               });
               if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
+                console.error('Character creation failed:', errorData);
                 throw new Error(errorData.error || 'Failed to create character');
               }
               const character = await res.json();
-              if (!character || !character.id) throw new Error('Failed to create character');
+              if (!character || !character.id) {
+                console.error('Character creation returned invalid data:', character);
+                throw new Error('Failed to create character');
+              }
               // If public, also submit a copy for review
               if (form.isPublic) {
                 const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
@@ -644,12 +648,18 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                   }
                 });
-                if (!reviewRes.ok) throw new Error('Failed to submit for review');
+                if (!reviewRes.ok) {
+                  const reviewError = await reviewRes.json().catch(() => ({}));
+                  console.error('Review submission failed:', reviewError);
+                  throw new Error('Failed to submit for review');
+                }
               }
               addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+              await reloadCharacters();
               setShowNewCharacterModal(false);
               return character;
             } catch (error) {
+              console.error('Error in onSave:', error);
               addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
               throw error;
             }
