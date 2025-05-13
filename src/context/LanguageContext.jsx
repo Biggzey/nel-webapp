@@ -207,6 +207,20 @@ const translations = {
       addError: 'Error adding character to collection',
       back: 'Back to Chat',
       view: 'View',
+    },
+    notifications: {
+      title: 'Notifications',
+      loading: 'Loading notifications...',
+      empty: 'No notifications',
+      markAsRead: 'Mark as read',
+      markAllRead: 'Mark all as read',
+      delete: 'Delete',
+      deleted: 'Notification deleted',
+      fetchError: 'Failed to fetch notifications',
+      markReadError: 'Failed to mark notification as read',
+      markAllReadError: 'Failed to mark all notifications as read',
+      deleteError: 'Failed to delete notification',
+      allRead: 'All notifications marked as read'
     }
   },
   es: {
@@ -414,6 +428,20 @@ const translations = {
       addError: 'Error adding character to collection',
       back: 'Back to Chat',
       view: 'View',
+    },
+    notifications: {
+      title: 'Notifications',
+      loading: 'Loading notifications...',
+      empty: 'No notifications',
+      markAsRead: 'Mark as read',
+      markAllRead: 'Mark all as read',
+      delete: 'Delete',
+      deleted: 'Notification deleted',
+      fetchError: 'Failed to fetch notifications',
+      markReadError: 'Failed to mark notification as read',
+      markAllReadError: 'Failed to mark all notifications as read',
+      deleteError: 'Failed to delete notification',
+      allRead: 'All notifications marked as read'
     }
   }
 };

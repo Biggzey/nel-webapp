@@ -213,8 +213,7 @@ export default function AdminPanel() {
         onUserSelect={setSelectedUserId}
         selectedUserId={selectedUserId}
       />
-      
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 flex flex-col min-h-0 bg-background-light dark:bg-background-dark overflow-y-auto">
         {selectedUserId ? (
           // User details view
           userDetails && (
@@ -514,147 +513,149 @@ export default function AdminPanel() {
             </div>
           )
         ) : (
-          // System overview
-          systemStats && (
-            <div className="space-y-6">
-              <h1 className="text-2xl font-bold mb-6">{t('admin.systemOverview')}</h1>
-              {/* Universal cleanup button for all users */}
-              <button
-                className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
-                onClick={async () => {
-                  try {
-                    const res = await fetch(`/api/admin/cleanup-duplicates`, {
-                      method: 'POST',
-                      headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    if (res.ok) {
-                      addToast({
-                        type: 'success',
-                        message: data.message,
-                        duration: 4000
+          <div className="flex-1 flex flex-col p-6">
+            {/* System overview and pending public characters go here */}
+            {systemStats && (
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold mb-6">{t('admin.systemOverview')}</h1>
+                {/* Universal cleanup button for all users */}
+                <button
+                  className="mb-4 px-4 py-2 rounded-lg bg-primary text-white shadow transition-colors hover:bg-primary/80 focus:outline-none focus:ring-2 focus:ring-primary"
+                  onClick={async () => {
+                    try {
+                      const res = await fetch(`/api/admin/cleanup-duplicates`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` }
                       });
-                    } else {
-                      throw new Error(data.error || 'Unknown error');
+                      const data = await res.json();
+                      if (res.ok) {
+                        addToast({
+                          type: 'success',
+                          message: data.message,
+                          duration: 4000
+                        });
+                      } else {
+                        throw new Error(data.error || 'Unknown error');
+                      }
+                    } catch (err) {
+                      addToast({
+                        type: 'error',
+                        message: t('admin.duplicateCleanupFailed', { error: err.message }),
+                        duration: 5000
+                      });
                     }
-                  } catch (err) {
-                    addToast({
-                      type: 'error',
-                      message: t('admin.duplicateCleanupFailed', { error: err.message }),
-                      duration: 5000
-                    });
-                  }
-                }}
-              >
-                {t('admin.removeDuplicatesAll')}
-              </button>
-              {/* 4-column grid for stats and pending characters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl mx-auto">
-                {/* User Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-3">Users</h2>
-                  <dl className="space-y-2">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Users</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Active Now</dt>
-                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">New Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {/* Message Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-3">Messages</h2>
-                  <dl className="space-y-2">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Messages</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Messages Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Avg per User</dt>
-                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgMessagesPerUser)}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {/* Character Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-3">Characters</h2>
-                  <dl className="space-y-2">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Characters</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Created Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Avg per User</dt>
-                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
-                    </div>
-                  </dl>
-                </div>
-                {/* Pending Public Characters - Carousel */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                  <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
-                  {loadingPending ? (
-                    <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
-                  ) : errorPending ? (
-                    <div className="text-red-500">{errorPending}</div>
-                  ) : pendingCharacters.length === 0 ? (
-                    <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
-                  ) : (
-                    <div className="relative">
-                      {/* Navigation Arrows */}
-                      <button
-                        onClick={handlePrev}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                      >
-                        <i className="fas fa-chevron-left" />
-                      </button>
-                      <button
-                        onClick={handleNext}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                      >
-                        <i className="fas fa-chevron-right" />
-                      </button>
-
-                      {/* Character Card */}
-                      <div 
-                        className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                        onClick={() => setShowReviewModal(true)}
-                      >
-                        <img
-                          src={pendingCharacters[currentCharacterIndex]?.avatar || '/default-avatar.png'}
-                          alt={pendingCharacters[currentCharacterIndex]?.name}
-                          className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30 shadow"
-                          onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                        />
-                        <h3 className="text-xl font-semibold mb-1 text-primary">{pendingCharacters[currentCharacterIndex]?.name}</h3>
-                        <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">{pendingCharacters[currentCharacterIndex]?.tagline}</div>
-                        <div className="flex flex-wrap gap-1 justify-center mb-2">
-                          {(pendingCharacters[currentCharacterIndex]?.tags || []).map(tag => (
-                            <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
-                          ))}
-                        </div>
-                        <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
+                  }}
+                >
+                  {t('admin.removeDuplicatesAll')}
+                </button>
+                {/* 4-column grid for stats and pending characters */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl mx-auto">
+                  {/* User Stats */}
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-3">Users</h2>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">Total Users</dt>
+                        <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
                       </div>
-                    </div>
-                  )}
+                      <div>
+                        <dt className="text-sm text-gray-500">Active Now</dt>
+                        <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">New Today</dt>
+                        <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {/* Message Stats */}
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-3">Messages</h2>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">Total Messages</dt>
+                        <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Messages Today</dt>
+                        <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Avg per User</dt>
+                        <dd className="text-2xl font-bold">{Math.round(systemStats.avgMessagesPerUser)}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {/* Character Stats */}
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-3">Characters</h2>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">Total Characters</dt>
+                        <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Created Today</dt>
+                        <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Avg per User</dt>
+                        <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {/* Pending Public Characters - Carousel */}
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                    <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
+                    {loadingPending ? (
+                      <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
+                    ) : errorPending ? (
+                      <div className="text-red-500">{errorPending}</div>
+                    ) : pendingCharacters.length === 0 ? (
+                      <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
+                    ) : (
+                      <div className="relative">
+                        {/* Navigation Arrows */}
+                        <button
+                          onClick={handlePrev}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                        >
+                          <i className="fas fa-chevron-left" />
+                        </button>
+                        <button
+                          onClick={handleNext}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                        >
+                          <i className="fas fa-chevron-right" />
+                        </button>
+
+                        {/* Character Card */}
+                        <div 
+                          className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                          onClick={() => setShowReviewModal(true)}
+                        >
+                          <img
+                            src={pendingCharacters[currentCharacterIndex]?.avatar || '/default-avatar.png'}
+                            alt={pendingCharacters[currentCharacterIndex]?.name}
+                            className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30 shadow"
+                            onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                          />
+                          <h3 className="text-xl font-semibold mb-1 text-primary">{pendingCharacters[currentCharacterIndex]?.name}</h3>
+                          <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">{pendingCharacters[currentCharacterIndex]?.tagline}</div>
+                          <div className="flex flex-wrap gap-1 justify-center mb-2">
+                            {(pendingCharacters[currentCharacterIndex]?.tags || []).map(tag => (
+                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                            ))}
+                          </div>
+                          <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
+            )}
+          </div>
         )}
 
         {/* Review Modal */}

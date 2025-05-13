@@ -2328,19 +2328,20 @@ try {
   app.post("/api/characters/:id/submit-for-review", authMiddleware, async (req, res) => {
     try {
       const characterId = parseInt(req.params.id);
-      
-      // Verify character belongs to user
-      const character = await prisma.character.findFirst({
-        where: {
-          id: characterId,
-          userId: req.user.id
-        }
+      const userId = req.user.id;
+      console.log('[submit-for-review] userId:', userId, 'characterId:', characterId);
+      // Find the character
+      const character = await prisma.character.findUnique({
+        where: { id: characterId }
       });
-
       if (!character) {
+        console.log('[submit-for-review] Character not found');
+        return res.status(404).json({ error: "Character not found" });
+      }
+      if (character.userId !== userId) {
+        console.log('[submit-for-review] Not authorized. Character userId:', character.userId, 'Request userId:', userId);
         return res.status(403).json({ error: "Not authorized to modify this character" });
       }
-
       const updated = await prisma.character.update({
         where: { id: characterId },
         data: {
@@ -2348,6 +2349,7 @@ try {
           reviewStatus: 'pending'
         }
       });
+      console.log('[submit-for-review] Character submitted for review:', updated.id);
       res.json(updated);
     } catch (error) {
       console.error("Error submitting character for review:", error);
