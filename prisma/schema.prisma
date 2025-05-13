@@ -23,6 +23,7 @@ model User {
   characters   Character[]
   preferences  UserPreference?
   hasSeenOnboarding Boolean    @default(false)
+  notifications Notification[]
 }
 
 model Character {
@@ -83,4 +84,17 @@ model UserPreference {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String   // e.g., 'CHARACTER_APPROVED', 'CHARACTER_REJECTED'
+  title     String
+  message   String
+  metadata  Json?    // Additional data like characterId, rejectionReason, etc.
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

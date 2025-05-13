@@ -15,6 +15,10 @@ export default function AdminPanel() {
   const [pendingCharacters, setPendingCharacters] = useState([]);
   const [loadingPending, setLoadingPending] = useState(false);
   const [errorPending, setErrorPending] = useState(null);
+  const [currentCharacterIndex, setCurrentCharacterIndex] = useState(0);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
   const navigate = useNavigate();
 
   // Load user details when selected
@@ -150,6 +154,15 @@ export default function AdminPanel() {
     fetchPending();
   }, [selectedUserId, token]);
 
+  // Navigation handlers for carousel
+  const handlePrev = () => {
+    setCurrentCharacterIndex(prev => (prev > 0 ? prev - 1 : pendingCharacters.length - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentCharacterIndex(prev => (prev < pendingCharacters.length - 1 ? prev + 1 : 0));
+  };
+
   // Approve/reject handlers
   async function handleApprove(id) {
     try {
@@ -160,19 +173,28 @@ export default function AdminPanel() {
       if (!res.ok) throw new Error('Failed to approve character');
       setPendingCharacters(prev => prev.filter(c => c.id !== id));
       addToast({ type: 'success', message: 'Character approved', duration: 3000 });
+      setShowReviewModal(false);
     } catch (err) {
       addToast({ type: 'error', message: err.message, duration: 4000 });
     }
   }
+
   async function handleReject(id) {
     try {
       const res = await fetch(`/api/admin/characters/${id}/reject`, {
         method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason: rejectReason })
       });
       if (!res.ok) throw new Error('Failed to reject character');
       setPendingCharacters(prev => prev.filter(c => c.id !== id));
       addToast({ type: 'success', message: 'Character rejected', duration: 3000 });
+      setShowReviewModal(false);
+      setShowRejectModal(false);
+      setRejectReason('');
     } catch (err) {
       addToast({ type: 'error', message: err.message, duration: 4000 });
     }
@@ -186,13 +208,13 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-background-light dark:bg-background-dark">
       <AdminSidebar
         onUserSelect={setSelectedUserId}
         selectedUserId={selectedUserId}
       />
       
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto">
         {selectedUserId ? (
           // User details view
           userDetails && (
@@ -582,8 +604,8 @@ export default function AdminPanel() {
                     </div>
                   </dl>
                 </div>
-                {/* Pending Public Characters */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                {/* Pending Public Characters - Carousel */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
                   <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
                   {loadingPending ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
@@ -592,41 +614,209 @@ export default function AdminPanel() {
                   ) : pendingCharacters.length === 0 ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
                   ) : (
-                    <div className="flex flex-col gap-2 w-full">
-                      {pendingCharacters.map(character => (
-                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-2">
-                          <img
-                            src={character.avatar || '/default-avatar.png'}
-                            alt={character.name}
-                            className="w-10 h-10 rounded-full object-cover mb-1 border-2 border-primary/30 shadow"
-                            onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                          />
-                          <h3 className="text-base font-semibold mb-0.5 text-primary">{character.name}</h3>
-                          <div className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-0.5">{character.tagline}</div>
-                          <div className="flex flex-wrap gap-1 justify-center mb-0.5">
-                            {(character.tags || []).map(tag => (
-                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{tag}</span>
-                            ))}
-                          </div>
-                          <div className="mb-0.5 text-xs text-gray-500">By: {character.user?.username || character.user?.email || 'Unknown'}</div>
-                          <div className="flex gap-2 mt-1">
-                            <button
-                              className="px-2 py-0.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs"
-                              onClick={() => handleApprove(character.id)}
-                            >Approve</button>
-                            <button
-                              className="px-2 py-0.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-xs"
-                              onClick={() => handleReject(character.id)}
-                            >Reject</button>
-                          </div>
+                    <div className="relative">
+                      {/* Navigation Arrows */}
+                      <button
+                        onClick={handlePrev}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                      >
+                        <i className="fas fa-chevron-left" />
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                      >
+                        <i className="fas fa-chevron-right" />
+                      </button>
+
+                      {/* Character Card */}
+                      <div 
+                        className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => setShowReviewModal(true)}
+                      >
+                        <img
+                          src={pendingCharacters[currentCharacterIndex]?.avatar || '/default-avatar.png'}
+                          alt={pendingCharacters[currentCharacterIndex]?.name}
+                          className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30 shadow"
+                          onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                        />
+                        <h3 className="text-xl font-semibold mb-1 text-primary">{pendingCharacters[currentCharacterIndex]?.name}</h3>
+                        <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">{pendingCharacters[currentCharacterIndex]?.tagline}</div>
+                        <div className="flex flex-wrap gap-1 justify-center mb-2">
+                          {(pendingCharacters[currentCharacterIndex]?.tags || []).map(tag => (
+                            <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                          ))}
                         </div>
-                      ))}
+                        <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
             </div>
           )
+        )}
+
+        {/* Review Modal */}
+        {showReviewModal && pendingCharacters[currentCharacterIndex] && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-semibold">Review Character</h2>
+                <button
+                  onClick={() => setShowReviewModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <i className="fas fa-times" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                {/* Left Column - Images */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Avatar</h3>
+                    <img
+                      src={pendingCharacters[currentCharacterIndex].avatar || '/default-avatar.png'}
+                      alt="Avatar"
+                      className="w-32 h-32 rounded-full object-cover border-2 border-primary/30"
+                    />
+                  </div>
+                  {pendingCharacters[currentCharacterIndex].fullImage && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Full Image</h3>
+                      <img
+                        src={pendingCharacters[currentCharacterIndex].fullImage}
+                        alt="Full Image"
+                        className="w-full rounded-lg border-2 border-primary/30"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Column - Details */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Basic Info</h3>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">Name</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].name}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Age</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].age || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Gender</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].gender || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Race</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].race || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Occupation</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].occupation || 'N/A'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Personality</h3>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">Description</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].description || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Backstory</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].backstory || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Likes</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].likes || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Dislikes</dt>
+                        <dd className="font-medium">{pendingCharacters[currentCharacterIndex].dislikes || 'N/A'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">System Configuration</h3>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500">System Prompt</dt>
+                        <dd className="font-medium whitespace-pre-wrap">{pendingCharacters[currentCharacterIndex].systemPrompt || 'N/A'}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500">Custom Instructions</dt>
+                        <dd className="font-medium whitespace-pre-wrap">{pendingCharacters[currentCharacterIndex].customInstructions || 'N/A'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-4 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    setShowRejectModal(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                >
+                  Decline
+                </button>
+                <button
+                  onClick={() => handleApprove(pendingCharacters[currentCharacterIndex].id)}
+                  className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Reject Modal */}
+        {showRejectModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-semibold mb-4">Decline Character</h3>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Reason for Decline</label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                  rows={4}
+                  placeholder="Please provide a reason for declining this character..."
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => {
+                    setShowRejectModal(false);
+                    setRejectReason('');
+                  }}
+                  className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleReject(pendingCharacters[currentCharacterIndex].id)}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                  disabled={!rejectReason.trim()}
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>

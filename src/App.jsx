@@ -22,6 +22,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 import ExplorePage from './components/ExplorePage';
 import { OnboardingProvider, useOnboarding } from './context/OnboardingContext';
 import SpotlightOnboarding from './components/SpotlightOnboarding';
+import { NotificationProvider } from './context/NotificationContext';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 

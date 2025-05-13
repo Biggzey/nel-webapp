@@ -30,6 +30,8 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import ReactDOM from "react-dom";
 import PrivatePersonalityModal from './PrivatePersonalityModal';
+import Notifications from './Notifications';
+import { useNotifications } from '../context/NotificationContext';
 
 // Portal component for context menu
 function ContextMenuPortal({ anchorRef, isOpen, children, onClose }) {
@@ -196,7 +198,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
 
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey, setShowExplore }) {
   const navigate = useNavigate();
-  const { isModerator, token } = useAuth();
+  const { isModerator, token, user } = useAuth();
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
@@ -234,6 +236,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const [showNewCharacterModal, setShowNewCharacterModal] = useState(false);
   const [newCharacterInitialData, setNewCharacterInitialData] = useState({ name: '', isPublic: false });
   const DEFAULT_AVATAR = '/assets/default-avatar.png'; // Adjust path as needed
+  const { unreadCount } = useNotifications();
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -606,24 +609,45 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <div className="flex items-center space-x-2">
-                  <span className="text-primary group-hover:scale-110 transition-transform">
-                    <i className="fas fa-user-circle" />
-                  </span>
-                  <span>{t('settings.profile')}</span>
+                <div className="w-8 h-8 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white font-semibold text-lg">
+                  {user?.avatar ? (
+                    <img 
+                      src={user.avatar || '/default-avatar.png'} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                      onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                    />
+                  ) : (
+                    <img 
+                      src={'/default-avatar.png'} 
+                      alt={user.username} 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
-                <i className={`fas fa-chevron-${isProfileOpen ? 'up' : 'down'} text-text-light/60 dark:text-text-dark/60`} />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">
+                    {user?.displayName || user?.username}
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="relative">
+                    <span>{t('sidebar.profile')}</span>
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-2 -right-4 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                        {unreadCount}
+                      </span>
+                    )}
+                  </span>
+                  <i className="fas fa-chevron-down text-text-light/60 dark:text-text-dark/60 group-hover:text-text-light dark:group-hover:text-text-dark transition-colors" />
+                </div>
               </button>
-              
               <ProfileDropdown
                 isOpen={isProfileOpen}
                 onClose={() => setIsProfileOpen(false)}
-                onSettingsClick={() => {
-                  setIsProfileOpen(false);
-                  onSettingsClick();
-                }}
+                onSettingsClick={onSettingsClick}
               />
             </div>
           </div>

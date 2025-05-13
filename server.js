@@ -2402,11 +2402,54 @@ try {
       }
 
       const characterId = parseInt(req.params.id);
-      const character = await prisma.character.update({
+
+      // Get character and creator info
+      const character = await prisma.character.findUnique({
+        where: { id: characterId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true
+            }
+          }
+        }
+      });
+
+      if (!character) {
+        return res.status(404).json({ error: "Character not found" });
+      }
+
+      // Update character status
+      const updatedCharacter = await prisma.character.update({
         where: { id: characterId },
         data: { reviewStatus: 'approved' }
       });
-      res.json(character);
+
+      // Create notification for the character creator
+      await prisma.notification.create({
+        data: {
+          userId: character.user.id,
+          type: 'CHARACTER_APPROVED',
+          title: 'Character Approved',
+          message: `Your character "${character.name}" has been approved and is now public!`,
+          metadata: {
+            characterId: character.id,
+            characterName: character.name
+          }
+        }
+      });
+
+      // TODO: Send email notification
+      // This will be implemented when we set up the email system
+      // await sendEmail({
+      //   to: character.user.email,
+      //   subject: 'Character Approved',
+      //   text: `Your character "${character.name}" has been approved and is now public!`
+      // });
+
+      res.json(updatedCharacter);
     } catch (error) {
       console.error("Error approving character:", error);
       res.status(500).json({ error: "Failed to approve character" });
@@ -2426,14 +2469,63 @@ try {
       }
 
       const characterId = parseInt(req.params.id);
-      const character = await prisma.character.update({
+      const { reason } = req.body;
+
+      if (!reason) {
+        return res.status(400).json({ error: "Rejection reason is required" });
+      }
+
+      // Get character and creator info
+      const character = await prisma.character.findUnique({
+        where: { id: characterId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              username: true
+            }
+          }
+        }
+      });
+
+      if (!character) {
+        return res.status(404).json({ error: "Character not found" });
+      }
+
+      // Update character status
+      const updatedCharacter = await prisma.character.update({
         where: { id: characterId },
         data: { 
           reviewStatus: 'rejected',
           isPublic: false
         }
       });
-      res.json(character);
+
+      // Create notification for the character creator
+      await prisma.notification.create({
+        data: {
+          userId: character.user.id,
+          type: 'CHARACTER_REJECTED',
+          title: 'Character Rejected',
+          message: `Your character "${character.name}" was rejected. Reason: ${reason}`,
+          metadata: {
+            characterId: character.id,
+            characterName: character.name,
+            rejectionReason: reason
+          }
+        }
+      });
+
+      // TODO: Send email notification
+      // This will be implemented when we set up the email system
+      // await sendEmail({
+      //   to: character.user.email,
+      //   subject: 'Character Rejected',
+      //   text: `Your character "${character.name}" was rejected. Reason: ${reason}`
+      // });
+
+      res.json(updatedCharacter);
     } catch (error) {
       console.error("Error rejecting character:", error);
       res.status(500).json({ error: "Failed to reject character" });
@@ -2473,6 +2565,95 @@ try {
     } catch (error) {
       console.error("Error adding character to collection:", error);
       res.status(500).json({ error: "Failed to add character to collection" });
+    }
+  });
+
+  // Get user's notifications
+  app.get("/api/notifications", authMiddleware, async (req, res) => {
+    try {
+      const notifications = await prisma.notification.findMany({
+        where: { userId: req.user.id },
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch("/api/notifications/:id/read", authMiddleware, async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      
+      // Verify the notification belongs to the user
+      const notification = await prisma.notification.findFirst({
+        where: {
+          id: notificationId,
+          userId: req.user.id
+        }
+      });
+
+      if (!notification) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+
+      const updatedNotification = await prisma.notification.update({
+        where: { id: notificationId },
+        data: { read: true }
+      });
+
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ error: "Failed to mark notification as read" });
+    }
+  });
+
+  // Mark all notifications as read
+  app.patch("/api/notifications/read-all", authMiddleware, async (req, res) => {
+    try {
+      await prisma.notification.updateMany({
+        where: {
+          userId: req.user.id,
+          read: false
+        },
+        data: { read: true }
+      });
+
+      res.json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ error: "Failed to mark all notifications as read" });
+    }
+  });
+
+  // Delete notification
+  app.delete("/api/notifications/:id", authMiddleware, async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      
+      // Verify the notification belongs to the user
+      const notification = await prisma.notification.findFirst({
+        where: {
+          id: notificationId,
+          userId: req.user.id
+        }
+      });
+
+      if (!notification) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+
+      await prisma.notification.delete({
+        where: { id: notificationId }
+      });
+
+      res.json({ message: "Notification deleted" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ error: "Failed to delete notification" });
     }
   });
 
