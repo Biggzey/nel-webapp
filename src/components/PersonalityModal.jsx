@@ -170,24 +170,23 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         isPublic: publicOnly ? true : confirmPublic
       };
       console.log('Submitting character with payload:', payload);
-      
       const saved = await onSave(payload);
       console.log('Character saved:', saved);
-
       if (!saved || !saved.id) {
         throw new Error('Failed to create character - no response data');
       }
-
+      let reviewSuccess = false;
       // If public, submit for review
       if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
         try {
           console.log('Submitting for review:', saved.id);
           const reviewRes = await submitForReview(saved.id);
           console.log('Review submission response:', reviewRes);
-          
           if (reviewRes && reviewRes.error) {
             throw new Error(reviewRes.error);
           }
+          reviewSuccess = true;
+          addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
         } catch (reviewError) {
           console.error('Error submitting for review:', reviewError);
           addToast && addToast({ 
@@ -197,11 +196,15 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           });
         }
       }
-
+      if (!publicOnly && !confirmPublic) {
+        addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
+      } else if (!reviewSuccess) {
+        // If public submission failed, but private succeeded
+        addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
+      }
       setLoading(false);
       setShowConfirm(false);
       onClose();
-      addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
       console.error('Error in handleConfirm:', error);
       setLoading(false);
@@ -218,7 +221,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   // Field configurations with custom widths and placeholders
   const fields = [
     { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
-    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -343,42 +345,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   
                   {/* Main content wrapper */}
                   <div className="flex-1 flex flex-col">
-                    {/* Description (replacing Personality) */}
-                    <div className="mb-2">
-                      <label className="block mb-1 text-sm font-medium">
-                        {t('character.fields.description')}
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      <textarea
-                        name="description"
-                        value={form.description || ""}
-                        onChange={handleChange}
-                        rows={2}
-                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.description ? ' border-red-500' : ''}`}
-                        placeholder={t('character.fields.descriptionPlaceholder')}
-                      />
-                      {fieldErrors.description && <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>}
-                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                        {t('character.personality.traitsHelp')}
-                      </p>
-                    </div>
-
-                    {/* Backstory */}
-                    <div className="mb-2">
-                      <label className="block mb-1 text-sm font-medium">{t('character.personality.backstory')}</label>
-                      <textarea
-                        name="backstory"
-                        value={form.backstory || ""}
-                        onChange={handleChange}
-                        rows={2}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder={t('character.personality.backstoryPlaceholder')}
-                      />
-                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                        {t('character.personality.backstoryHelp')}
-                      </p>
-                    </div>
-
+                    {/* Personality */}
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.personality')}
@@ -400,6 +367,25 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       </p>
                     </div>
 
+                    {/* Backstory */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.backstory')}
+                      </label>
+                      <textarea
+                        name="backstory"
+                        value={form.backstory || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={t('character.personality.backstoryPlaceholder')}
+                      />
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.backstoryHelp')}
+                      </p>
+                    </div>
+
+                    {/* System Prompt */}
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.personality.systemPrompt')}
@@ -418,6 +404,24 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       )}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.systemPromptHelp')}
+                      </p>
+                    </div>
+
+                    {/* Custom Instructions */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.customInstructions')}
+                      </label>
+                      <textarea
+                        name="customInstructions"
+                        value={form.customInstructions || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={t('character.personality.customInstructionsPlaceholder')}
+                      />
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.customInstructionsHelp')}
                       </p>
                     </div>
 

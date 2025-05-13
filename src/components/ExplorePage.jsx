@@ -198,21 +198,29 @@ export default function ExplorePage({ onClose }) {
               if (!res.ok) throw new Error('Failed to create character');
               const character = await res.json();
               // Submit for review
-              await fetch(`/api/characters/${character.id}/submit-for-review`, {
+              const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 }
               });
-              addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
+              if (!reviewRes.ok) {
+                const errorData = await reviewRes.json().catch(() => ({}));
+                addToast({
+                  type: 'error',
+                  message: errorData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
+                  duration: 4000
+                });
+              } else {
+                addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
+              }
               await reloadCharacters();
               setGlobalLoading(false); // Hide spinner
               return character;
-            } catch (err) {
+            } catch (error) {
               setGlobalLoading(false);
-              addToast({ type: 'error', message: t('character.createFailed', 'Failed to create character'), duration: 4000 });
-              throw err;
+              addToast({ type: 'error', message: error.message || t('character.createError', 'Failed to create character'), duration: 4000 });
             }
           }}
         />

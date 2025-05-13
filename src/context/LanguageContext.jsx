@@ -122,7 +122,9 @@ const translations = {
       reviewError: 'Character created but failed to submit for review. You can try submitting it later.',
       created: 'Character created!',
       createError: 'Failed to create character',
-      createFailed: 'Failed to create character'
+      createFailed: 'Failed to create character',
+      submittedForApproval: 'Character submitted for approval!',
+      addedToPrivate: 'Character added to private collection!'
     },
     sidebar: {
       characters: 'Characters',
@@ -352,7 +354,9 @@ const translations = {
       reviewError: 'Personaje creado pero no se pudo enviar para revisión. Puedes intentar enviarlo más tarde.',
       created: '¡Personaje creado!',
       createError: 'No se pudo crear el personaje',
-      createFailed: 'No se pudo crear el personaje'
+      createFailed: 'No se pudo crear el personaje',
+      submittedForApproval: '¡Personaje enviado para aprobación!',
+      addedToPrivate: '¡Personaje añadido a la colección privada!'
     },
     sidebar: {
       characters: 'Personajes',
