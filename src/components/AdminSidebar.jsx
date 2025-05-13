@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
 
-export default function AdminSidebar({ onUserSelect, selectedUserId }) {
+export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey }) {
   const { token } = useAuth();
   const { t } = useLanguage();
   const { addToast } = useToast();
@@ -35,6 +35,11 @@ export default function AdminSidebar({ onUserSelect, selectedUserId }) {
     }
     loadUsers();
   }, [token, addToast]);
+
+  // Fetch users again when refreshKey changes
+  useEffect(() => {
+    fetchUsers();
+  }, [refreshKey]);
 
   // Filter users based on search
   const filteredUsers = users.filter(user => 

@@ -20,6 +20,7 @@ export default function AdminPanel() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const navigate = useNavigate();
+  const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
 
   // Load user details when selected
   useEffect(() => {
@@ -212,6 +213,7 @@ export default function AdminPanel() {
       <AdminSidebar
         onUserSelect={setSelectedUserId}
         selectedUserId={selectedUserId}
+        refreshKey={sidebarRefreshKey}
       />
       <main className="w-full flex-1 bg-background-light dark:bg-background-dark overflow-y-auto">
         <div className="flex-1 p-6 md:p-8">
@@ -313,47 +315,53 @@ export default function AdminPanel() {
                           <div>
                             <dt className="text-sm text-gray-500">Role</dt>
                             <dd className="font-medium">
-                              <select
-                                value={userDetails.role}
-                                onChange={async (e) => {
-                                  try {
-                                    const res = await fetch(`/api/admin/users/${selectedUserId}/role`, {
-                                      method: 'PATCH',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                        Authorization: `Bearer ${token}`
-                                      },
-                                      body: JSON.stringify({ role: e.target.value })
-                                    });
-                                    if (!res.ok) throw new Error('Failed to update role');
-                                    addToast({
-                                      type: 'success',
-                                      message: 'Role updated successfully',
-                                      duration: 3000
-                                    });
-                                    // Refresh user details
-                                    const updated = await fetch(`/api/admin/users/${selectedUserId}`, {
-                                      headers: { Authorization: `Bearer ${token}` }
-                                    });
-                                    if (updated.ok) {
-                                      const data = await updated.json();
-                                      setUserDetails(data);
+                              {userDetails.role === 'SUPER_ADMIN' ? (
+                                <span className="px-2 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold">SUPER ADMIN</span>
+                              ) : (
+                                <select
+                                  value={userDetails.role}
+                                  onChange={async (e) => {
+                                    try {
+                                      const res = await fetch(`/api/admin/users/${selectedUserId}/role`, {
+                                        method: 'PATCH',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          Authorization: `Bearer ${token}`
+                                        },
+                                        body: JSON.stringify({ role: e.target.value })
+                                      });
+                                      if (!res.ok) throw new Error('Failed to update role');
+                                      addToast({
+                                        type: 'success',
+                                        message: 'Role updated successfully',
+                                        duration: 3000
+                                      });
+                                      // Refresh user details
+                                      const updated = await fetch(`/api/admin/users/${selectedUserId}`, {
+                                        headers: { Authorization: `Bearer ${token}` }
+                                      });
+                                      if (updated.ok) {
+                                        const data = await updated.json();
+                                        setUserDetails(data);
+                                      }
+                                      // Refresh sidebar by updating a dummy state
+                                      setSidebarRefreshKey(prev => prev + 1);
+                                    } catch (error) {
+                                      console.error('Error updating role:', error);
+                                      addToast({
+                                        type: 'error',
+                                        message: 'Failed to update role',
+                                        duration: 5000
+                                      });
                                     }
-                                  } catch (error) {
-                                    console.error('Error updating role:', error);
-                                    addToast({
-                                      type: 'error',
-                                      message: 'Failed to update role',
-                                      duration: 5000
-                                    });
-                                  }
-                                }}
-                                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                              >
-                                <option value="USER">User</option>
-                                <option value="MODERATOR">Moderator</option>
-                                <option value="ADMIN">Admin</option>
-                              </select>
+                                  }}
+                                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                                >
+                                  <option value="USER">User</option>
+                                  <option value="MODERATOR">Moderator</option>
+                                  <option value="ADMIN">Admin</option>
+                                </select>
+                              )}
                             </dd>
                           </div>
                           <div>
@@ -362,11 +370,11 @@ export default function AdminPanel() {
                               <div className="flex items-center space-x-2">
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                   userDetails.blocked ? 'bg-red-100 text-red-800' :
-                                  userDetails.online ? 'bg-green-100 text-green-800' :
+                                  isUserOnline(userDetails) ? 'bg-green-100 text-green-800' :
                                   'bg-gray-100 text-gray-800'
                                 }`}>
                                   {userDetails.blocked ? 'Blocked' :
-                                   userDetails.online ? 'Online' : 'Offline'}
+                                   isUserOnline(userDetails) ? 'Online' : 'Offline'}
                                 </span>
                                 {userDetails.blocked && userDetails.blockedUntil && (
                                   <span className="text-sm text-gray-500">

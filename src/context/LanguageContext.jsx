@@ -93,7 +93,8 @@ const translations = {
         fullImage: 'Full-Body Image URL or Upload',
         fullImagePlaceholder: 'https://example.com/full.png',
         avatarRequired: 'Avatar is required',
-        descriptionRequired: 'Description is required',
+        description: 'Description',
+        descriptionPlaceholder: 'Describe your character...',
         systemPromptRequired: 'System prompt is required',
         missingFields: 'Please fill all required fields'
       },
@@ -318,7 +319,8 @@ const translations = {
         fullImage: 'URL de Imagen Completa o Subir',
         fullImagePlaceholder: 'https://ejemplo.com/completa.png',
         avatarRequired: 'Avatar is required',
-        descriptionRequired: 'Description is required',
+        description: 'Descripción',
+        descriptionPlaceholder: 'Describe tu personaje...',
         systemPromptRequired: 'System prompt is required',
         missingFields: 'Please fill all required fields'
       },
