@@ -229,6 +229,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const [pendingImportToast, setPendingImportToast] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef();
+  const [showNewCharacterModal, setShowNewCharacterModal] = useState(false);
+  const [newCharacterInitialData, setNewCharacterInitialData] = useState({ name: '', isPublic: false });
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
@@ -368,7 +370,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         <div className="w-full px-2 flex flex-row gap-x-2 mb-6 mt-4">
           <button
             onClick={() => {
-              handleNewCharacter();
+              setNewCharacterInitialData({ name: '', isPublic: false });
+              setShowNewCharacterModal(true);
               onLinkClick();
             }}
             className="new-character-button w-1/2 bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex items-center justify-center"
@@ -604,6 +607,45 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             </div>
           </div>
         </div>
+      )}
+
+      {/* Render PersonalityModal for new character */}
+      {showNewCharacterModal && (
+        <PersonalityModal
+          isOpen={showNewCharacterModal}
+          initialData={newCharacterInitialData}
+          onClose={() => setShowNewCharacterModal(false)}
+          onSave={async (form) => {
+            try {
+              const res = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify(form)
+              });
+              if (!res.ok) throw new Error('Failed to create character');
+              const character = await res.json();
+              if (form.isPublic) {
+                await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                  }
+                });
+              }
+              await reloadCharacters();
+              setSelectedIndexRaw(characters.length); // select the new character
+              return character;
+            } catch (err) {
+              // Optionally show error toast
+              throw err;
+            }
+          }}
+          publicOnly={false}
+        />
       )}
     </div>
   );

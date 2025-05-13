@@ -182,7 +182,6 @@ export default function ExplorePage({ onClose }) {
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
           onSave={async (form) => {
-            // Create the character as public and submit for review
             try {
               const res = await fetch('/api/characters', {
                 method: 'POST',
@@ -195,17 +194,29 @@ export default function ExplorePage({ onClose }) {
               if (!res.ok) throw new Error('Failed to create character');
               const character = await res.json();
               // Submit for review
-              await fetch(`/api/characters/${character.id}/submit-for-review`, {
+              const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 }
               });
+              if (!reviewRes.ok) throw new Error('Failed to submit for review');
+              // Show toast
+              addToast({
+                type: 'success',
+                message: t('explore.submitSuccess', 'Character submitted for review!'),
+                duration: 4000
+              });
               setShowCreate(false);
-              // Optionally refresh characters in sidebar or show a toast
+              return character;
             } catch (err) {
-              // Optionally show error toast
+              addToast({
+                type: 'error',
+                message: t('explore.submitError', 'Error submitting character'),
+                duration: 4000
+              });
+              return null;
             }
           }}
           publicOnly={true}

@@ -100,6 +100,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       }
       setShowConfirm(false);
       onClose();
+      // Optionally show toast if addToast is available
+      if (typeof window !== 'undefined' && window.addToast) {
+        window.addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
+      }
     } catch (error) {
       console.error('Error saving character:', error);
     }

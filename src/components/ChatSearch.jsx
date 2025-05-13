@@ -65,7 +65,7 @@ export default function ChatSearch({ messages, open, onClose, onJumpToMessage })
           onClick={onClose}
           aria-label="Close search"
         >
-          <i className="fas fa-times" />
+          <i className="fas fa-times" />''
         </button>
         <input
           ref={inputRef}
