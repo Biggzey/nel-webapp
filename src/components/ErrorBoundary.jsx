@@ -5,7 +5,8 @@ import { useLanguage } from '../context/LanguageContext';
 // to use hooks like useLanguage
 function ErrorContent({ error, errorInfo }) {
   const { t } = useLanguage();
-  
+  // Always log error details for debugging
+  console.log('ErrorContent:', error, errorInfo);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-light dark:bg-background-dark px-4">
       <div className="max-w-md w-full space-y-4 text-center">
@@ -32,16 +33,15 @@ function ErrorContent({ error, errorInfo }) {
             {t('common.goHome')}
           </button>
         </div>
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-900 rounded text-left overflow-auto">
-            <p className="text-red-600 dark:text-red-400 font-mono text-sm">
-              {error && error.toString()}
-            </p>
-            <pre className="text-gray-700 dark:text-gray-300 font-mono text-xs mt-2">
-              {errorInfo && errorInfo.componentStack}
-            </pre>
-          </div>
-        )}
+        {/* Always show error details for debugging */}
+        <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-900 rounded text-left overflow-auto">
+          <p className="text-red-600 dark:text-red-400 font-mono text-sm">
+            {error && error.toString()}
+          </p>
+          <pre className="text-gray-700 dark:text-gray-300 font-mono text-xs mt-2">
+            {errorInfo && errorInfo.componentStack}
+          </pre>
+        </div>
       </div>
     </div>
   );
@@ -66,7 +66,6 @@ class ErrorBoundary extends React.Component {
       error: error,
       errorInfo: errorInfo
     });
-    
     // Log the error to your preferred error tracking service
     console.error('Error caught by boundary:', error, errorInfo);
   }
