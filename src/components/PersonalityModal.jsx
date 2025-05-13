@@ -134,10 +134,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     const errors = {};
     if (!form.name || form.name.trim() === '') errors.name = t('character.fields.nameRequired', 'Name is required');
     if (!form.description || form.description.trim() === '') errors.description = t('character.fields.descriptionRequired', 'Description is required');
-    if (publicOnly) {
-      if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
-      if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
-    }
+    if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
+    if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
+    if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
     return errors;
   }
 
@@ -217,6 +216,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   // Field configurations with custom widths and placeholders
   const fields = [
     { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
+    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
+    { label: t('character.fields.personality'), field: "personality", placeholder: t('character.fields.personalityPlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -296,7 +297,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div>
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.avatar')}
-                        {publicOnly && <span className="text-red-500 ml-1">*</span>}
+                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         name="avatar"
@@ -381,10 +382,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       systemPrompt={form.systemPrompt || ""}
                       customInstructions={form.customInstructions || ""}
                       onChange={(field, value) => handleChange({ target: { name: field, value } })}
-                      systemPromptRequired={publicOnly}
+                      systemPromptRequired={true}
                       systemPromptError={fieldErrors.systemPrompt}
                     />
-                    {publicOnly && fieldErrors.systemPrompt && (
+                    {fieldErrors.systemPrompt && (
                       <p className="text-red-500 text-xs mt-1">{fieldErrors.systemPrompt}</p>
                     )}
 

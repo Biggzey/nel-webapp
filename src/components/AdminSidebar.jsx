@@ -12,31 +12,31 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const menuRef = useRef(null);
 
-  // Load users
-  useEffect(() => {
-    async function loadUsers() {
-      try {
-        const res = await fetch('/api/admin/users', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        if (!res.ok) throw new Error('Failed to load users');
-        const data = await res.json();
-        setUsers(data);
-      } catch (error) {
-        console.error('Error loading users:', error);
-        addToast({
-          type: 'error',
-          message: 'Failed to load users',
-          duration: 5000
-        });
-      }
+  // Move loadUsers outside of useEffect
+  async function loadUsers() {
+    try {
+      const res = await fetch('/api/admin/users', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (!res.ok) throw new Error('Failed to load users');
+      const data = await res.json();
+      setUsers(data);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      addToast({
+        type: 'error',
+        message: 'Failed to load users',
+        duration: 5000
+      });
     }
+  }
+
+  useEffect(() => {
     loadUsers();
   }, [token, addToast]);
 
-  // Fetch users again when refreshKey changes
   useEffect(() => {
     loadUsers();
   }, [refreshKey]);

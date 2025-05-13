@@ -96,7 +96,10 @@ const translations = {
         description: 'Description',
         descriptionPlaceholder: 'Describe your character...',
         systemPromptRequired: 'System prompt is required',
-        missingFields: 'Please fill all required fields'
+        missingFields: 'Please fill all required fields',
+        personality: 'Personality',
+        personalityPlaceholder: 'Describe the character\'s personality...',
+        personalityRequired: 'Personality is required'
       },
       actions: {
         resetDefaults: 'Reset to Defaults',
@@ -322,7 +325,10 @@ const translations = {
         description: 'Descripción',
         descriptionPlaceholder: 'Describe tu personaje...',
         systemPromptRequired: 'System prompt is required',
-        missingFields: 'Please fill all required fields'
+        missingFields: 'Please fill all required fields',
+        personality: 'Personalidad',
+        personalityPlaceholder: 'Describe la personalidad del personaje...',
+        personalityRequired: 'La personalidad es obligatoria'
       },
       actions: {
         resetDefaults: 'Restablecer Valores',
