@@ -7,7 +7,7 @@ import PersonalityModal from './PersonalityModal';
 
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
-  const { addToCollection, characters: userCharacters, setSelectedIndex } = useCharacter();
+  const { addToCollection, characters: userCharacters, setSelectedIndex, reloadCharacters } = useCharacter();
   const { addToast } = useToast();
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null);
@@ -203,6 +203,8 @@ export default function ExplorePage({ onClose }) {
                 }
               });
               addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              await reloadCharacters();
               setShowCreate(false);
               return character;
             } catch (err) {

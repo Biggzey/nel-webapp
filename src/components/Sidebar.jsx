@@ -620,6 +620,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onClose={() => setShowNewCharacterModal(false)}
           onSave={async (form) => {
             const { addToast } = useToast();
+            console.log('Sidebar onSave called with form:', form);
             try {
               const payload = { ...form, avatar: form.avatar || '/default-avatar.png', isPublic: false };
               const res = await fetch('/api/characters', {
@@ -633,11 +634,15 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));
                 console.error('Character creation failed:', errorData);
+                addToast && addToast({ type: 'error', message: errorData.error || 'Failed to create character', duration: 4000 });
+                console.log('Sidebar onSave: throwing after failed character creation');
                 throw new Error(errorData.error || 'Failed to create character');
               }
               const character = await res.json();
               if (!character || !character.id) {
                 console.error('Character creation returned invalid data:', character);
+                addToast && addToast({ type: 'error', message: 'Failed to create character', duration: 4000 });
+                console.log('Sidebar onSave: throwing after invalid character data');
                 throw new Error('Failed to create character');
               }
               // If public, use the same logic as ExplorePage
@@ -664,6 +669,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 await reloadCharacters();
                 setShowNewCharacterModal(false);
+                console.log('Sidebar onSave: finished public flow');
                 return character;
               }
               // Private creation
@@ -671,10 +677,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               await new Promise(resolve => setTimeout(resolve, 2000));
               await reloadCharacters();
               setShowNewCharacterModal(false);
+              console.log('Sidebar onSave: finished private flow');
               return character;
             } catch (error) {
               console.error('Error in onSave:', error);
               addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
+              console.log('Sidebar onSave: throwing from catch');
               throw error;
             }
           }}
