@@ -57,7 +57,7 @@ model Character {
   reviewStatus    String    @default("private") // "private", "pending", "approved", "rejected"
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages        ChatMessage[]
-  pendingSubmission PendingCharacter? @relation("PendingSubmission")
+  pendingSubmissions PendingCharacter[] @relation("PendingSubmission")
 }
 
 model ChatMessage {
