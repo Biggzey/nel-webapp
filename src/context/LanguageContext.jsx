@@ -99,7 +99,8 @@ const translations = {
         missingFields: 'Please fill all required fields',
         personality: 'Personality',
         personalityPlaceholder: 'Describe the character\'s personality...',
-        personalityRequired: 'Personality is required'
+        personalityRequired: 'Personality is required',
+        descriptionRequired: 'Description is required'
       },
       actions: {
         resetDefaults: 'Reset to Defaults',
@@ -321,14 +322,15 @@ const translations = {
         avatarPlaceholder: 'https://ejemplo.com/avatar.png',
         fullImage: 'URL de Imagen Completa o Subir',
         fullImagePlaceholder: 'https://ejemplo.com/completa.png',
-        avatarRequired: 'Avatar is required',
+        avatarRequired: 'El avatar es obligatorio',
         description: 'Descripción',
         descriptionPlaceholder: 'Describe tu personaje...',
-        systemPromptRequired: 'System prompt is required',
+        systemPromptRequired: 'El prompt del sistema es obligatorio',
         missingFields: 'Please fill all required fields',
         personality: 'Personalidad',
         personalityPlaceholder: 'Describe la personalidad del personaje...',
-        personalityRequired: 'La personalidad es obligatoria'
+        personalityRequired: 'La personalidad es obligatoria',
+        descriptionRequired: 'La descripción es obligatoria'
       },
       actions: {
         resetDefaults: 'Restablecer Valores',

@@ -55,6 +55,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
   useEffect(() => {
     setForm(prev => sanitizeForm({
@@ -140,8 +141,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     return errors;
   }
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault();
+    setAttemptedSubmit(true);
     const errors = validateRequiredFields();
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -217,7 +219,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const fields = [
     { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
     { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
-    { label: t('character.fields.personality'), field: "personality", placeholder: t('character.fields.personalityPlaceholder'), required: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -283,9 +284,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
                           />
                         )}
-                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">
-                          {fieldErrors[field] || (required && t(`character.fields.${field}Required`, `${label} is required`))}
-                        </p>
+                        {attemptedSubmit && fieldErrors[field] && (
+                          <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors[field]}</p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -391,9 +392,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.personality ? ' border-red-500' : ''}`}
                         placeholder={t('character.fields.personalityPlaceholder')}
                       />
-                      <p className="text-red-500 text-xs mt-1 min-h-[18px]">
-                        {fieldErrors.personality || t('character.fields.personalityRequired', 'Personality is required')}
-                      </p>
+                      {attemptedSubmit && fieldErrors.personality && (
+                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.personality}</p>
+                      )}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.traitsHelp')}
                       </p>
@@ -412,9 +413,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.systemPrompt ? ' border-red-500' : ''}`}
                         placeholder={t('character.personality.systemPromptPlaceholder')}
                       />
-                      <p className="text-red-500 text-xs mt-1 min-h-[18px]">
-                        {fieldErrors.systemPrompt || t('character.fields.systemPromptRequired', 'System prompt is required')}
-                      </p>
+                      {attemptedSubmit && fieldErrors.systemPrompt && (
+                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.systemPrompt}</p>
+                      )}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.systemPromptHelp')}
                       </p>
