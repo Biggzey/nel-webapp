@@ -408,7 +408,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     headers: {
                       'Content-Type': 'application/json',
                       Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                    }
+                    },
+                    body: JSON.stringify({})
                   });
 
                   if (!reviewRes.ok) {
@@ -598,12 +599,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             {isModerator && (
               <button
                 onClick={() => navigate('/admin')}
-                className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg font-semibold text-text-light dark:text-text-dark transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <span className="text-primary group-hover:scale-110 transition-transform">
-                  <i className="fas fa-shield-alt" />
+                <span className="flex items-center gap-2">
+                  <i className="fas fa-shield-alt text-2xl" />
+                  <span>Admin Panel</span>
                 </span>
-                <span>Admin Panel</span>
               </button>
             )}
             
@@ -611,18 +612,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg font-semibold text-text-light dark:text-text-dark transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <i className="fas fa-user-circle text-2xl text-primary" />
-                <span className="font-semibold text-text-light dark:text-text-dark">{t('settings.profile', 'Profile')}</span>
-                <div className="flex items-center space-x-2 ml-auto">
+                <span className="flex items-center gap-2">
+                  <i className="fas fa-user-circle text-2xl" />
+                  <span>{t('settings.profile', 'Profile')}</span>
+                </span>
+                <span className="flex items-center ml-auto gap-2">
                   {unreadCount > 0 && (
                     <span className="relative inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
                       {unreadCount}
                     </span>
                   )}
-                  <i className="fas fa-chevron-down text-text-light/60 dark:text-text-dark/60 group-hover:text-text-light dark:group-hover:text-text-dark transition-colors" />
-                </div>
+                  <i className="fas fa-chevron-down text-xl text-text-light/60 dark:text-text-dark/60 group-hover:text-text-light dark:group-hover:text-text-dark transition-colors ml-2" style={{ marginRight: 4 }} />
+                </span>
               </button>
               <ProfileDropdown
                 isOpen={isProfileOpen}

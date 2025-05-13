@@ -511,7 +511,7 @@ export default function AdminPanel() {
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-5xl mx-auto flex flex-col gap-8">
+          <div className="w-full px-8 flex flex-col gap-8">
             {/* System Stats Grid */}
             {systemStats ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
