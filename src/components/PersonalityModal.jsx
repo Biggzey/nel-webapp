@@ -283,9 +283,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
                           />
                         )}
-                        {fieldErrors[field] && (
-                          <p className="text-red-500 text-xs mt-1">{fieldErrors[field]}</p>
-                        )}
+                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">
+                          {fieldErrors[field] || (required && t(`character.fields.${field}Required`, `${label} is required`))}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -375,6 +375,48 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       />
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.backstoryHelp')}
+                      </p>
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.fields.personality')}
+                        <span className="text-red-500 ml-1">*</span>
+                      </label>
+                      <textarea
+                        name="personality"
+                        value={form.personality || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.personality ? ' border-red-500' : ''}`}
+                        placeholder={t('character.fields.personalityPlaceholder')}
+                      />
+                      <p className="text-red-500 text-xs mt-1 min-h-[18px]">
+                        {fieldErrors.personality || t('character.fields.personalityRequired', 'Personality is required')}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.traitsHelp')}
+                      </p>
+                    </div>
+
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.systemPrompt')}
+                        <span className="text-red-500 ml-1">*</span>
+                      </label>
+                      <textarea
+                        name="systemPrompt"
+                        value={form.systemPrompt || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.systemPrompt ? ' border-red-500' : ''}`}
+                        placeholder={t('character.personality.systemPromptPlaceholder')}
+                      />
+                      <p className="text-red-500 text-xs mt-1 min-h-[18px]">
+                        {fieldErrors.systemPrompt || t('character.fields.systemPromptRequired', 'System prompt is required')}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.systemPromptHelp')}
                       </p>
                     </div>
 
