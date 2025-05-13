@@ -120,7 +120,17 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       };
       const saved = await onSave(payload);
       if ((publicOnly ? true : confirmPublic) && saved && saved.id && typeof submitForReview === 'function') {
-        await submitForReview(saved.id);
+        try {
+          await submitForReview(saved.id);
+        } catch (reviewError) {
+          console.error('Error submitting for review:', reviewError);
+          addToast && addToast({ 
+            type: 'error', 
+            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
+            duration: 4000 
+          });
+          // Don't throw here, as the character was still created successfully
+        }
       }
       setLoading(false);
       setShowConfirm(false);
@@ -128,7 +138,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
       setLoading(false);
-      addToast && addToast({ type: 'error', message: t('character.createError', 'Failed to create character'), duration: 4000 });
+      console.error('Error creating character:', error);
+      // Show more specific error message if available
+      const errorMessage = error.message || t('character.createError', 'Failed to create character');
+      addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
     }
   }
 

@@ -1516,16 +1516,29 @@ try {
         return res.status(401).json({ error: "User no longer exists" });
       }
 
+      // Validate required fields
+      if (!req.body.name || req.body.name.trim() === '') {
+        return res.status(400).json({ error: "Character name is required" });
+      }
+
+      // Ensure avatar is set
+      const characterData = {
+        ...req.body,
+        avatar: req.body.avatar || '/assets/default-avatar.png',
+        userId: req.user.id
+      };
+
       const character = await prisma.character.create({
-        data: {
-          ...req.body,
-          userId: req.user.id
-        }
+        data: characterData
       });
 
       res.json(character);
     } catch (error) {
       console.error("Error creating character:", error);
+      // Check for specific Prisma errors
+      if (error.code === 'P2002') {
+        return res.status(400).json({ error: "A character with this name already exists" });
+      }
       res.status(500).json({ error: "Failed to create character" });
     }
   });
