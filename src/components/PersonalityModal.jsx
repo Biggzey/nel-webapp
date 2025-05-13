@@ -5,6 +5,7 @@ import { useLanguage } from "../context/LanguageContext";
 import { CharacterPrompts } from "./CharacterPrompts";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
+import { useToast } from './Toast';
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
   const { resetCurrentCharacter, submitForReview } = useCharacter();
@@ -15,6 +16,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const modalRef = useRef(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmPublic, setConfirmPublic] = useState(false);
+  const { addToast } = useToast();
 
   useEffect(() => {
     setForm(initialData);
@@ -93,6 +95,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
+    // Basic validation: require name
+    if (!form.name || form.name.trim() === '') {
+      addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
+      return;
+    }
     try {
       const saved = await onSave({ ...form, isPublic: publicOnly ? true : confirmPublic });
       if ((publicOnly ? true : confirmPublic) && saved && saved.id) {
@@ -100,11 +107,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       }
       setShowConfirm(false);
       onClose();
-      // Optionally show toast if addToast is available
-      if (typeof window !== 'undefined' && window.addToast) {
-        window.addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
-      }
+      addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
+      addToast({ type: 'error', message: error.message || t('character.createFailed', 'Failed to create character'), duration: 4000 });
       console.error('Error saving character:', error);
     }
   }
@@ -401,18 +406,18 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             {!publicOnly && (
               <>
                 <div className="flex items-center gap-2 mb-2">
-                  <input
-                    type="checkbox"
-                    id="public-toggle"
-                    checked={confirmPublic}
-                    onChange={e => setConfirmPublic(e.target.checked)}
-                    className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary"
-                    tabIndex={0}
-                    onClick={e => e.stopPropagation()}
-                  />
-                  <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer"
-                    onClick={e => e.stopPropagation()}
+                  {/* Toggle for Make Public */}
+                  <button
+                    type="button"
+                    aria-pressed={confirmPublic}
+                    onClick={() => setConfirmPublic(v => !v)}
+                    className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${confirmPublic ? 'bg-primary' : 'bg-gray-400'}`}
                   >
+                    <span
+                      className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${confirmPublic ? 'translate-x-6' : ''}`}
+                    />
+                  </button>
+                  <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer select-none">
                     {t('character.public.title', 'Make Public')}
                   </label>
                 </div>
