@@ -150,6 +150,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
           src={character.avatar}
           alt=""
           className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
+          onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
         />
         <span className="font-medium">{character.name}</span>
       </button>
@@ -620,17 +621,21 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onSave={async (form) => {
             const { addToast } = useToast();
             try {
-              // Always create a private character for the user, always include avatar
+              const payload = { ...form, avatar: form.avatar || '/default-avatar.png', isPublic: false };
               const res = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 },
-                body: JSON.stringify({ ...form, avatar: form.avatar || DEFAULT_AVATAR, isPublic: false })
+                body: JSON.stringify(payload)
               });
-              if (!res.ok) throw new Error('Failed to create character');
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Failed to create character');
+              }
               const character = await res.json();
+              if (!character || !character.id) throw new Error('Failed to create character');
               // If public, also submit a copy for review
               if (form.isPublic) {
                 const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
@@ -642,12 +647,10 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 if (!reviewRes.ok) throw new Error('Failed to submit for review');
               }
               addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
-              // Refresh sidebar/character list here (call your refresh function or context)
               setShowNewCharacterModal(false);
               return character;
             } catch (error) {
               addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
-              // Keep modal open
               throw error;
             }
           }}

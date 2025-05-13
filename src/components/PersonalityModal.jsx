@@ -7,7 +7,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
 import { useToast } from './Toast';
 
-const DEFAULT_AVATAR = '/assets/default-avatar.png'; // Adjust path as needed
+const DEFAULT_AVATAR = '/default-avatar.png'; // Use public root for default avatar
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
   const { resetCurrentCharacter, submitForReview } = useCharacter();
