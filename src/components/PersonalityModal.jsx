@@ -23,7 +23,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [nameError, setNameError] = useState('');
 
   useEffect(() => {
-    setForm(initialData);
+    setForm(prev => ({
+      ...initialData,
+      avatar: initialData.avatar || DEFAULT_AVATAR
+    }));
     setShowConfirm(false);
     setConfirmPublic(false);
   }, [initialData, isOpen]);
@@ -142,6 +145,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       // Show more specific error message if available
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
+      // Don't close modals on error
+      return;
     }
   }
 
