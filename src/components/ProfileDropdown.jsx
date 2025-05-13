@@ -20,9 +20,18 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
             className="fixed inset-0 z-40"
             onClick={onClose}
           />
-          
+          {/* Dropdown trigger button */}
+          <button
+            className="absolute bottom-full mb-2 right-0 flex items-center gap-2 px-4 py-2 rounded-xl bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark shadow-lg z-50 overflow-hidden hover:bg-primary/10 transition-colors focus:outline-none"
+            aria-haspopup="true"
+            aria-expanded={isOpen}
+            style={{ minWidth: '140px' }}
+          >
+            <i className="fas fa-user-circle text-2xl text-primary" />
+            <span className="font-semibold text-primary">{t('settings.profile', 'Profile')}</span>
+          </button>
           {/* Dropdown menu */}
-          <div className="profile-button absolute bottom-full mb-2 right-0 w-56 rounded-xl bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark shadow-lg z-50 overflow-hidden">
+          <div className="profile-dropdown-content absolute bottom-full mb-2 right-0 w-56 rounded-xl bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark shadow-lg z-50 overflow-hidden">
             {/* Profile section */}
             <div className="p-3 border-b border-container-border-light/10 dark:border-container-border-dark/10 flex items-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white font-semibold text-lg">
@@ -57,7 +66,6 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
                 </button>
               </div>
             </div>
-
             {/* Menu items */}
             <div className="p-1">
               <button
@@ -67,7 +75,6 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
                 <i className="fas fa-cog text-text-light/60 dark:text-text-dark/60" />
                 <span>{t('sidebar.settings')}</span>
               </button>
-              
               <button
                 onClick={logout}
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors text-red-400"

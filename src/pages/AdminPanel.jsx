@@ -549,7 +549,7 @@ export default function AdminPanel() {
                   {t('admin.removeDuplicatesAll')}
                 </button>
                 {/* 4-column grid for stats and pending characters */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                   {/* User Stats */}
                   <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
                     <h2 className="text-xl font-semibold mb-3">Users</h2>
