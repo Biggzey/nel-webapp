@@ -149,119 +149,121 @@ function ProtectedContent({ addToast }) {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background-container-light dark:bg-background-container-dark">
-      {/* Global loading overlay */}
-      {(isLoading || isImporting || isReloadingCharacters) && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
-          <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
-        </div>
-      )}
-      <KeyboardShortcuts
-        chatInputRef={chatInputRef}
-        onSendMessage={handleSendMessage}
-        onOpenSettings={handleOpenSettings}
-        onToggleSidebar={handleToggleSidebar}
-        onToggleCharacterPane={handleToggleCharacterPane}
-        onRegenerate={handleRegenerate}
-        onNavigateCharacter={handleNavigateCharacter}
-        onFocusSearch={() => setShowChatSearch(true)}
-        onShowShortcutHelp={handleShowShortcutHelp}
-      />
-      <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
-      {location.pathname !== '/admin' && sidebarVisible && (
-        <Sidebar
-          className="h-full"
-          onSettingsClick={() => setIsSettingsOpen(true)}
-          onClearChat={handleClearChat}
-          sidebarReloadKey={sidebarReloadKey}
-          setSidebarReloadKey={setSidebarReloadKey}
-          setShowExplore={setShowExplore}
+    <NotificationProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-background-container-light dark:bg-background-container-dark">
+        {/* Global loading overlay */}
+        {(isLoading || isImporting || isReloadingCharacters) && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+            <div className="loader border-8 border-primary border-t-transparent rounded-full w-20 h-20 animate-spin" />
+          </div>
+        )}
+        <KeyboardShortcuts
+          chatInputRef={chatInputRef}
+          onSendMessage={handleSendMessage}
+          onOpenSettings={handleOpenSettings}
+          onToggleSidebar={handleToggleSidebar}
+          onToggleCharacterPane={handleToggleCharacterPane}
+          onRegenerate={handleRegenerate}
+          onNavigateCharacter={handleNavigateCharacter}
+          onFocusSearch={() => setShowChatSearch(true)}
+          onShowShortcutHelp={handleShowShortcutHelp}
         />
-      )}
-      <Routes>
-        <Route path="/admin" element={<AdminPanel />} />
-        <Route path="/*" element={
-          <>
-            {/* Only show spinner during loading/importing/reloading, nothing else */}
-            {(isLoading || isImporting || isReloadingCharacters) ? (
-              null
-            ) : (
-              <Suspense fallback={null}>
-                {(!characters || characters.length === 0 || !current || showExplore)
-                  ? (
-                    <ExplorePage onClose={() => {
-                      setShowExplore(false);
-                      if (current) setCharacterPaneVisible(true);
-                    }} />
-                  ) : (
-              <ChatWindow 
-                ref={chatWindowRef} 
-                chatInputRef={chatInputRef} 
-                className="flex-1" 
-                chatReloadKey={chatReloadKey}
-                onMenuClick={handleMobileMenuClick}
-                onCharacterPaneClick={handleMobileCharacterPaneClick}
-              />
+        <ShortcutHelpModal isOpen={showShortcutHelp} onClose={() => setShowShortcutHelp(false)} />
+        {location.pathname !== '/admin' && sidebarVisible && (
+          <Sidebar
+            className="h-full"
+            onSettingsClick={() => setIsSettingsOpen(true)}
+            onClearChat={handleClearChat}
+            sidebarReloadKey={sidebarReloadKey}
+            setSidebarReloadKey={setSidebarReloadKey}
+            setShowExplore={setShowExplore}
+          />
+        )}
+        <Routes>
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/*" element={
+            <>
+              {/* Only show spinner during loading/importing/reloading, nothing else */}
+              {(isLoading || isImporting || isReloadingCharacters) ? (
+                null
+              ) : (
+                <Suspense fallback={null}>
+                  {(!characters || characters.length === 0 || !current || showExplore)
+                    ? (
+                      <ExplorePage onClose={() => {
+                        setShowExplore(false);
+                        if (current) setCharacterPaneVisible(true);
+                      }} />
+                    ) : (
+                    <ChatWindow 
+                      ref={chatWindowRef} 
+                      chatInputRef={chatInputRef} 
+                      className="flex-1" 
+                      chatReloadKey={chatReloadKey}
+                      onMenuClick={handleMobileMenuClick}
+                      onCharacterPaneClick={handleMobileCharacterPaneClick}
+                    />
                   )}
-              </Suspense>
-            )}
-            {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
-            {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
-              <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
-            )}
-            {characterPaneVisible && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
-              <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
-                <CharacterPane 
-                  className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
-                />
-              </Suspense>
-            )}
-          </>
-        } />
-      </Routes>
-      <ChatSearch
-        messages={chatWindowRef.current?.messages || []}
-        open={showChatSearch}
-        onClose={() => setShowChatSearch(false)}
-        onJumpToMessage={handleJumpToMessage}
-      />
-      <PersonalityModal
-        isOpen={isModalOpen}
-        initialData={current}
-        onClose={handleCloseModal}
-        onSave={handleSaveCharacter}
-      />
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        addToast={addToast}
-      />
-      {/* Confirmation Modal */}
-      {confirmClear && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-semibold mb-4">{t('chat.confirmClear')}</h3>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setConfirmClear(null)}
-                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleConfirmClear}
-                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-              >
-                {t('common.delete')}
-              </button>
+                </Suspense>
+              )}
+              {/* CharacterPane should also only show when not loading/importing/reloading and not showing ExplorePage */}
+              {characterPaneVisible && isMobile && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
+                <div className="fixed inset-0 z-40 bg-black/40" onClick={() => setCharacterPaneVisible(false)} />
+              )}
+              {characterPaneVisible && !showExplore && current && !isLoading && !isImporting && !isReloadingCharacters && (
+                <Suspense fallback={<div className="w-[22rem] flex items-center justify-center"><div className="loader" /></div>}>
+                  <CharacterPane 
+                    className={`${isMobile ? 'fixed inset-y-0 right-0 z-50' : 'w-[22rem]'}`} 
+                  />
+                </Suspense>
+              )}
+            </>
+          } />
+        </Routes>
+        <ChatSearch
+          messages={chatWindowRef.current?.messages || []}
+          open={showChatSearch}
+          onClose={() => setShowChatSearch(false)}
+          onJumpToMessage={handleJumpToMessage}
+        />
+        <PersonalityModal
+          isOpen={isModalOpen}
+          initialData={current}
+          onClose={handleCloseModal}
+          onSave={handleSaveCharacter}
+        />
+        <SettingsModal
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          addToast={addToast}
+        />
+        {/* Confirmation Modal */}
+        {confirmClear && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-semibold mb-4">{t('chat.confirmClear')}</h3>
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => setConfirmClear(null)}
+                  className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleConfirmClear}
+                  className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                >
+                  {t('common.delete')}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-      {user && hasSeenOnboarding === false && (
-        <SpotlightOnboarding onFinish={markOnboardingComplete} />
-      )}
-    </div>
+        )}
+        {user && hasSeenOnboarding === false && (
+          <SpotlightOnboarding onFinish={markOnboardingComplete} />
+        )}
+      </div>
+    </NotificationProvider>
   );
 }
 
