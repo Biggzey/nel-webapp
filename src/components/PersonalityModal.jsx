@@ -13,6 +13,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [form, setForm] = useState(initialData || {});
   const inputRefs = useRef({});
   const modalRef = useRef(null);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmPublic, setConfirmPublic] = useState(false);
 
   useEffect(() => {
     setForm(initialData);
@@ -85,14 +87,16 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   async function handleSubmit(e) {
     e.preventDefault();
+    setShowConfirm(true);
+  }
+
+  async function handleConfirm() {
     try {
-      const saved = await onSave(form);
-      
-      // If character is marked as public, submit for review
-      if (form.isPublic) {
+      const saved = await onSave({ ...form, isPublic: confirmPublic });
+      if (confirmPublic) {
         await submitForReview(saved.id);
       }
-      
+      setShowConfirm(false);
       onClose();
     } catch (error) {
       console.error('Error saving character:', error);
@@ -116,270 +120,308 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      {/* Backdrop */}
-      <div className="absolute inset-0" onClick={onClose} />
-      {/* Decorative background patterns */}
-      <div className="absolute inset-0 opacity-70 pointer-events-none">
-        {/* Top right decorative circle */}
-        <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent-primary-light dark:bg-accent-primary-dark blur-3xl" />
-        {/* Bottom left decorative circle */}
-        <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-accent-secondary-light dark:bg-accent-secondary-dark blur-3xl" />
-      </div>
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        {/* Backdrop */}
+        <div className="absolute inset-0" onClick={onClose} />
+        {/* Decorative background patterns */}
+        <div className="absolute inset-0 opacity-70 pointer-events-none">
+          {/* Top right decorative circle */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-accent-primary-light dark:bg-accent-primary-dark blur-3xl" />
+          {/* Bottom left decorative circle */}
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 rounded-full bg-accent-secondary-light dark:bg-accent-secondary-dark blur-3xl" />
+        </div>
 
-      {/* Modal */}
-      <form
-        ref={modalRef}
-        onSubmit={handleSubmit}
-        className={`relative z-10 ${isMobile ? 'w-full h-full max-w-none max-h-none rounded-none' : 'w-full max-w-[90rem] rounded-xl max-h-[90vh]'} bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-4 md:p-6 shadow-xl overflow-y-auto border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up`}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Subtle background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-accent-primary-light/5 to-transparent dark:from-accent-primary-dark/5 rounded-xl pointer-events-none" />
+        {/* Modal */}
+        <form
+          ref={modalRef}
+          onSubmit={handleSubmit}
+          className={`relative z-10 ${isMobile ? 'w-full h-full max-w-none max-h-none rounded-none' : 'w-full max-w-[90rem] rounded-xl max-h-[90vh]'} bg-background-container-light dark:bg-background-container-dark text-text-light dark:text-text-dark p-4 md:p-6 shadow-xl overflow-y-auto border-2 border-container-border-light dark:border-container-border-dark transition-all duration-300 hover:border-primary/40 hover:shadow-2xl animate-fade-in-up`}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Subtle background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-accent-primary-light/5 to-transparent dark:from-accent-primary-dark/5 rounded-xl pointer-events-none" />
 
-        {/* Content container with backdrop blur */}
-        <div className="relative">
-          <div className={`flex ${isMobile ? 'flex-col' : 'gap-6'}`}>
-            {/* Left Column - Character Details */}
-            <div className={`${isMobile ? 'w-full' : 'w-[500px]'} space-y-3`}>
-              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
-                <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {fields.map(({ label, field, placeholder, multiline }) => (
-                    <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
-                      <label className="block mb-1 text-sm font-medium">{label}</label>
-                      {multiline ? (
-                        <textarea
-                          ref={el => inputRefs.current[field] = el}
-                          name={field}
-                          value={form[field] || ""}
-                          onChange={handleChange}
-                          placeholder={placeholder}
-                          className="w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden"
-                          rows={1}
-                        />
-                      ) : (
-                        <input
-                          name={field}
-                          value={form[field] || ""}
-                          onChange={handleChange}
-                          placeholder={placeholder}
-                          className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        />
-                      )}
+          {/* Content container with backdrop blur */}
+          <div className="relative">
+            <div className={`flex ${isMobile ? 'flex-col' : 'gap-6'}`}>
+              {/* Left Column - Character Details */}
+              <div className={`${isMobile ? 'w-full' : 'w-[500px]'} space-y-3`}>
+                <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
+                  <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {fields.map(({ label, field, placeholder, multiline }) => (
+                      <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
+                        <label className="block mb-1 text-sm font-medium">{label}</label>
+                        {multiline ? (
+                          <textarea
+                            ref={el => inputRefs.current[field] = el}
+                            name={field}
+                            value={form[field] || ""}
+                            onChange={handleChange}
+                            placeholder={placeholder}
+                            className="w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden"
+                            rows={1}
+                          />
+                        ) : (
+                          <input
+                            name={field}
+                            value={form[field] || ""}
+                            onChange={handleChange}
+                            placeholder={placeholder}
+                            className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Images */}
+                <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}</label>
+                      <input
+                        name="avatar"
+                        value={form.avatar || ""}
+                        onChange={handleChange}
+                        placeholder={t('character.fields.avatarPlaceholder')}
+                        className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, "avatar")}
+                        className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
+                      />
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Images */}
-              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
-                <div className="space-y-4">
-                  <div>
-                    <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}</label>
-                    <input
-                      name="avatar"
-                      value={form.avatar || ""}
-                      onChange={handleChange}
-                      placeholder={t('character.fields.avatarPlaceholder')}
-                      className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, "avatar")}
-                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-1 text-sm font-medium">{t('character.fields.fullImage')}</label>
-                    <input
-                      name="fullImage"
-                      value={form.fullImage || ""}
-                      onChange={handleChange}
-                      placeholder={t('character.fields.fullImagePlaceholder')}
-                      className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, "fullImage")}
-                      className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
-                    />
+                    <div>
+                      <label className="block mb-1 text-sm font-medium">{t('character.fields.fullImage')}</label>
+                      <input
+                        name="fullImage"
+                        value={form.fullImage || ""}
+                        onChange={handleChange}
+                        placeholder={t('character.fields.fullImagePlaceholder')}
+                        className="w-full h-9 px-3 mb-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                      />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileUpload(e, "fullImage")}
+                        className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 file:transition-colors file:cursor-pointer w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right Column - Custom Prompts */}
-            <div className={`${isMobile ? 'w-full mt-4' : 'flex-1'} space-y-2 flex flex-col`}>
-              <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark flex-1 flex flex-col">
-                <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
-                
-                {/* Main content wrapper */}
-                <div className="flex-1 flex flex-col">
-                  {/* Description (replacing Personality) */}
-                  <div className="mb-2">
-                    <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}</label>
-                    <textarea
-                      name="description"
-                      value={form.description || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder={t('character.personality.traitsPlaceholder')}
+              {/* Right Column - Custom Prompts */}
+              <div className={`${isMobile ? 'w-full mt-4' : 'flex-1'} space-y-2 flex flex-col`}>
+                <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark flex-1 flex flex-col">
+                  <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
+                  
+                  {/* Main content wrapper */}
+                  <div className="flex-1 flex flex-col">
+                    {/* Description (replacing Personality) */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}</label>
+                      <textarea
+                        name="description"
+                        value={form.description || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={t('character.personality.traitsPlaceholder')}
+                      />
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.traitsHelp')}
+                      </p>
+                    </div>
+
+                    {/* Backstory */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">{t('character.personality.backstory')}</label>
+                      <textarea
+                        name="backstory"
+                        value={form.backstory || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={t('character.personality.backstoryPlaceholder')}
+                      />
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.backstoryHelp')}
+                      </p>
+                    </div>
+
+                    <CharacterPrompts
+                      systemPrompt={form.systemPrompt || ""}
+                      customInstructions={form.customInstructions || ""}
+                      onChange={(field, value) => handleChange({ target: { name: field, value } })}
                     />
-                    <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                      {t('character.personality.traitsHelp')}
-                    </p>
+
+                    {/* --- New Card Fields --- */}
+                    <div className="mt-4 space-y-2">
+                      <label className="block mb-1 text-sm font-medium">First Message</label>
+                      <textarea
+                        name="firstMessage"
+                        value={form.firstMessage || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="First message to user"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Message Example</label>
+                      <textarea
+                        name="messageExample"
+                        value={form.messageExample || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Example conversation"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Scenario</label>
+                      <textarea
+                        name="scenario"
+                        value={form.scenario || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Scenario"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Creator Notes</label>
+                      <textarea
+                        name="creatorNotes"
+                        value={form.creatorNotes || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Creator notes"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Alternate Greetings (comma separated)</label>
+                      <input
+                        name="alternateGreetings"
+                        value={Array.isArray(form.alternateGreetings) ? form.alternateGreetings.join(", ") : form.alternateGreetings || ""}
+                        onChange={e => handleChange({ target: { name: "alternateGreetings", value: e.target.value.split(/,\s*/) } })}
+                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Hi!, Hello!, Welcome!"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Tags (comma separated)</label>
+                      <input
+                        name="tags"
+                        value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
+                        onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
+                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="tag1, tag2, tag3"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Creator</label>
+                      <input
+                        name="creator"
+                        value={form.creator || ""}
+                        onChange={handleChange}
+                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="Creator name"
+                      />
+                      <label className="block mb-1 text-sm font-medium">Character Version</label>
+                      <input
+                        name="characterVersion"
+                        value={form.characterVersion || ""}
+                        onChange={handleChange}
+                        className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder="main, v2, etc."
+                      />
+                      <label className="block mb-1 text-sm font-medium">Extensions (JSON)</label>
+                      <textarea
+                        name="extensions"
+                        value={typeof form.extensions === 'string' ? form.extensions : JSON.stringify(form.extensions || {}, null, 2)}
+                        onChange={e => {
+                          let val = e.target.value;
+                          try {
+                            val = JSON.parse(val);
+                          } catch {
+                            // keep as string if not valid JSON
+                          }
+                          handleChange({ target: { name: "extensions", value: val } });
+                        }}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono"
+                        placeholder={'{\n  "chub": { ... }\n}'}
+                      />
+                    </div>
+                    {/* --- End new card fields --- */}
                   </div>
 
-                  {/* Backstory */}
-                  <div className="mb-2">
-                    <label className="block mb-1 text-sm font-medium">{t('character.personality.backstory')}</label>
-                    <textarea
-                      name="backstory"
-                      value={form.backstory || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder={t('character.personality.backstoryPlaceholder')}
-                    />
-                    <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                      {t('character.personality.backstoryHelp')}
-                    </p>
-                  </div>
-
-                  <CharacterPrompts
-                    systemPrompt={form.systemPrompt || ""}
-                    customInstructions={form.customInstructions || ""}
-                    onChange={(field, value) => handleChange({ target: { name: field, value } })}
-                  />
-
-                  {/* --- New Card Fields --- */}
-                  <div className="mt-4 space-y-2">
-                    <label className="block mb-1 text-sm font-medium">First Message</label>
-                    <textarea
-                      name="firstMessage"
-                      value={form.firstMessage || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="First message to user"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Message Example</label>
-                    <textarea
-                      name="messageExample"
-                      value={form.messageExample || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Example conversation"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Scenario</label>
-                    <textarea
-                      name="scenario"
-                      value={form.scenario || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Scenario"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Creator Notes</label>
-                    <textarea
-                      name="creatorNotes"
-                      value={form.creatorNotes || ""}
-                      onChange={handleChange}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Creator notes"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Alternate Greetings (comma separated)</label>
-                    <input
-                      name="alternateGreetings"
-                      value={Array.isArray(form.alternateGreetings) ? form.alternateGreetings.join(", ") : form.alternateGreetings || ""}
-                      onChange={e => handleChange({ target: { name: "alternateGreetings", value: e.target.value.split(/,\s*/) } })}
-                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Hi!, Hello!, Welcome!"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Tags (comma separated)</label>
-                    <input
-                      name="tags"
-                      value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
-                      onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
-                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="tag1, tag2, tag3"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Creator</label>
-                    <input
-                      name="creator"
-                      value={form.creator || ""}
-                      onChange={handleChange}
-                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="Creator name"
-                    />
-                    <label className="block mb-1 text-sm font-medium">Character Version</label>
-                    <input
-                      name="characterVersion"
-                      value={form.characterVersion || ""}
-                      onChange={handleChange}
-                      className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                      placeholder="main, v2, etc."
-                    />
-                    <label className="block mb-1 text-sm font-medium">Extensions (JSON)</label>
-                    <textarea
-                      name="extensions"
-                      value={typeof form.extensions === 'string' ? form.extensions : JSON.stringify(form.extensions || {}, null, 2)}
-                      onChange={e => {
-                        let val = e.target.value;
-                        try {
-                          val = JSON.parse(val);
-                        } catch {
-                          // keep as string if not valid JSON
-                        }
-                        handleChange({ target: { name: "extensions", value: val } });
-                      }}
-                      rows={2}
-                      className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono"
-                      placeholder={'{\n  "chub": { ... }\n}'}
-                    />
-                  </div>
-                  {/* --- End new card fields --- */}
-                </div>
-
-                {/* Buttons */}
-                <div className="flex items-center justify-end space-x-2 mt-auto pt-3 border-t border-border-light dark:border-border-dark">
-                  {!isNew && (
+                  {/* Buttons */}
+                  <div className="flex items-center justify-end space-x-2 mt-auto pt-3 border-t border-border-light dark:border-border-dark">
+                    {!isNew && (
+                      <button
+                        type="button"
+                        onClick={handleReset}
+                        title={t('character.actions.resetDefaults')}
+                        className="p-2 text-red-500 hover:text-red-600 transition-colors hover:scale-110 transform duration-200"
+                      >
+                        <i className="fas fa-sync-alt" />
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={handleReset}
-                      title={t('character.actions.resetDefaults')}
-                      className="p-2 text-red-500 hover:text-red-600 transition-colors hover:scale-110 transform duration-200"
+                      onClick={onClose}
+                      className="px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 hover:scale-105 transform"
                     >
-                      <i className="fas fa-sync-alt" />
+                      {t('character.actions.cancel')}
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 hover:scale-105 transform"
-                  >
-                    {t('character.actions.cancel')}
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 hover:scale-105 transform"
-                  >
-                    {t('character.actions.save')}
-                  </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 hover:scale-105 transform"
+                    >
+                      {t('character.actions.save')}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </form>
+      </div>
+      {/* Confirmation Portal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
+            <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreate', 'Confirm Character Creation')}</h2>
+            <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreateDesc', 'Are you sure you want to create this character?')}</p>
+            <button
+              className="bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90 mb-4"
+              onClick={handleConfirm}
+            >
+              {t('common.create', 'Create')}
+            </button>
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="checkbox"
+                id="public-toggle"
+                checked={confirmPublic}
+                onChange={e => setConfirmPublic(e.target.checked)}
+                className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary"
+              />
+              <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer">
+                {t('character.public.title', 'Make Public')}
+              </label>
+            </div>
+            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+              {t('character.public.description', 'Submit this character to the public explore page for others to use. Requires admin approval.')}
+            </p>
+            <button
+              className="mt-2 px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 text-base font-semibold"
+              onClick={() => setShowConfirm(false)}
+            >
+              {t('common.cancel', 'Cancel')}
+            </button>
+          </div>
         </div>
-      </form>
-    </div>
+      )}
+    </>
   );
 }

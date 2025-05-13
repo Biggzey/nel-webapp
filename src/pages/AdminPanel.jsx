@@ -527,6 +527,51 @@ export default function AdminPanel() {
                 {t('admin.removeDuplicatesAll')}
               </button>
               
+              {/* Pending Public Characters - own container above stats grid */}
+              <div className="w-full max-w-5xl mx-auto mb-8">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-4 text-primary">Pending Public Characters</h2>
+                  {loadingPending ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
+                  ) : errorPending ? (
+                    <div className="text-red-500">{errorPending}</div>
+                  ) : pendingCharacters.length === 0 ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+                      {pendingCharacters.map(character => (
+                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow flex flex-col items-center p-4">
+                          <img
+                            src={character.avatar || '/default-avatar.png'}
+                            alt={character.name}
+                            className="w-16 h-16 rounded-full object-cover mb-2 border-4 border-primary/30 shadow-lg"
+                            onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                          />
+                          <h3 className="text-base font-semibold mb-1 text-primary">{character.name}</h3>
+                          <div className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">{character.tagline}</div>
+                          <div className="flex flex-wrap gap-1 justify-center mb-1">
+                            {(character.tags || []).map(tag => (
+                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{tag}</span>
+                            ))}
+                          </div>
+                          <div className="mb-1 text-xs text-gray-500">By: {character.user?.username || character.user?.email || 'Unknown'}</div>
+                          <div className="flex gap-2 mt-1">
+                            <button
+                              className="px-3 py-0.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs"
+                              onClick={() => handleApprove(character.id)}
+                            >Approve</button>
+                            <button
+                              className="px-3 py-0.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-xs"
+                              onClick={() => handleReject(character.id)}
+                            >Reject</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* User Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
@@ -583,49 +628,6 @@ export default function AdminPanel() {
                       <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
                     </div>
                   </dl>
-                </div>
-
-                {/* Pending Public Characters */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4 text-primary">Pending Public Characters</h2>
-                  {loadingPending ? (
-                    <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
-                  ) : errorPending ? (
-                    <div className="text-red-500">{errorPending}</div>
-                  ) : pendingCharacters.length === 0 ? (
-                    <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
-                  ) : (
-                    <div className="space-y-4">
-                      {pendingCharacters.map(character => (
-                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md flex flex-col items-center p-4">
-                          <img
-                            src={character.avatar || '/default-avatar.png'}
-                            alt={character.name}
-                            className="w-16 h-16 rounded-full object-cover mb-2 border-4 border-primary/30 shadow-lg"
-                            onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                          />
-                          <h3 className="text-base font-semibold mb-1 text-primary">{character.name}</h3>
-                          <div className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">{character.tagline}</div>
-                          <div className="flex flex-wrap gap-1 justify-center mb-1">
-                            {(character.tags || []).map(tag => (
-                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{tag}</span>
-                            ))}
-                          </div>
-                          <div className="mb-1 text-xs text-gray-500">By: {character.user?.username || character.user?.email || 'Unknown'}</div>
-                          <div className="flex gap-2 mt-1">
-                            <button
-                              className="px-3 py-0.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs"
-                              onClick={() => handleApprove(character.id)}
-                            >Approve</button>
-                            <button
-                              className="px-3 py-0.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-xs"
-                              onClick={() => handleReject(character.id)}
-                            >Reject</button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
