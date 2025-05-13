@@ -2426,174 +2426,166 @@ try {
   // Admin: Get pending characters
   app.get("/api/admin/pending-characters", authMiddleware, async (req, res) => {
     try {
-      // Verify user is admin
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.id }
-      });
-
-      if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-        return res.status(403).json({ error: "Not authorized" });
+      if (!req.user.isAdmin && !req.user.isModerator) {
+        return res.status(403).json({ error: "Unauthorized" });
       }
 
-      const characters = await prisma.character.findMany({
-        where: { 
-          isPublic: true,
-          reviewStatus: 'pending'
+      const pendingCharacters = await prisma.pendingCharacter.findMany({
+        where: {
+          status: "pending"
         },
         include: {
           user: {
             select: {
+              id: true,
               username: true,
-              email: true
+              displayName: true
             }
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: {
+          createdAt: 'desc'
+        }
       });
-      res.json(characters);
+
+      res.json(pendingCharacters);
     } catch (error) {
       console.error("Error fetching pending characters:", error);
       res.status(500).json({ error: "Failed to fetch pending characters" });
     }
   });
 
-  // Admin: Approve character
-  app.put("/api/admin/characters/:id/approve", authMiddleware, async (req, res) => {
+  // Approve character (admin only)
+  app.post("/api/admin/characters/:id/approve", authMiddleware, async (req, res) => {
     try {
-      // Verify user is admin
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.id }
-      });
-
-      if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-        return res.status(403).json({ error: "Not authorized" });
+      if (!req.user.isAdmin && !req.user.isModerator) {
+        return res.status(403).json({ error: "Unauthorized" });
       }
 
-      const characterId = parseInt(req.params.id);
+      const pendingId = parseInt(req.params.id);
+      
+      // Get the pending character
+      const pendingCharacter = await prisma.pendingCharacter.findUnique({
+        where: { id: pendingId },
+        include: { user: true }
+      });
 
-      // Get character and creator info
-      const character = await prisma.character.findUnique({
-        where: { id: characterId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              username: true
-            }
-          }
+      if (!pendingCharacter) {
+        return res.status(404).json({ error: "Pending character not found" });
+      }
+
+      // Create the public character
+      const publicCharacter = await prisma.character.create({
+        data: {
+          name: pendingCharacter.name,
+          description: pendingCharacter.description,
+          avatar: pendingCharacter.avatar,
+          fullImage: pendingCharacter.fullImage,
+          age: pendingCharacter.age,
+          gender: pendingCharacter.gender,
+          race: pendingCharacter.race,
+          occupation: pendingCharacter.occupation,
+          likes: pendingCharacter.likes,
+          dislikes: pendingCharacter.dislikes,
+          personality: pendingCharacter.personality,
+          systemPrompt: pendingCharacter.systemPrompt,
+          customInstructions: pendingCharacter.customInstructions,
+          backstory: pendingCharacter.backstory,
+          firstMessage: pendingCharacter.firstMessage,
+          messageExample: pendingCharacter.messageExample,
+          scenario: pendingCharacter.scenario,
+          creatorNotes: pendingCharacter.creatorNotes,
+          alternateGreetings: pendingCharacter.alternateGreetings,
+          tags: pendingCharacter.tags,
+          creator: pendingCharacter.creator,
+          characterVersion: pendingCharacter.characterVersion,
+          extensions: pendingCharacter.extensions,
+          userId: pendingCharacter.userId,
+          isPublic: true,
+          reviewStatus: "approved"
         }
       });
 
-      if (!character) {
-        return res.status(404).json({ error: "Character not found" });
-      }
-
-      // Update character status
-      const updatedCharacter = await prisma.character.update({
-        where: { id: characterId },
-        data: { reviewStatus: 'approved' }
+      // Update the pending character status
+      await prisma.pendingCharacter.update({
+        where: { id: pendingId },
+        data: { status: "approved" }
       });
 
-      // Create notification for the character creator
+      // If there's an original character, update its status
+      if (pendingCharacter.originalCharacterId) {
+        await prisma.character.update({
+          where: { id: pendingCharacter.originalCharacterId },
+          data: { reviewStatus: "approved" }
+        });
+      }
+
+      // Create notification for the user
       await prisma.notification.create({
         data: {
-          userId: character.user.id,
-          type: 'CHARACTER_APPROVED',
-          title: 'Character Approved',
-          message: `Your character "${character.name}" has been approved and is now public!`,
-          metadata: {
-            characterId: character.id,
-            characterName: character.name
-          }
+          userId: pendingCharacter.userId,
+          type: "CHARACTER_APPROVED",
+          title: "Character Approved",
+          message: `Your character "${pendingCharacter.name}" has been approved and is now public!`,
+          metadata: { characterId: publicCharacter.id }
         }
       });
 
-      // TODO: Send email notification
-      // This will be implemented when we set up the email system
-      // await sendEmail({
-      //   to: character.user.email,
-      //   subject: 'Character Approved',
-      //   text: `Your character "${character.name}" has been approved and is now public!`
-      // });
-
-      res.json(updatedCharacter);
+      res.json(publicCharacter);
     } catch (error) {
       console.error("Error approving character:", error);
       res.status(500).json({ error: "Failed to approve character" });
     }
   });
 
-  // Admin: Reject character
-  app.put("/api/admin/characters/:id/reject", authMiddleware, async (req, res) => {
+  // Reject character (admin only)
+  app.post("/api/admin/characters/:id/reject", authMiddleware, async (req, res) => {
     try {
-      // Verify user is admin
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.id }
-      });
-
-      if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-        return res.status(403).json({ error: "Not authorized" });
+      if (!req.user.isAdmin && !req.user.isModerator) {
+        return res.status(403).json({ error: "Unauthorized" });
       }
 
-      const characterId = parseInt(req.params.id);
+      const pendingId = parseInt(req.params.id);
       const { reason } = req.body;
 
-      if (!reason) {
-        return res.status(400).json({ error: "Rejection reason is required" });
-      }
-
-      // Get character and creator info
-      const character = await prisma.character.findUnique({
-        where: { id: characterId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              email: true,
-              username: true
-            }
-          }
-        }
+      // Get the pending character
+      const pendingCharacter = await prisma.pendingCharacter.findUnique({
+        where: { id: pendingId }
       });
 
-      if (!character) {
-        return res.status(404).json({ error: "Character not found" });
+      if (!pendingCharacter) {
+        return res.status(404).json({ error: "Pending character not found" });
       }
 
-      // Update character status
-      const updatedCharacter = await prisma.character.update({
-        where: { id: characterId },
+      // Update the pending character status
+      await prisma.pendingCharacter.update({
+        where: { id: pendingId },
         data: { 
-          reviewStatus: 'rejected',
-          isPublic: false
+          status: "rejected",
+          rejectionReason: reason
         }
       });
 
-      // Create notification for the character creator
+      // If there's an original character, update its status
+      if (pendingCharacter.originalCharacterId) {
+        await prisma.character.update({
+          where: { id: pendingCharacter.originalCharacterId },
+          data: { reviewStatus: "rejected" }
+        });
+      }
+
+      // Create notification for the user
       await prisma.notification.create({
         data: {
-          userId: character.user.id,
-          type: 'CHARACTER_REJECTED',
-          title: 'Character Rejected',
-          message: `Your character "${character.name}" was rejected. Reason: ${reason}`,
-          metadata: {
-            characterId: character.id,
-            characterName: character.name,
-            rejectionReason: reason
-          }
+          userId: pendingCharacter.userId,
+          type: "CHARACTER_REJECTED",
+          title: "Character Rejected",
+          message: `Your character "${pendingCharacter.name}" has been rejected.${reason ? ` Reason: ${reason}` : ''}`,
+          metadata: { characterId: pendingCharacter.originalCharacterId }
         }
       });
 
-      // TODO: Send email notification
-      // This will be implemented when we set up the email system
-      // await sendEmail({
-      //   to: character.user.email,
-      //   subject: 'Character Rejected',
-      //   text: `Your character "${character.name}" was rejected. Reason: ${reason}`
-      // });
-
-      res.json(updatedCharacter);
+      res.json({ message: "Character rejected successfully" });
     } catch (error) {
       console.error("Error rejecting character:", error);
       res.status(500).json({ error: "Failed to reject character" });
@@ -2722,6 +2714,91 @@ try {
     } catch (error) {
       console.error("Error deleting notification:", error);
       res.status(500).json({ error: "Failed to delete notification" });
+    }
+  });
+
+  // Create notification
+  app.post("/api/notifications", authMiddleware, async (req, res) => {
+    try {
+      const { type, title, message, metadata } = req.body;
+      
+      const notification = await prisma.notification.create({
+        data: {
+          userId: req.user.id,
+          type,
+          title,
+          message,
+          metadata: metadata || {},
+          read: false
+        }
+      });
+
+      res.json(notification);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      res.status(500).json({ error: "Failed to create notification" });
+    }
+  });
+
+  // Submit character for review
+  app.post("/api/characters/:id/submit", authMiddleware, async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.id);
+      
+      // Get the character
+      const character = await prisma.character.findFirst({
+        where: {
+          id: characterId,
+          userId: req.user.id
+        }
+      });
+
+      if (!character) {
+        return res.status(404).json({ error: "Character not found" });
+      }
+
+      // Create a pending submission
+      const pendingCharacter = await prisma.pendingCharacter.create({
+        data: {
+          name: character.name,
+          description: character.description,
+          avatar: character.avatar,
+          fullImage: character.fullImage,
+          age: character.age,
+          gender: character.gender,
+          race: character.race,
+          occupation: character.occupation,
+          likes: character.likes,
+          dislikes: character.dislikes,
+          personality: character.personality,
+          systemPrompt: character.systemPrompt,
+          customInstructions: character.customInstructions,
+          backstory: character.backstory,
+          firstMessage: character.firstMessage,
+          messageExample: character.messageExample,
+          scenario: character.scenario,
+          creatorNotes: character.creatorNotes,
+          alternateGreetings: character.alternateGreetings,
+          tags: character.tags,
+          creator: character.creator,
+          characterVersion: character.characterVersion,
+          extensions: character.extensions,
+          userId: character.userId,
+          originalCharacterId: character.id,
+          status: "pending"
+        }
+      });
+
+      // Update the original character's review status
+      await prisma.character.update({
+        where: { id: characterId },
+        data: { reviewStatus: "pending" }
+      });
+
+      res.json(pendingCharacter);
+    } catch (error) {
+      console.error("Error submitting character for review:", error);
+      res.status(500).json({ error: "Failed to submit character for review" });
     }
   });
 

@@ -6,6 +6,7 @@ import { CharacterPrompts } from "./CharacterPrompts";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
 import { useToast } from './Toast';
+import { useNotifications } from '../context/NotificationContext';
 
 const DEFAULT_AVATAR = '/default-avatar.png'; // Use public root for default avatar
 
@@ -52,6 +53,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmPublic, setConfirmPublic] = useState(false);
   const { addToast } = useToast();
+  const { fetchNotifications } = useNotifications();
   const [loading, setLoading] = useState(false);
   const [nameError, setNameError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
@@ -138,10 +140,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
     if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
     if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
-    // Tags: required, min 3, only for public
+    // Tags: always required, min 3
     const tagsArr = Array.isArray(form.tags) ? form.tags : (typeof form.tags === 'string' ? form.tags.split(/,\s*/) : []);
-    if ((publicOnly || confirmPublic) && (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim()))) {
-      errors.tags = t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.');
+    if (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim())) {
+      errors.tags = t('character.fields.tagsRequired', 'At least 3 tags are required.');
     }
     return errors;
   }
@@ -191,6 +193,22 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             throw new Error(reviewRes.error);
           }
           reviewSuccess = true;
+          // Create notification for successful submission
+          await fetch('/api/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+              type: 'CHARACTER_SUBMITTED',
+              title: t('notifications.characterSubmitted.title'),
+              message: t('notifications.characterSubmitted.message'),
+              metadata: { characterId: saved.id }
+            })
+          });
+          // Refresh notifications
+          fetchNotifications();
           addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
         } catch (reviewError) {
           console.error('Error submitting for review:', reviewError);
@@ -225,8 +243,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   // Field configurations with custom widths and placeholders
   const fields = [
-    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true },
-    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true },
+    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true, isRequired: true },
+    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true, isRequired: true },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -267,7 +285,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {fields.map(({ label, field, placeholder, multiline, required }) => (
+                    {fields.map(({ label, field, placeholder, multiline, required, isRequired }) => (
                       <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
                         <label className="block mb-1 text-sm font-medium">
                           {label}
@@ -280,7 +298,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${fieldErrors[field] ? 'border-red-500' : ''}`}
+                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${fieldErrors[field] ? 'border-red-500' : ''}`}
                             rows={1}
                           />
                         ) : (
@@ -289,7 +307,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
+                            className={`w-full h-9 px-3 border rounded ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
                           />
                         )}
                         {attemptedSubmit && fieldErrors[field] && (
@@ -399,7 +417,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.tags')}
-                        {(publicOnly || confirmPublic) && <span className="text-red-500 ml-1">*</span>}
+                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         name="tags"
@@ -408,14 +426,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         className={`w-full h-9 px-3 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
                         placeholder={t('character.fields.tagsPlaceholder')}
                       />
-                      {(publicOnly || confirmPublic) && attemptedSubmit && fieldErrors.tags && (
+                      {attemptedSubmit && fieldErrors.tags && (
                         <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.tags}</p>
                       )}
-                      {(publicOnly || confirmPublic) && (
-                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-                          {t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.')}
-                        </p>
-                      )}
+                      <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                        {t('character.fields.tagsRequired', 'At least 3 tags are required.')}
+                      </p>
                     </div>
 
                     {/* Custom Instructions */}
@@ -586,6 +602,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
                         {t('character.public.description', 'Submit this character to the public explore page for others to use. Requires admin approval.')}
                       </p>
+                      {confirmPublic && (
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                          {t('character.public.warning', 'Note: Deleting your private character will not remove your public submission. If you wish to request deletion of your public submission, please contact support (feature coming soon).')}
+                        </p>
+                      )}
                     </>
                   )}
                   <div className="flex gap-3 mt-4 w-full justify-center">

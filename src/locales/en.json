@@ -11,6 +11,10 @@
     "markReadError": "Failed to mark notification as read",
     "markAllReadError": "Failed to mark all notifications as read",
     "deleteError": "Failed to delete notification",
-    "allRead": "All notifications marked as read"
+    "allRead": "All notifications marked as read",
+    "characterSubmitted": {
+      "title": "Character Submitted",
+      "message": "Your character has been submitted for public review. Any changes made to your private copy will not affect the submitted version. You will be notified when it is approved or rejected."
+    }
   }
 } 

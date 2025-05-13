@@ -27,42 +27,36 @@ model User {
 }
 
 model Character {
-  id                 Int           @id @default(autoincrement())
-  userId             Int
-  name               String
-  status             String        @default("")
-  personality        String        @default("")
-  avatar             String
-  systemPrompt       String        @default("")
-  customInstructions String        @default("")
-  bookmarked         Boolean       @default(false)
-  age                String?
-  gender             String?
-  race               String?
-  occupation         String?
-  likes              String?
-  dislikes           String?
-  backstory          String?
-  fullImage          String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  spec               String?
-  specVersion        String?
-  description        String?
-  firstMessage       String?
-  messageExample     String?
-  scenario           String?
-  creatorNotes       String?
+  id              Int       @id @default(autoincrement())
+  name            String
+  description     String
+  avatar          String
+  fullImage       String?
+  age             String?
+  gender          String?
+  race            String?
+  occupation      String?
+  likes           String?
+  dislikes        String?
+  personality     String
+  systemPrompt    String
+  customInstructions String?
+  backstory       String?
+  firstMessage    String?
+  messageExample  String?
+  scenario        String?
+  creatorNotes    String?
   alternateGreetings String[]
-  tags               String[]
-  creator            String?
-  characterVersion   String?
-  extensions         Json?
-  order              Int           @default(0)
-  isPublic           Boolean       @default(false)
-  reviewStatus       String        @default("private") // "private", "pending", "approved", "rejected"
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  messages           ChatMessage[]
+  tags            String[]
+  creator         String?
+  characterVersion String?
+  extensions      Json?
+  userId          Int
+  isPublic        Boolean   @default(false)
+  reviewStatus    String    @default("private") // "private", "pending", "approved", "rejected"
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages        ChatMessage[]
+  pendingSubmission PendingCharacter? // Link to pending submission if exists
 }
 
 model ChatMessage {
@@ -97,4 +91,39 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PendingCharacter {
+  id              Int       @id @default(autoincrement())
+  name            String
+  description     String
+  avatar          String
+  fullImage       String?
+  age             String?
+  gender          String?
+  race            String?
+  occupation      String?
+  likes           String?
+  dislikes        String?
+  personality     String
+  systemPrompt    String
+  customInstructions String?
+  backstory       String?
+  firstMessage    String?
+  messageExample  String?
+  scenario        String?
+  creatorNotes    String?
+  alternateGreetings String[]
+  tags            String[]
+  creator         String?
+  characterVersion String?
+  extensions      Json?
+  userId          Int
+  originalCharacterId Int?  // Link to original private character if exists
+  status          String    @default("pending") // "pending", "approved", "rejected"
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalCharacter Character? @relation("PendingSubmission", fields: [originalCharacterId], references: [id])
 }
