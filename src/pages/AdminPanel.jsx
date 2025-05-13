@@ -512,75 +512,81 @@ export default function AdminPanel() {
           </div>
         ) : (
           <div className="w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* System Stats */}
-              <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                <h2 className="text-xl font-semibold mb-3">System Stats</h2>
-                <dl className="space-y-2">
-                  <div>
-                    <dt className="text-sm text-gray-500">Total Users</dt>
-                    <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">Active Now</dt>
-                    <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-gray-500">New Today</dt>
-                    <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-                  </div>
-                </dl>
+            {!systemStats ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
+                <span className="ml-4 text-text-secondary-light dark:text-text-secondary-dark">Loading system stats...</span>
               </div>
-
-              {/* Pending Characters */}
-              <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
-                {loadingPending ? (
-                  <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
-                ) : errorPending ? (
-                  <div className="text-red-500">{errorPending}</div>
-                ) : pendingCharacters.length === 0 ? (
-                  <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
-                ) : (
-                  <div className="relative w-full">
-                    {/* Navigation Arrows */}
-                    <button
-                      onClick={handlePrev}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                    >
-                      <i className="fas fa-chevron-left" />
-                    </button>
-                    <button
-                      onClick={handleNext}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
-                    >
-                      <i className="fas fa-chevron-right" />
-                    </button>
-
-                    {/* Character Card */}
-                    <div 
-                      className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition-shadow w-full"
-                      onClick={() => setShowReviewModal(true)}
-                    >
-                      <img
-                        src={pendingCharacters[currentCharacterIndex]?.avatar || '/default-avatar.png'}
-                        alt={pendingCharacters[currentCharacterIndex]?.name}
-                        className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30 shadow"
-                        onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                      />
-                      <h3 className="text-xl font-semibold mb-1 text-primary">{pendingCharacters[currentCharacterIndex]?.name}</h3>
-                      <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">{pendingCharacters[currentCharacterIndex]?.tagline}</div>
-                      <div className="flex flex-wrap gap-1 justify-center mb-2">
-                        {(pendingCharacters[currentCharacterIndex]?.tags || []).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
-                        ))}
-                      </div>
-                      <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* System Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                  <h2 className="text-xl font-semibold mb-3">System Stats</h2>
+                  <dl className="space-y-2">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Users</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
                     </div>
-                  </div>
-                )}
+                    <div>
+                      <dt className="text-sm text-gray-500">Active Now</dt>
+                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">New Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
+                    </div>
+                  </dl>
+                </div>
+                {/* Pending Characters */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                  <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
+                  {loadingPending ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
+                  ) : errorPending ? (
+                    <div className="text-red-500">{errorPending}</div>
+                  ) : pendingCharacters.length === 0 ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
+                  ) : (
+                    <div className="relative w-full">
+                      {/* Navigation Arrows */}
+                      <button
+                        onClick={handlePrev}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                      >
+                        <i className="fas fa-chevron-left" />
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 p-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary transition-colors"
+                      >
+                        <i className="fas fa-chevron-right" />
+                      </button>
+
+                      {/* Character Card */}
+                      <div 
+                        className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-4 cursor-pointer hover:shadow-lg transition-shadow w-full"
+                        onClick={() => setShowReviewModal(true)}
+                      >
+                        <img
+                          src={pendingCharacters[currentCharacterIndex]?.avatar || '/default-avatar.png'}
+                          alt={pendingCharacters[currentCharacterIndex]?.name}
+                          className="w-24 h-24 rounded-full object-cover mb-3 border-2 border-primary/30 shadow"
+                          onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                        />
+                        <h3 className="text-xl font-semibold mb-1 text-primary">{pendingCharacters[currentCharacterIndex]?.name}</h3>
+                        <div className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2">{pendingCharacters[currentCharacterIndex]?.tagline}</div>
+                        <div className="flex flex-wrap gap-1 justify-center mb-2">
+                          {(pendingCharacters[currentCharacterIndex]?.tags || []).map(tag => (
+                            <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                          ))}
+                        </div>
+                        <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

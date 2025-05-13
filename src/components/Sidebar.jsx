@@ -614,7 +614,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
                 <i className="fas fa-user-circle text-2xl text-primary" />
-                <span className="font-semibold text-primary">{t('settings.profile', 'Profile')}</span>
+                <span className="font-semibold text-text-light dark:text-text-dark">{t('settings.profile', 'Profile')}</span>
                 <div className="flex items-center space-x-2 ml-auto">
                   {unreadCount > 0 && (
                     <span className="relative inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
