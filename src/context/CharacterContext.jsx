@@ -17,7 +17,7 @@ const defaultCharacters = [
 const CharacterContext = createContext();
 
 export function CharacterProvider({ children }) {
-  const { token, logout } = useAuth();
+  const { token, logout, fetchWithAuth } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
@@ -37,11 +37,7 @@ export function CharacterProvider({ children }) {
         setIsLoading(true);
         
         // Load characters
-        const charsRes = await fetch("/api/characters", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const charsRes = await fetchWithAuth("/api/characters");
 
         if (charsRes.status === 429) {
           handleRateLimit();
@@ -72,11 +68,7 @@ export function CharacterProvider({ children }) {
         // No longer auto-create Nelliel. If no characters, userChars will be empty.
 
         // Load preferences
-        const prefsRes = await fetch("/api/preferences", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const prefsRes = await fetchWithAuth("/api/preferences");
 
         if (prefsRes.status === 429) {
           handleRateLimit();

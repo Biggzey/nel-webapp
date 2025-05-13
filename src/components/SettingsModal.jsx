@@ -12,7 +12,7 @@ import { useCharacter } from '../context/CharacterContext';
 // Tab components
 function Profile({ user, onSave }) {
   const { t } = useLanguage();
-  const { token, logout } = useAuth();
+  const { token, logout, fetchWithAuth } = useAuth();
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
     avatar: user?.avatar || null,
@@ -111,11 +111,10 @@ function Profile({ user, onSave }) {
       });
 
       // Update profile
-      const profileRes = await fetch('/api/user/profile', {
+      const profileRes = await fetchWithAuth('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           displayName: formData.displayName,
@@ -162,11 +161,10 @@ function Profile({ user, onSave }) {
           throw new Error('New passwords do not match.');
         }
 
-        const passwordRes = await fetch('/api/user/password', {
+        const passwordRes = await fetchWithAuth('/api/user/password', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
             oldPassword: formData.oldPassword,
@@ -323,7 +321,7 @@ function Preferences() {
   const { settings, updateSettings } = useSettings();
   const [model, setModel] = useState('openai');
   const { characters, handleDeleteCharacter, reloadCharacters, setSelectedIndex, setSelectedIndexRaw } = useCharacter();
-  const { token } = useAuth();
+  const { token, fetchWithAuth } = useAuth();
   const [advancedOptions, setAdvancedOptions] = useState(false);
   const [showDeleteNelConfirm, setShowDeleteNelConfirm] = useState(false);
   const [showRestoreNelConfirm, setShowRestoreNelConfirm] = useState(false);
@@ -385,14 +383,12 @@ function Preferences() {
       customInstructions: "",
     };
     // Create Nel at the top of the list
-    const res = await fetch("/api/characters", {
+    const res = await fetchWithAuth("/api/characters", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(defaultNel),
-      credentials: 'include',
     });
     if (!res.ok) {
       addToast({ type: 'error', message: 'Failed to restore Nel.', duration: 4000 });

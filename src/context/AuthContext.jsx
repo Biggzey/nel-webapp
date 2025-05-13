@@ -242,6 +242,22 @@ export function AuthProvider({ children }) {
     return currentRank > targetRank;
   };
 
+  // Centralized fetch with auth and auto-logout on 401
+  const fetchWithAuth = async (url, options = {}) => {
+    const headers = {
+      ...(options.headers || {}),
+      Authorization: token ? `Bearer ${token}` : undefined,
+    };
+    const opts = { ...options, headers };
+    const res = await fetch(url, opts);
+    if (res.status === 401) {
+      logout();
+      navigate('/login');
+      throw new Error('Session expired. Please log in again.');
+    }
+    return res;
+  };
+
   return (
     <AuthContext.Provider value={{ 
       token, 
@@ -255,7 +271,8 @@ export function AuthProvider({ children }) {
       signup,
       authenticatedFetch,
       user,
-      refreshUser
+      refreshUser,
+      fetchWithAuth
     }}>
       {children}
     </AuthContext.Provider>

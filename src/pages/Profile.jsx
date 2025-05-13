@@ -6,7 +6,7 @@ import { useLanguage } from "../context/LanguageContext";
 import ThemePicker from "../components/ThemePicker";
 
 export default function Profile() {
-  const { token } = useAuth();
+  const { token, fetchWithAuth } = useAuth();
   const nav = useNavigate();
   const { t } = useLanguage();
   const [username, setUsername] = useState("");
@@ -18,9 +18,7 @@ export default function Profile() {
 
   // Load current user data
   useEffect(() => {
-    fetch("/api/user", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetchWithAuth("/api/user")
       .then((r) => r.json())
       .then((data) => {
         setEmail(data.email);
@@ -32,11 +30,10 @@ export default function Profile() {
   async function handleEmailUpdate(e) {
     e.preventDefault();
     try {
-      const res = await fetch("/api/user", {
+      const res = await fetchWithAuth("/api/user", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ email: newEmail }),
       });
@@ -52,11 +49,10 @@ export default function Profile() {
   async function handlePasswordChange(e) {
     e.preventDefault();
     try {
-      const res = await fetch("/api/user/password", {
+      const res = await fetchWithAuth("/api/user/password", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ 
           oldPassword: oldPwd, 
