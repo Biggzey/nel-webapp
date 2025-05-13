@@ -362,6 +362,93 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     return () => document.removeEventListener("keydown", handleKey);
   }, []);
 
+  // Debug: log before rendering PrivatePersonalityModal
+  console.log('Sidebar: About to render PrivatePersonalityModal', { showNewCharacterModal, newCharacterInitialData });
+  let privateModal = null;
+  try {
+    if (showNewCharacterModal) {
+      // Debug: try rendering with normal data, fallback to hardcoded if error
+      privateModal = (
+        <PrivatePersonalityModal
+          isOpen={showNewCharacterModal}
+          initialData={newCharacterInitialData && typeof newCharacterInitialData === 'object' ? newCharacterInitialData : { name: 'Test', avatar: '/default-avatar.png' }}
+          onClose={() => setShowNewCharacterModal(false)}
+          onSave={async (form) => {
+            const { addToast } = useToast();
+            console.log('Sidebar onSave called with form:', form);
+            try {
+              const payload = { ...form, avatar: form.avatar || '/default-avatar.png', isPublic: false };
+              const res = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify(payload)
+              });
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                console.error('Character creation failed:', errorData);
+                addToast && addToast({ type: 'error', message: errorData.error || 'Failed to create character', duration: 4000 });
+                console.log('Sidebar onSave: throwing after failed character creation');
+                throw new Error(errorData.error || 'Failed to create character');
+              }
+              const character = await res.json();
+              if (!character || !character.id) {
+                console.error('Character creation returned invalid data:', character);
+                addToast && addToast({ type: 'error', message: 'Failed to create character', duration: 4000 });
+                console.log('Sidebar onSave: throwing after invalid character data');
+                throw new Error('Failed to create character');
+              }
+              // If public, use the same logic as ExplorePage
+              if (form.isPublic) {
+                try {
+                  const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                    }
+                  });
+                  if (!reviewRes.ok) {
+                    const reviewError = await reviewRes.json().catch(() => ({}));
+                    console.error('Review submission failed:', reviewError);
+                    addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
+                  } else {
+                    addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+                  }
+                } catch (err) {
+                  console.error('Error submitting for review:', err);
+                  addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
+                }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await reloadCharacters();
+                setShowNewCharacterModal(false);
+                console.log('Sidebar onSave: finished public flow');
+                return character;
+              }
+              // Private creation
+              addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              await reloadCharacters();
+              setShowNewCharacterModal(false);
+              console.log('Sidebar onSave: finished private flow');
+              return character;
+            } catch (error) {
+              console.error('Error in onSave:', error);
+              addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
+              console.log('Sidebar onSave: throwing from catch');
+              throw error;
+            }
+          }}
+        />
+      );
+    }
+  } catch (err) {
+    console.error('Error rendering PrivatePersonalityModal:', err);
+    privateModal = <div>Error rendering modal</div>;
+  }
+
   return (
     <div className={`sidebar flex flex-col h-full w-sidebar bg-background-container-light dark:bg-background-container-dark border-2 border-primary rounded-2xl shadow-purple-glow ${className}`}>
       {/* Decorative background patterns */}
@@ -613,81 +700,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       )}
 
       {/* Render PersonalityModal for new character */}
-      {showNewCharacterModal && (
-        <PrivatePersonalityModal
-          isOpen={showNewCharacterModal}
-          initialData={newCharacterInitialData}
-          onClose={() => setShowNewCharacterModal(false)}
-          onSave={async (form) => {
-            const { addToast } = useToast();
-            console.log('Sidebar onSave called with form:', form);
-            try {
-              const payload = { ...form, avatar: form.avatar || '/default-avatar.png', isPublic: false };
-              const res = await fetch('/api/characters', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                },
-                body: JSON.stringify(payload)
-              });
-              if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                console.error('Character creation failed:', errorData);
-                addToast && addToast({ type: 'error', message: errorData.error || 'Failed to create character', duration: 4000 });
-                console.log('Sidebar onSave: throwing after failed character creation');
-                throw new Error(errorData.error || 'Failed to create character');
-              }
-              const character = await res.json();
-              if (!character || !character.id) {
-                console.error('Character creation returned invalid data:', character);
-                addToast && addToast({ type: 'error', message: 'Failed to create character', duration: 4000 });
-                console.log('Sidebar onSave: throwing after invalid character data');
-                throw new Error('Failed to create character');
-              }
-              // If public, use the same logic as ExplorePage
-              if (form.isPublic) {
-                try {
-                  const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                    }
-                  });
-                  if (!reviewRes.ok) {
-                    const reviewError = await reviewRes.json().catch(() => ({}));
-                    console.error('Review submission failed:', reviewError);
-                    addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
-                  } else {
-                    addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
-                  }
-                } catch (err) {
-                  console.error('Error submitting for review:', err);
-                  addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
-                }
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                await reloadCharacters();
-                setShowNewCharacterModal(false);
-                console.log('Sidebar onSave: finished public flow');
-                return character;
-              }
-              // Private creation
-              addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              await reloadCharacters();
-              setShowNewCharacterModal(false);
-              console.log('Sidebar onSave: finished private flow');
-              return character;
-            } catch (error) {
-              console.error('Error in onSave:', error);
-              addToast && addToast({ type: 'error', message: error.message || 'Failed to create character', duration: 4000 });
-              console.log('Sidebar onSave: throwing from catch');
-              throw error;
-            }
-          }}
-        />
-      )}
+      {privateModal}
     </div>
   );
 }
