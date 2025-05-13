@@ -641,8 +641,10 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               }
               await reloadCharacters();
               setSelectedIndexRaw(characters.length); // select the new character
+              addToast({ type: 'success', message: 'Character created!', duration: 3000 });
               return character;
             } catch (err) {
+              addToast({ type: 'error', message: err.message || 'Failed to create character', duration: 4000 });
               throw err;
             }
           }}
