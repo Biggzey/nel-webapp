@@ -181,7 +181,33 @@ export default function ExplorePage({ onClose }) {
           isOpen={showCreate}
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
-          onSave={() => { setShowCreate(false); }}
+          onSave={async (form) => {
+            // Create the character as public and submit for review
+            try {
+              const res = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify(form)
+              });
+              if (!res.ok) throw new Error('Failed to create character');
+              const character = await res.json();
+              // Submit for review
+              await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                }
+              });
+              setShowCreate(false);
+              // Optionally refresh characters in sidebar or show a toast
+            } catch (err) {
+              // Optionally show error toast
+            }
+          }}
           publicOnly={true}
         />
       )}

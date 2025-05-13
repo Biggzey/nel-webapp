@@ -18,7 +18,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   useEffect(() => {
     setForm(initialData);
-  }, [initialData]);
+    setShowConfirm(false);
+    setConfirmPublic(false);
+  }, [initialData, isOpen]);
 
   // Add keyboard event listener for ESC key
   useEffect(() => {
