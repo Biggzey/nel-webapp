@@ -97,6 +97,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleSubmit(e) {
+    console.log('PersonalityModal handleSubmit called');
     e.preventDefault();
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));
@@ -107,6 +108,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
+    console.log('PersonalityModal handleConfirm called');
     setNameError('');
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));

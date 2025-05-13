@@ -15,6 +15,7 @@ export default function ExplorePage({ onClose }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [globalLoading, setGlobalLoading] = useState(false);
 
   // Fetch public/explore characters
   useEffect(() => {
@@ -184,6 +185,8 @@ export default function ExplorePage({ onClose }) {
           onClose={() => setShowCreate(false)}
           onSave={async (form) => {
             try {
+              setShowCreate(false); // Close modal immediately
+              setGlobalLoading(true); // Show global spinner
               const res = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
@@ -203,16 +206,21 @@ export default function ExplorePage({ onClose }) {
                 }
               });
               addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
-              await new Promise(resolve => setTimeout(resolve, 2000));
               await reloadCharacters();
-              setShowCreate(false);
+              setGlobalLoading(false); // Hide spinner
               return character;
             } catch (err) {
+              setGlobalLoading(false);
               addToast({ type: 'error', message: t('character.createFailed', 'Failed to create character'), duration: 4000 });
               throw err;
             }
           }}
         />
+      )}
+      {globalLoading && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
+          <div className="loader border-4 border-primary border-t-transparent rounded-full w-16 h-16 animate-spin" />
+        </div>
       )}
     </div>
   );
