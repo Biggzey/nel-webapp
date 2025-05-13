@@ -17,6 +17,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmPublic, setConfirmPublic] = useState(false);
   const { addToast } = useToast();
+  const [loading, setLoading] = useState(false);
+  const [nameError, setNameError] = useState('');
 
   useEffect(() => {
     setForm(initialData);
@@ -95,11 +97,13 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
-    // Basic validation: require name
+    setNameError('');
     if (!form.name || form.name.trim() === '') {
+      setNameError(t('character.fields.nameRequired', 'Name is required'));
       addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
       return;
     }
+    setLoading(true);
     try {
       const saved = await onSave({ ...form, isPublic: publicOnly ? true : confirmPublic });
       if ((publicOnly ? true : confirmPublic) && saved && saved.id) {
@@ -111,6 +115,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     } catch (error) {
       addToast({ type: 'error', message: error.message || t('character.createFailed', 'Failed to create character'), duration: 4000 });
       console.error('Error saving character:', error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -410,7 +416,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <button
                     type="button"
                     aria-pressed={confirmPublic}
-                    onClick={() => setConfirmPublic(v => !v)}
+                    onClick={e => { e.preventDefault(); e.stopPropagation(); setConfirmPublic(v => !v); }}
                     className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors duration-200 ${confirmPublic ? 'bg-primary' : 'bg-gray-400'}`}
                   >
                     <span
@@ -435,13 +441,20 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                 {t('common.cancel', 'Cancel')}
               </button>
               <button
-                className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold"
+                className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold flex items-center justify-center min-w-[80px]"
                 onClick={handleConfirm}
                 type="button"
+                disabled={loading}
               >
+                {loading ? (
+                  <span className="loader border-2 border-white border-t-transparent rounded-full w-5 h-5 mr-2 animate-spin" />
+                ) : null}
                 {t('common.save', 'Save')}
               </button>
             </div>
+            {nameError && (
+              <div className="text-red-500 text-sm mt-2">{nameError}</div>
+            )}
           </div>
         </div>
       )}
