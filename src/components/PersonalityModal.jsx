@@ -362,7 +362,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         value={form.personality || ""}
                         onChange={handleChange}
                         rows={2}
-                        className={`w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.personality ? ' border-red-500' : ''}`}
+                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.personality ? ' border-red-500' : ''}`}
                         placeholder={t('character.fields.personalityPlaceholder')}
                       />
                       {attemptedSubmit && fieldErrors.personality && (
@@ -370,24 +370,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       )}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.traitsHelp')}
-                      </p>
-                    </div>
-
-                    {/* Backstory */}
-                    <div className="mb-2">
-                      <label className="block mb-1 text-sm font-medium">
-                        {t('character.personality.backstory')}
-                      </label>
-                      <textarea
-                        name="backstory"
-                        value={form.backstory || ""}
-                        onChange={handleChange}
-                        rows={2}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder={t('character.personality.backstoryPlaceholder')}
-                      />
-                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
-                        {t('character.personality.backstoryHelp')}
                       </p>
                     </div>
 
@@ -413,6 +395,29 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       </p>
                     </div>
 
+                    {/* Tags */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.fields.tags')}
+                        {(publicOnly || confirmPublic) && <span className="text-red-500 ml-1">*</span>}
+                      </label>
+                      <input
+                        name="tags"
+                        value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
+                        onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
+                        className={`w-full h-9 px-3 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
+                        placeholder={t('character.fields.tagsPlaceholder')}
+                      />
+                      {(publicOnly || confirmPublic) && attemptedSubmit && fieldErrors.tags && (
+                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.tags}</p>
+                      )}
+                      {(publicOnly || confirmPublic) && (
+                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                          {t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.')}
+                        </p>
+                      )}
+                    </div>
+
                     {/* Custom Instructions */}
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
@@ -423,7 +428,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                         value={form.customInstructions || ""}
                         onChange={handleChange}
                         rows={2}
-                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors`}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                         placeholder={t('character.personality.customInstructionsPlaceholder')}
                       />
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
@@ -431,75 +436,97 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       </p>
                     </div>
 
-                    {/* --- New Card Fields --- */}
-                    <div className="mt-4 space-y-2">
-                      <label className="block mb-1 text-sm font-medium">First Message</label>
+                    {/* Backstory */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.backstory')}
+                      </label>
+                      <textarea
+                        name="backstory"
+                        value={form.backstory || ""}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={t('character.personality.backstoryPlaceholder')}
+                      />
+                      <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                        {t('character.personality.backstoryHelp')}
+                      </p>
+                    </div>
+
+                    {/* First Message */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.firstMessage')}
+                      </label>
                       <textarea
                         name="firstMessage"
                         value={form.firstMessage || ""}
                         onChange={handleChange}
                         rows={2}
                         className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="First message to user"
+                        placeholder={t('character.personality.firstMessagePlaceholder')}
                       />
-                      <label className="block mb-1 text-sm font-medium">Message Example</label>
+                    </div>
+
+                    {/* Message Example */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.messageExample')}
+                      </label>
                       <textarea
                         name="messageExample"
                         value={form.messageExample || ""}
                         onChange={handleChange}
                         rows={2}
                         className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="Example conversation"
+                        placeholder={t('character.personality.messageExamplePlaceholder')}
                       />
-                      <label className="block mb-1 text-sm font-medium">Scenario</label>
+                    </div>
+
+                    {/* Scenario */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.scenario')}
+                      </label>
                       <textarea
                         name="scenario"
                         value={form.scenario || ""}
                         onChange={handleChange}
                         rows={2}
                         className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="Scenario"
+                        placeholder={t('character.personality.scenarioPlaceholder')}
                       />
-                      <label className="block mb-1 text-sm font-medium">Creator Notes</label>
+                    </div>
+
+                    {/* Creator Notes */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.creatorNotes')}
+                      </label>
                       <textarea
                         name="creatorNotes"
                         value={form.creatorNotes || ""}
                         onChange={handleChange}
                         rows={2}
                         className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="Creator notes"
+                        placeholder={t('character.personality.creatorNotesPlaceholder')}
                       />
-                      <label className="block mb-1 text-sm font-medium">Alternate Greetings (comma separated)</label>
+                    </div>
+
+                    {/* Alternate Greetings */}
+                    <div className="mb-2">
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.alternateGreetings')}
+                      </label>
                       <input
                         name="alternateGreetings"
                         value={Array.isArray(form.alternateGreetings) ? form.alternateGreetings.join(", ") : form.alternateGreetings || ""}
                         onChange={e => handleChange({ target: { name: "alternateGreetings", value: e.target.value.split(/,\s*/) } })}
                         className="w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder="Hi!, Hello!, Welcome!"
+                        placeholder={t('character.personality.alternateGreetingsPlaceholder')}
                       />
-                      <div className="mb-2">
-                        <label className="block mb-1 text-sm font-medium">
-                          {t('character.fields.tags')}
-                          {(publicOnly || confirmPublic) && <span className="text-red-500 ml-1">*</span>}
-                        </label>
-                        <input
-                          name="tags"
-                          value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
-                          onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
-                          className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
-                          placeholder={t('character.fields.tagsPlaceholder')}
-                        />
-                        {(publicOnly || confirmPublic) && attemptedSubmit && fieldErrors.tags && (
-                          <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.tags}</p>
-                        )}
-                        {(publicOnly || confirmPublic) && (
-                          <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-                            {t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.')}
-                          </p>
-                        )}
-                      </div>
                     </div>
-                    {/* --- End new card fields --- */}
                   </div>
 
                   {/* Buttons */}
