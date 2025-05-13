@@ -6,7 +6,7 @@ import { CharacterPrompts } from "./CharacterPrompts";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
 
-export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave }) {
+export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
   const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
   const isMobile = useIsMobile();
@@ -92,8 +92,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   async function handleConfirm() {
     try {
-      const saved = await onSave({ ...form, isPublic: confirmPublic });
-      if (confirmPublic) {
+      const saved = await onSave({ ...form, isPublic: publicOnly ? true : confirmPublic });
+      if (publicOnly ? true : confirmPublic) {
         await submitForReview(saved.id);
       }
       setShowConfirm(false);
@@ -388,7 +388,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       </div>
       {/* Confirmation Portal */}
       {showConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
             <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreate', 'Confirm Character Creation')}</h2>
             <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreateDesc', 'Are you sure you want to create this character?')}</p>
@@ -398,21 +398,25 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             >
               {t('common.create', 'Create')}
             </button>
-            <div className="flex items-center gap-2 mb-2">
-              <input
-                type="checkbox"
-                id="public-toggle"
-                checked={confirmPublic}
-                onChange={e => setConfirmPublic(e.target.checked)}
-                className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary"
-              />
-              <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer">
-                {t('character.public.title', 'Make Public')}
-              </label>
-            </div>
-            <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
-              {t('character.public.description', 'Submit this character to the public explore page for others to use. Requires admin approval.')}
-            </p>
+            {!publicOnly && (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="checkbox"
+                    id="public-toggle"
+                    checked={confirmPublic}
+                    onChange={e => setConfirmPublic(e.target.checked)}
+                    className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary"
+                  />
+                  <label htmlFor="public-toggle" className="text-sm text-text-light dark:text-text-dark cursor-pointer">
+                    {t('character.public.title', 'Make Public')}
+                  </label>
+                </div>
+                <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                  {t('character.public.description', 'Submit this character to the public explore page for others to use. Requires admin approval.')}
+                </p>
+              </>
+            )}
             <button
               className="mt-2 px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 text-base font-semibold"
               onClick={() => setShowConfirm(false)}

@@ -526,9 +526,63 @@ export default function AdminPanel() {
               >
                 {t('admin.removeDuplicatesAll')}
               </button>
-              
-              {/* Pending Public Characters - own container above stats grid */}
-              <div className="w-full max-w-5xl mx-auto mb-8">
+              {/* 4-column grid for stats and pending characters */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
+                {/* User Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-4">Users</h2>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Users</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Active Now</dt>
+                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">New Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
+                    </div>
+                  </dl>
+                </div>
+                {/* Message Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-4">Messages</h2>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Messages</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Messages Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Avg per User</dt>
+                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgMessagesPerUser)}</dd>
+                    </div>
+                  </dl>
+                </div>
+                {/* Character Stats */}
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-4">Characters</h2>
+                  <dl className="space-y-3">
+                    <div>
+                      <dt className="text-sm text-gray-500">Total Characters</dt>
+                      <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Created Today</dt>
+                      <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">Avg per User</dt>
+                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
+                    </div>
+                  </dl>
+                </div>
+                {/* Pending Public Characters */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
                   <h2 className="text-xl font-semibold mb-4 text-primary">Pending Public Characters</h2>
                   {loadingPending ? (
@@ -538,13 +592,13 @@ export default function AdminPanel() {
                   ) : pendingCharacters.length === 0 ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+                    <div className="flex flex-col gap-4 w-full">
                       {pendingCharacters.map(character => (
-                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow flex flex-col items-center p-4">
+                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-3">
                           <img
                             src={character.avatar || '/default-avatar.png'}
                             alt={character.name}
-                            className="w-16 h-16 rounded-full object-cover mb-2 border-4 border-primary/30 shadow-lg"
+                            className="w-12 h-12 rounded-full object-cover mb-2 border-2 border-primary/30 shadow"
                             onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
                           />
                           <h3 className="text-base font-semibold mb-1 text-primary">{character.name}</h3>
@@ -569,65 +623,6 @@ export default function AdminPanel() {
                       ))}
                     </div>
                   )}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* User Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Users</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Users</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Active Now</dt>
-                      <dd className="text-2xl font-bold">{systemStats.activeUsers}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">New Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.newUsersToday}</dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {/* Message Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Messages</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Messages</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Messages Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.messagesToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Avg per User</dt>
-                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgMessagesPerUser)}</dd>
-                    </div>
-                  </dl>
-                </div>
-
-                {/* Character Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">
-                  <h2 className="text-xl font-semibold mb-4">Characters</h2>
-                  <dl className="space-y-3">
-                    <div>
-                      <dt className="text-sm text-gray-500">Total Characters</dt>
-                      <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Created Today</dt>
-                      <dd className="text-2xl font-bold">{systemStats.charactersCreatedToday}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-gray-500">Avg per User</dt>
-                      <dd className="text-2xl font-bold">{Math.round(systemStats.avgCharactersPerUser * 10) / 10}</dd>
-                    </div>
-                  </dl>
                 </div>
               </div>
             </div>

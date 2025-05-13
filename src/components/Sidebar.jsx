@@ -451,7 +451,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         character={nelliel}
                         index={characters.findIndex(c => c.id === nelliel.id)}
                         isSelected={characters.findIndex(c => c.id === nelliel.id) === selectedIndex}
-                        onSelect={setSelectedIndex}
+                        onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
                         onClearChat={handleClearChat}
                         onDelete={handleDeleteCharacterWithConfirm}
                         onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
@@ -482,7 +482,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                         character={c}
                         index={globalIdx}
                         isSelected={globalIdx === selectedIndex}
-                        onSelect={setSelectedIndex}
+                        onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
                         onClearChat={handleClearChat}
                         onDelete={handleDeleteCharacterWithConfirm}
                         onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}

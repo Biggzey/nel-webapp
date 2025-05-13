@@ -6,7 +6,7 @@ import PersonalityModal from './PersonalityModal';
 
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
-  const { addToCollection } = useCharacter();
+  const { addToCollection, characters: userCharacters, setSelectedIndex } = useCharacter();
   const { addToast } = useToast();
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null);
@@ -63,6 +63,15 @@ export default function ExplorePage({ onClose }) {
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-b from-primary/10 via-background-light to-background-container-light dark:from-primary/20 dark:via-background-dark dark:to-background-container-dark px-2 py-8 animate-fade-in-up">
+      {/* Back to Chats button, only if user has characters */}
+      {userCharacters && userCharacters.length > 0 && (
+        <button
+          className="mb-4 px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold self-start"
+          onClick={onClose}
+        >
+          <i className="fas fa-arrow-left mr-2" />{t('explore.back')}
+        </button>
+      )}
       <h1 className="text-4xl font-bold mb-4 text-primary drop-shadow-lg">{t('explore.title')}</h1>
       <p className="mb-8 text-lg max-w-xl text-center text-text-secondary-light dark:text-text-secondary-dark">
         {t('explore.description')}
@@ -173,6 +182,7 @@ export default function ExplorePage({ onClose }) {
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
           onSave={() => { setShowCreate(false); }}
+          publicOnly={true}
         />
       )}
     </div>
