@@ -270,7 +270,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${field === 'name' && !form[field] ? 'border-red-500' : ''}`}
+                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${fieldErrors[field] ? 'border-red-500' : ''}`}
                             rows={1}
                           />
                         ) : (
@@ -279,11 +279,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${field === 'name' && !form[field] ? 'border-red-500' : ''}`}
+                            className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
                           />
                         )}
-                        {field === 'name' && !form[field] && (
-                          <p className="text-red-500 text-xs mt-1">{t('character.fields.nameRequired', 'Name is required')}</p>
+                        {fieldErrors[field] && (
+                          <p className="text-red-500 text-xs mt-1">{fieldErrors[field]}</p>
                         )}
                       </div>
                     ))}
@@ -294,7 +294,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                 <div className="bg-background-light dark:bg-background-dark rounded-lg p-3 border border-border-light dark:border-border-dark">
                   <div className="space-y-4">
                     <div>
-                      <label className="block mb-1 text-sm font-medium">{t('character.fields.avatar')}{publicOnly && <span className="text-red-500 ml-1">*</span>}</label>
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.fields.avatar')}
+                        {publicOnly && <span className="text-red-500 ml-1">*</span>}
+                      </label>
                       <input
                         name="avatar"
                         value={form.avatar || ""}
@@ -340,7 +343,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <div className="flex-1 flex flex-col">
                     {/* Description (replacing Personality) */}
                     <div className="mb-2">
-                      <label className="block mb-1 text-sm font-medium">{t('character.personality.traits')}{publicOnly && <span className="text-red-500 ml-1">*</span>}</label>
+                      <label className="block mb-1 text-sm font-medium">
+                        {t('character.personality.traits')}
+                        {publicOnly && <span className="text-red-500 ml-1">*</span>}
+                      </label>
                       <textarea
                         name="description"
                         value={form.description || ""}

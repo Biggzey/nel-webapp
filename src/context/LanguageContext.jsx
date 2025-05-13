@@ -91,7 +91,11 @@ const translations = {
         avatar: 'Avatar URL or Upload',
         avatarPlaceholder: 'https://example.com/avatar.png',
         fullImage: 'Full-Body Image URL or Upload',
-        fullImagePlaceholder: 'https://example.com/full.png'
+        fullImagePlaceholder: 'https://example.com/full.png',
+        avatarRequired: 'Avatar is required',
+        descriptionRequired: 'Description is required',
+        systemPromptRequired: 'System prompt is required',
+        missingFields: 'Please fill all required fields'
       },
       actions: {
         resetDefaults: 'Reset to Defaults',
@@ -312,7 +316,11 @@ const translations = {
         avatar: 'URL de Avatar o Subir',
         avatarPlaceholder: 'https://ejemplo.com/avatar.png',
         fullImage: 'URL de Imagen Completa o Subir',
-        fullImagePlaceholder: 'https://ejemplo.com/completa.png'
+        fullImagePlaceholder: 'https://ejemplo.com/completa.png',
+        avatarRequired: 'Avatar is required',
+        descriptionRequired: 'Description is required',
+        systemPromptRequired: 'System prompt is required',
+        missingFields: 'Please fill all required fields'
       },
       actions: {
         resetDefaults: 'Restablecer Valores',
