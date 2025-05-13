@@ -75,6 +75,7 @@ const translations = {
       fields: {
         name: 'Name',
         namePlaceholder: 'Character name',
+        nameRequired: 'Name is required',
         age: 'Age',
         agePlaceholder: 'Age',
         gender: 'Gender',
@@ -281,6 +282,7 @@ const translations = {
       fields: {
         name: 'Nombre',
         namePlaceholder: 'Nombre del personaje',
+        nameRequired: 'El nombre es obligatorio',
         age: 'Edad',
         agePlaceholder: 'Edad',
         gender: 'Género',

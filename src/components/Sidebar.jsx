@@ -640,21 +640,35 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 console.error('Character creation returned invalid data:', character);
                 throw new Error('Failed to create character');
               }
-              // If public, also submit a copy for review
+              // If public, use the same logic as ExplorePage
               if (form.isPublic) {
-                const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
-                  method: 'POST',
-                  headers: {
-                    Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                try {
+                  const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                    }
+                  });
+                  if (!reviewRes.ok) {
+                    const reviewError = await reviewRes.json().catch(() => ({}));
+                    console.error('Review submission failed:', reviewError);
+                    addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
+                  } else {
+                    addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
                   }
-                });
-                if (!reviewRes.ok) {
-                  const reviewError = await reviewRes.json().catch(() => ({}));
-                  console.error('Review submission failed:', reviewError);
-                  throw new Error('Failed to submit for review');
+                } catch (err) {
+                  console.error('Error submitting for review:', err);
+                  addToast && addToast({ type: 'error', message: 'Character created but failed to submit for review. You can try submitting it later.', duration: 4000 });
                 }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await reloadCharacters();
+                setShowNewCharacterModal(false);
+                return character;
               }
+              // Private creation
               addToast && addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+              await new Promise(resolve => setTimeout(resolve, 2000));
               await reloadCharacters();
               setShowNewCharacterModal(false);
               return character;
