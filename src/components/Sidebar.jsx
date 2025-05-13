@@ -617,30 +617,32 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onClose={() => setShowNewCharacterModal(false)}
           onSave={async (form) => {
             try {
+              // Always create a private character for the user
               const res = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify({ ...form, isPublic: false })
               });
               if (!res.ok) throw new Error('Failed to create character');
               const character = await res.json();
+              // If public, also submit a copy for review
               if (form.isPublic) {
-                await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                await fetch('/api/characters', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                     Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                  }
+                  },
+                  body: JSON.stringify({ ...form, isPublic: true })
                 });
               }
               await reloadCharacters();
               setSelectedIndexRaw(characters.length); // select the new character
               return character;
             } catch (err) {
-              // Optionally show error toast
               throw err;
             }
           }}

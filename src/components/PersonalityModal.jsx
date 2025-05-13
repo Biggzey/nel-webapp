@@ -421,7 +421,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             <div className="flex gap-3 mt-4 w-full justify-center">
               <button
                 className="px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 text-base font-semibold"
-                onClick={() => setShowConfirm(false)}
+                onClick={() => { setShowConfirm(false); onClose(); }}
                 type="button"
               >
                 {t('common.cancel', 'Cancel')}
