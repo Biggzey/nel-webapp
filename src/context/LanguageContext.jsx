@@ -48,6 +48,15 @@ const translations = {
       new: 'New Character',
       edit: 'Edit Character',
       details: 'Character Details',
+      public: {
+        title: 'Make Public',
+        description: 'Submit this character to the public explore page for others to use. Requires admin approval.',
+        submit: 'Submit for Review',
+        pending: 'Pending Review',
+        approved: 'Approved',
+        rejected: 'Rejected',
+        private: 'Private'
+      },
       personality: {
         title: 'Personality Configuration',
         traits: 'Personality',
@@ -169,13 +178,23 @@ const translations = {
     },
     explore: {
       title: 'Explore Characters',
-      subtitle: 'Discover and add new characters created by the community!',
-      search: 'Search characters or tags...',
-      noResults: 'No characters found. Try a different search!',
-      view: 'View',
+      description: 'Discover and add characters created by the community',
+      create: 'Create Public Character',
       add: 'Add to My Characters',
-      added: '{name} added to your characters!',
-      back: 'Back to Chat'
+      added: 'Added to My Characters',
+      pending: 'Pending Review',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      private: 'Private',
+      search: 'Search characters...',
+      filter: 'Filter by tags...',
+      noResults: 'No characters found',
+      loading: 'Loading characters...',
+      error: 'Error loading characters',
+      submitSuccess: 'Character submitted for review',
+      submitError: 'Error submitting character',
+      addSuccess: 'Character added to your collection',
+      addError: 'Error adding character to collection'
     }
   },
   es: {
@@ -224,6 +243,15 @@ const translations = {
       new: 'Nuevo Personaje',
       edit: 'Editar Personaje',
       details: 'Detalles del Personaje',
+      public: {
+        title: 'Hacer Público',
+        description: 'Enviar este personaje a la página de exploración pública para que otros lo utilicen. Requiere aprobación del administrador.',
+        submit: 'Enviar para Revisión',
+        pending: 'Pendiente de Revisión',
+        approved: 'Aprobado',
+        rejected: 'Rechazado',
+        private: 'Privado'
+      },
       personality: {
         title: 'Configuración de Personalidad',
         traits: 'Personalidad',
@@ -345,13 +373,23 @@ const translations = {
     },
     explore: {
       title: 'Explore Characters',
-      subtitle: 'Discover and add new characters created by the community!',
-      search: 'Search characters or tags...',
-      noResults: 'No characters found. Try a different search!',
-      view: 'View',
+      description: 'Discover and add characters created by the community',
+      create: 'Create Public Character',
       add: 'Add to My Characters',
-      added: '{name} added to your characters!',
-      back: 'Back to Chat'
+      added: 'Added to My Characters',
+      pending: 'Pending Review',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      private: 'Private',
+      search: 'Search characters...',
+      filter: 'Filter by tags...',
+      noResults: 'No characters found',
+      loading: 'Loading characters...',
+      error: 'Error loading characters',
+      submitSuccess: 'Character submitted for review',
+      submitError: 'Error submitting character',
+      addSuccess: 'Character added to your collection',
+      addError: 'Error adding character to collection'
     }
   }
 };

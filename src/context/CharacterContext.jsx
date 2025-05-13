@@ -417,6 +417,55 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  // Add new functions for explore functionality
+  async function submitForReview(characterId) {
+    try {
+      const res = await fetch(`/api/characters/${characterId}/submit-for-review`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to submit character for review');
+      }
+
+      const updated = await res.json();
+      setCharacters(prev =>
+        prev.map(c => (c.id === characterId ? updated : c))
+      );
+      return updated;
+    } catch (error) {
+      console.error('Error submitting character for review:', error);
+      throw error;
+    }
+  }
+
+  async function addToCollection(characterId) {
+    try {
+      const res = await fetch(`/api/explore/characters/${characterId}/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to add character to collection');
+      }
+
+      const newCharacter = await res.json();
+      setCharacters(prev => [...prev, newCharacter]);
+      return newCharacter;
+    } catch (error) {
+      console.error('Error adding character to collection:', error);
+      throw error;
+    }
+  }
+
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -445,6 +494,8 @@ export function CharacterProvider({ children }) {
         setIsImporting,
         isReloadingCharacters,
         setIsReloadingCharacters,
+        submitForReview,
+        addToCollection,
       }}
     >
       {children}

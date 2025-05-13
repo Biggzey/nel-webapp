@@ -7,7 +7,7 @@ import { useIsMobile } from "../hooks/useIsMobile";
 import { extractCharacterDetails } from "../utils/characterDetails";
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave }) {
-  const { resetCurrentCharacter } = useCharacter();
+  const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
   const isMobile = useIsMobile();
   const [form, setForm] = useState(initialData || {});
@@ -83,9 +83,20 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     reader.readAsDataURL(file);
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    onSave(form);
+    try {
+      const saved = await onSave(form);
+      
+      // If character is marked as public, submit for review
+      if (form.isPublic) {
+        await submitForReview(saved.id);
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error('Error saving character:', error);
+    }
   }
 
   function handleReset() {

@@ -12,6 +12,9 @@ export default function AdminPanel() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [systemStats, setSystemStats] = useState(null);
+  const [pendingCharacters, setPendingCharacters] = useState([]);
+  const [loadingPending, setLoadingPending] = useState(false);
+  const [errorPending, setErrorPending] = useState(null);
   const navigate = useNavigate();
 
   // Load user details when selected
@@ -124,6 +127,56 @@ export default function AdminPanel() {
 
     loadUserMetrics();
   }, [selectedUserId, token, addToast]);
+
+  // Fetch pending public characters for review
+  useEffect(() => {
+    if (selectedUserId) return; // Only show in system overview
+    async function fetchPending() {
+      setLoadingPending(true);
+      setErrorPending(null);
+      try {
+        const res = await fetch('/api/admin/pending-characters', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch pending characters');
+        const data = await res.json();
+        setPendingCharacters(data);
+      } catch (err) {
+        setErrorPending(err.message);
+      } finally {
+        setLoadingPending(false);
+      }
+    }
+    fetchPending();
+  }, [selectedUserId, token]);
+
+  // Approve/reject handlers
+  async function handleApprove(id) {
+    try {
+      const res = await fetch(`/api/admin/characters/${id}/approve`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to approve character');
+      setPendingCharacters(prev => prev.filter(c => c.id !== id));
+      addToast({ type: 'success', message: 'Character approved', duration: 3000 });
+    } catch (err) {
+      addToast({ type: 'error', message: err.message, duration: 4000 });
+    }
+  }
+  async function handleReject(id) {
+    try {
+      const res = await fetch(`/api/admin/characters/${id}/reject`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to reject character');
+      setPendingCharacters(prev => prev.filter(c => c.id !== id));
+      addToast({ type: 'success', message: 'Character rejected', duration: 3000 });
+    } catch (err) {
+      addToast({ type: 'error', message: err.message, duration: 4000 });
+    }
+  }
 
   // Helper to determine online status
   function isUserOnline(user) {
@@ -474,6 +527,50 @@ export default function AdminPanel() {
                 {t('admin.removeDuplicatesAll')}
               </button>
               
+              {!selectedUserId && (
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6 mb-8">
+                  <h2 className="text-xl font-semibold mb-4 text-primary">Pending Public Characters</h2>
+                  {loadingPending ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
+                  ) : errorPending ? (
+                    <div className="text-red-500">{errorPending}</div>
+                  ) : pendingCharacters.length === 0 ? (
+                    <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                      {pendingCharacters.map(character => (
+                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md flex flex-col items-center p-6">
+                          <img
+                            src={character.avatar || '/default-avatar.png'}
+                            alt={character.name}
+                            className="w-20 h-20 rounded-full object-cover mb-4 border-4 border-primary/30 shadow-lg"
+                            onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
+                          />
+                          <h3 className="text-lg font-semibold mb-1 text-primary">{character.name}</h3>
+                          <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
+                          <div className="flex flex-wrap gap-2 justify-center mb-2">
+                            {(character.tags || []).map(tag => (
+                              <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                            ))}
+                          </div>
+                          <div className="mb-2 text-xs text-gray-500">Submitted by: {character.user?.username || character.user?.email || 'Unknown'}</div>
+                          <div className="flex gap-2 mt-2">
+                            <button
+                              className="px-4 py-1 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-all"
+                              onClick={() => handleApprove(character.id)}
+                            >Approve</button>
+                            <button
+                              className="px-4 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all"
+                              onClick={() => handleReject(character.id)}
+                            >Reject</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* User Stats */}
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl p-6">

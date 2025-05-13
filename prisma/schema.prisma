@@ -58,6 +58,8 @@ model Character {
   characterVersion   String?
   extensions         Json?
   order              Int           @default(0)
+  isPublic           Boolean       @default(false)
+  reviewStatus       String        @default("private") // "private", "pending", "approved", "rejected"
   user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages           ChatMessage[]
 }

@@ -2294,6 +2294,175 @@ try {
     }
   });
 
+  // Get explore characters (public, approved characters)
+  app.get("/api/explore/characters", authMiddleware, async (req, res) => {
+    try {
+      const characters = await prisma.character.findMany({
+        where: { 
+          isPublic: true,
+          reviewStatus: 'approved'
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(characters);
+    } catch (error) {
+      console.error("Error fetching explore characters:", error);
+      res.status(500).json({ error: "Failed to fetch explore characters" });
+    }
+  });
+
+  // Submit character for public review
+  app.post("/api/characters/:id/submit-for-review", authMiddleware, async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.id);
+      
+      // Verify character belongs to user
+      const character = await prisma.character.findFirst({
+        where: {
+          id: characterId,
+          userId: req.user.id
+        }
+      });
+
+      if (!character) {
+        return res.status(403).json({ error: "Not authorized to modify this character" });
+      }
+
+      const updated = await prisma.character.update({
+        where: { id: characterId },
+        data: {
+          isPublic: true,
+          reviewStatus: 'pending'
+        }
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("Error submitting character for review:", error);
+      res.status(500).json({ error: "Failed to submit character for review" });
+    }
+  });
+
+  // Admin: Get pending characters
+  app.get("/api/admin/pending-characters", authMiddleware, async (req, res) => {
+    try {
+      // Verify user is admin
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const characters = await prisma.character.findMany({
+        where: { 
+          isPublic: true,
+          reviewStatus: 'pending'
+        },
+        include: {
+          user: {
+            select: {
+              username: true,
+              email: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(characters);
+    } catch (error) {
+      console.error("Error fetching pending characters:", error);
+      res.status(500).json({ error: "Failed to fetch pending characters" });
+    }
+  });
+
+  // Admin: Approve character
+  app.put("/api/admin/characters/:id/approve", authMiddleware, async (req, res) => {
+    try {
+      // Verify user is admin
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const characterId = parseInt(req.params.id);
+      const character = await prisma.character.update({
+        where: { id: characterId },
+        data: { reviewStatus: 'approved' }
+      });
+      res.json(character);
+    } catch (error) {
+      console.error("Error approving character:", error);
+      res.status(500).json({ error: "Failed to approve character" });
+    }
+  });
+
+  // Admin: Reject character
+  app.put("/api/admin/characters/:id/reject", authMiddleware, async (req, res) => {
+    try {
+      // Verify user is admin
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || user.role !== 'ADMIN') {
+        return res.status(403).json({ error: "Not authorized" });
+      }
+
+      const characterId = parseInt(req.params.id);
+      const character = await prisma.character.update({
+        where: { id: characterId },
+        data: { 
+          reviewStatus: 'rejected',
+          isPublic: false
+        }
+      });
+      res.json(character);
+    } catch (error) {
+      console.error("Error rejecting character:", error);
+      res.status(500).json({ error: "Failed to reject character" });
+    }
+  });
+
+  // Add character to user's collection
+  app.post("/api/explore/characters/:id/add", authMiddleware, async (req, res) => {
+    try {
+      const characterId = parseInt(req.params.id);
+      
+      // Get the public character
+      const publicCharacter = await prisma.character.findFirst({
+        where: {
+          id: characterId,
+          isPublic: true,
+          reviewStatus: 'approved'
+        }
+      });
+
+      if (!publicCharacter) {
+        return res.status(404).json({ error: "Character not found or not approved" });
+      }
+
+      // Create a copy for the user
+      const newCharacter = await prisma.character.create({
+        data: {
+          ...publicCharacter,
+          id: undefined, // Let the database generate a new ID
+          userId: req.user.id,
+          isPublic: false,
+          reviewStatus: 'private'
+        }
+      });
+
+      res.json(newCharacter);
+    } catch (error) {
+      console.error("Error adding character to collection:", error);
+      res.status(500).json({ error: "Failed to add character to collection" });
+    }
+  });
+
   // Start server
   const PORT = process.env.PORT || 3001;
   await testDbConnection(); // Test DB connection before starting server
