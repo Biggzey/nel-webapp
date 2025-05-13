@@ -431,17 +431,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       </p>
                     </div>
 
-                    <CharacterPrompts
-                      systemPrompt={form.systemPrompt || ""}
-                      customInstructions={form.customInstructions || ""}
-                      onChange={(field, value) => handleChange({ target: { name: field, value } })}
-                      systemPromptRequired={true}
-                      systemPromptError={fieldErrors.systemPrompt}
-                    />
-                    {fieldErrors.systemPrompt && (
-                      <p className="text-red-500 text-xs mt-1">{fieldErrors.systemPrompt}</p>
-                    )}
-
                     {/* --- New Card Fields --- */}
                     <div className="mt-4 space-y-2">
                       <label className="block mb-1 text-sm font-medium">First Message</label>
