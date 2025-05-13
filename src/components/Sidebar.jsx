@@ -412,18 +412,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                   });
 
                   if (!reviewRes.ok) {
+                    const errorData = await reviewRes.json().catch(() => ({}));
                     addToast({ 
                       type: 'error', 
-                      message: 'Character created but failed to submit for review. You can try submitting it later.', 
+                      message: errorData.error || 'Character created but failed to submit for review. You can try submitting it later.', 
                       duration: 4000 
                     });
                   } else {
-                    addToast({ type: 'success', message: 'Character created!', duration: 3000 });
+                    addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
                   }
                 } catch (err) {
+                  console.error('Error submitting for review:', err);
                   addToast({ 
                     type: 'error', 
-                    message: 'Character created but failed to submit for review. You can try submitting it later.', 
+                    message: err.message || 'Character created but failed to submit for review. You can try submitting it later.', 
                     duration: 4000 
                   });
                 }
@@ -611,36 +613,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark group"
               >
-                <div className="w-8 h-8 rounded-full bg-primary overflow-hidden flex items-center justify-center text-white font-semibold text-lg">
-                  {user?.avatar ? (
-                    <img 
-                      src={user.avatar || '/default-avatar.png'} 
-                      alt={user.username} 
-                      className="w-full h-full object-cover"
-                      onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-                    />
-                  ) : (
-                    <img 
-                      src={'/default-avatar.png'} 
-                      alt={user.username} 
-                      className="w-full h-full object-cover"
-                    />
+                <i className="fas fa-user-circle text-2xl text-primary" />
+                <span className="font-semibold text-primary">{t('settings.profile', 'Profile')}</span>
+                <div className="flex items-center space-x-2 ml-auto">
+                  {unreadCount > 0 && (
+                    <span className="relative inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                      {unreadCount}
+                    </span>
                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">
-                    {user?.displayName || user?.username}
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="relative">
-                    <span>{t('sidebar.profile')}</span>
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-2 -right-4 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </span>
                   <i className="fas fa-chevron-down text-text-light/60 dark:text-text-dark/60 group-hover:text-text-light dark:group-hover:text-text-dark transition-colors" />
                 </div>
               </button>
