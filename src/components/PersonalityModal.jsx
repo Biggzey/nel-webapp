@@ -130,7 +130,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleSubmit(e) {
-    console.log('PersonalityModal handleSubmit called');
+    console.log('PersonalityModal handleSubmit called with form:', form);
     e.preventDefault();
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));
@@ -141,50 +141,60 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
-    console.log('PersonalityModal handleConfirm called');
+    console.log('PersonalityModal handleConfirm called with form:', form);
     setNameError('');
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));
       addToast && addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
       return;
     }
+
     setLoading(true);
     try {
-      // Always include avatar
+      // Create the character first
       const payload = {
         ...form,
         avatar: form.avatar || DEFAULT_AVATAR,
-        isPublic: publicOnly ? true : confirmPublic,
+        isPublic: publicOnly ? true : confirmPublic
       };
+      console.log('Submitting character with payload:', payload);
+      
       const saved = await onSave(payload);
-      if (!saved || !saved.id) throw new Error('Failed to create character - no response data');
-      // If publicOnly or confirmPublic, submit for review
+      console.log('Character saved:', saved);
+
+      if (!saved || !saved.id) {
+        throw new Error('Failed to create character - no response data');
+      }
+
+      // If public, submit for review
       if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
         try {
+          console.log('Submitting for review:', saved.id);
           const reviewRes = await submitForReview(saved.id);
-          if (reviewRes && reviewRes.error) throw new Error(reviewRes.error);
+          console.log('Review submission response:', reviewRes);
+          
+          if (reviewRes && reviewRes.error) {
+            throw new Error(reviewRes.error);
+          }
         } catch (reviewError) {
-          setLoading(false);
           console.error('Error submitting for review:', reviewError);
           addToast && addToast({ 
             type: 'error', 
             message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
             duration: 4000 
           });
-          setShowConfirm(true);
-          return;
         }
       }
+
       setLoading(false);
       setShowConfirm(false);
       onClose();
       addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
+      console.error('Error in handleConfirm:', error);
       setLoading(false);
-      console.error('Error creating character:', error);
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
-      setShowConfirm(true);
     }
   }
 
