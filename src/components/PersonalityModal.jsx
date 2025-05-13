@@ -97,10 +97,13 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
+    console.log('handleConfirm called', { form, confirmPublic, publicOnly });
+    console.log('addToast:', addToast);
+    window.alert('Saving!');
     setNameError('');
     if (!form.name || form.name.trim() === '') {
       setNameError(t('character.fields.nameRequired', 'Name is required'));
-      addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
+      addToast && addToast({ type: 'error', message: t('character.fields.nameRequired', 'Name is required'), duration: 3000 });
       return;
     }
     setLoading(true);
@@ -111,9 +114,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       }
       setShowConfirm(false);
       onClose();
-      addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
+      addToast && addToast({ type: 'success', message: t('character.created', 'Character created!'), duration: 3000 });
     } catch (error) {
-      addToast({ type: 'error', message: error.message || t('character.createFailed', 'Failed to create character'), duration: 4000 });
+      addToast && addToast({ type: 'error', message: error.message || t('character.createFailed', 'Failed to create character'), duration: 4000 });
       console.error('Error saving character:', error);
     } finally {
       setLoading(false);
@@ -442,7 +445,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
               </button>
               <button
                 className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold flex items-center justify-center min-w-[80px]"
-                onClick={handleConfirm}
+                onClick={async () => { console.log('Save button clicked'); await handleConfirm(); }}
                 type="button"
                 disabled={loading}
               >
