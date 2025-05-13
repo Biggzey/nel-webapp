@@ -104,6 +104,8 @@ const translations = {
         personalityRequired: 'Personality is required',
         descriptionRequired: 'Description is required',
         customInstructionsRequired: 'Custom instructions are required',
+        tags: 'Tags (comma separated)',
+        tagsPlaceholder: 'tag1, tag2, tag3',
         tagsRequired: 'At least 3 tags are required (comma separated)'
       },
       actions: {
@@ -342,6 +344,8 @@ const translations = {
         personalityRequired: 'La personalidad es obligatoria',
         descriptionRequired: 'La descripción es obligatoria',
         customInstructionsRequired: 'Las instrucciones personalizadas son obligatorias',
+        tags: 'Etiquetas (separadas por comas)',
+        tagsPlaceholder: 'etiqueta1, etiqueta2, etiqueta3',
         tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)'
       },
       actions: {

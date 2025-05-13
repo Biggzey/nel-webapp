@@ -138,9 +138,9 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
     if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
     if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
-    // Tags: required, min 3
+    // Tags: required, min 3, only for public
     const tagsArr = Array.isArray(form.tags) ? form.tags : (typeof form.tags === 'string' ? form.tags.split(/,\s*/) : []);
-    if (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim())) {
+    if ((publicOnly || confirmPublic) && (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim()))) {
       errors.tags = t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.');
     }
     return errors;
@@ -491,7 +491,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       <div className="mb-2">
                         <label className="block mb-1 text-sm font-medium">
                           {t('character.fields.tags')}
-                          <span className="text-red-500 ml-1">*</span>
+                          {(publicOnly || confirmPublic) && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         <input
                           name="tags"
@@ -500,12 +500,14 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                           className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
                           placeholder={t('character.fields.tagsPlaceholder')}
                         />
-                        {attemptedSubmit && fieldErrors.tags && (
+                        {(publicOnly || confirmPublic) && attemptedSubmit && fieldErrors.tags && (
                           <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.tags}</p>
                         )}
-                        <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
-                          {t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.')}
-                        </p>
+                        {(publicOnly || confirmPublic) && (
+                          <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                            {t('character.fields.tagsRequired', 'At least 3 tags are required for public characters.')}
+                          </p>
+                        )}
                       </div>
                     </div>
                     {/* --- End new card fields --- */}
