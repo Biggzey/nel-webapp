@@ -93,7 +93,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   async function handleConfirm() {
     try {
       const saved = await onSave({ ...form, isPublic: publicOnly ? true : confirmPublic });
-      if (publicOnly ? true : confirmPublic) {
+      if ((publicOnly ? true : confirmPublic) && saved && saved.id) {
         await submitForReview(saved.id);
       }
       setShowConfirm(false);
