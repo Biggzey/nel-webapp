@@ -527,11 +527,11 @@ export default function AdminPanel() {
                 {t('admin.removeDuplicatesAll')}
               </button>
               {/* 4-column grid for stats and pending characters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-5xl mx-auto">
                 {/* User Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-4">Users</h2>
-                  <dl className="space-y-3">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-3">Users</h2>
+                  <dl className="space-y-2">
                     <div>
                       <dt className="text-sm text-gray-500">Total Users</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalUsers}</dd>
@@ -547,9 +547,9 @@ export default function AdminPanel() {
                   </dl>
                 </div>
                 {/* Message Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-4">Messages</h2>
-                  <dl className="space-y-3">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-3">Messages</h2>
+                  <dl className="space-y-2">
                     <div>
                       <dt className="text-sm text-gray-500">Total Messages</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalMessages}</dd>
@@ -565,9 +565,9 @@ export default function AdminPanel() {
                   </dl>
                 </div>
                 {/* Character Stats */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-4">Characters</h2>
-                  <dl className="space-y-3">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-3">Characters</h2>
+                  <dl className="space-y-2">
                     <div>
                       <dt className="text-sm text-gray-500">Total Characters</dt>
                       <dd className="text-2xl font-bold">{systemStats.totalCharacters}</dd>
@@ -583,8 +583,8 @@ export default function AdminPanel() {
                   </dl>
                 </div>
                 {/* Pending Public Characters */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 flex flex-col items-center">
-                  <h2 className="text-xl font-semibold mb-4 text-primary">Pending Public Characters</h2>
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col items-center">
+                  <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
                   {loadingPending ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
                   ) : errorPending ? (
@@ -592,30 +592,30 @@ export default function AdminPanel() {
                   ) : pendingCharacters.length === 0 ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">No pending characters for review.</div>
                   ) : (
-                    <div className="flex flex-col gap-4 w-full">
+                    <div className="flex flex-col gap-2 w-full">
                       {pendingCharacters.map(character => (
-                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-3">
+                        <div key={character.id} className="relative bg-background-container-light dark:bg-background-container-dark rounded-xl border border-primary/20 shadow flex flex-col items-center p-2">
                           <img
                             src={character.avatar || '/default-avatar.png'}
                             alt={character.name}
-                            className="w-12 h-12 rounded-full object-cover mb-2 border-2 border-primary/30 shadow"
+                            className="w-10 h-10 rounded-full object-cover mb-1 border-2 border-primary/30 shadow"
                             onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
                           />
-                          <h3 className="text-base font-semibold mb-1 text-primary">{character.name}</h3>
-                          <div className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">{character.tagline}</div>
-                          <div className="flex flex-wrap gap-1 justify-center mb-1">
+                          <h3 className="text-base font-semibold mb-0.5 text-primary">{character.name}</h3>
+                          <div className="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-0.5">{character.tagline}</div>
+                          <div className="flex flex-wrap gap-1 justify-center mb-0.5">
                             {(character.tags || []).map(tag => (
                               <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">{tag}</span>
                             ))}
                           </div>
-                          <div className="mb-1 text-xs text-gray-500">By: {character.user?.username || character.user?.email || 'Unknown'}</div>
+                          <div className="mb-0.5 text-xs text-gray-500">By: {character.user?.username || character.user?.email || 'Unknown'}</div>
                           <div className="flex gap-2 mt-1">
                             <button
-                              className="px-3 py-0.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs"
+                              className="px-2 py-0.5 rounded-lg bg-green-500 text-white hover:bg-green-600 text-xs"
                               onClick={() => handleApprove(character.id)}
                             >Approve</button>
                             <button
-                              className="px-3 py-0.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-xs"
+                              className="px-2 py-0.5 rounded-lg bg-red-500 text-white hover:bg-red-600 text-xs"
                               onClick={() => handleReject(character.id)}
                             >Reject</button>
                           </div>

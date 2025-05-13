@@ -392,12 +392,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
             <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreate', 'Confirm Character Creation')}</h2>
             <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreateDesc', 'Are you sure you want to create this character?')}</p>
-            <button
-              className="bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90 mb-4"
-              onClick={handleConfirm}
-            >
-              {t('common.create', 'Create')}
-            </button>
             {!publicOnly && (
               <>
                 <div className="flex items-center gap-2 mb-2">
@@ -417,12 +411,22 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                 </p>
               </>
             )}
-            <button
-              className="mt-2 px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 text-base font-semibold"
-              onClick={() => setShowConfirm(false)}
-            >
-              {t('common.cancel', 'Cancel')}
-            </button>
+            <div className="flex gap-3 mt-4 w-full justify-center">
+              <button
+                className="px-4 py-1.5 rounded-lg bg-background-secondary-light dark:bg-background-secondary-dark hover:bg-background-light/90 dark:hover:bg-background-dark/90 transition-all duration-200 text-base font-semibold"
+                onClick={() => setShowConfirm(false)}
+                type="button"
+              >
+                {t('common.cancel', 'Cancel')}
+              </button>
+              <button
+                className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold"
+                onClick={handleConfirm}
+                type="button"
+              >
+                {t('common.save', 'Save')}
+              </button>
+            </div>
           </div>
         </div>
       )}
