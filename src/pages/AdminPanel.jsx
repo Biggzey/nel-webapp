@@ -475,7 +475,7 @@ export default function AdminPanel() {
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">
                   <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
                   {pendingCharacters.length > 0 && (
-                    <span className="absolute top-2 right-2 z-10 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                    <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-lg font-extrabold px-4 py-2 rounded-full shadow-lg" style={{ minWidth: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {pendingCharacters.length}
                     </span>
                   )}
