@@ -377,6 +377,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           initialData={{ name: '', isPublic: false }}
           onClose={() => setShowNewCharacterModal(false)}
           onSave={async (form) => {
+            console.log('PrivatePersonalityModal onSave called');
             try {
               // Always create the private character first
               const res = await fetch('/api/characters', {
