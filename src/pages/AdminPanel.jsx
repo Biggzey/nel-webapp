@@ -183,7 +183,7 @@ export default function AdminPanel() {
   async function handleReject(id) {
     try {
       const res = await fetch(`/api/admin/characters/${id}/reject`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
