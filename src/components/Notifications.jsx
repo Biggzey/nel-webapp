@@ -54,6 +54,21 @@ export default function Notifications({ modalMode = false }) {
     }
   };
 
+  const handleDeleteAllNotifications = async () => {
+    setLocalLoading(true);
+    try {
+      // If there is no deleteAll API, delete one by one
+      for (const n of notifications) {
+        await deleteNotification(n.id);
+      }
+      addToast({ type: 'success', message: t('notifications.allDeleted', 'All notifications deleted') });
+    } catch (error) {
+      addToast({ type: 'error', message: t('notifications.deleteError', 'Failed to delete notification') });
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
   return (
     <div className={modalMode ? 'w-full max-w-lg' : 'relative'}>
       {!modalMode && (
@@ -67,13 +82,26 @@ export default function Notifications({ modalMode = false }) {
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">{t('notifications.title', 'Notifications')}</h3>
             {notifications.length > 0 && (
-              <button
-                onClick={handleMarkAllAsRead}
-                className="text-sm text-blue-600 hover:text-blue-800"
-                disabled={localLoading}
-              >
-                {t('notifications.markAllRead', 'Mark all as read')}
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={handleMarkAllAsRead}
+                  className="p-2 text-green-600 hover:text-green-800 rounded-full hover:bg-green-100 transition"
+                  title={t('notifications.markAllRead', 'Mark all as read')}
+                  aria-label={t('notifications.markAllRead', 'Mark all as read')}
+                  disabled={localLoading}
+                >
+                  <i className="fas fa-check-double" />
+                </button>
+                <button
+                  onClick={handleDeleteAllNotifications}
+                  className="p-2 text-red-600 hover:text-red-800 rounded-full hover:bg-red-100 transition"
+                  title={t('notifications.deleteAll', 'Delete all notifications')}
+                  aria-label={t('notifications.deleteAll', 'Delete all notifications')}
+                  disabled={localLoading}
+                >
+                  <i className="fas fa-ban" />
+                </button>
+              </div>
             )}
           </div>
         </div>

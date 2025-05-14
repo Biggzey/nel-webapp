@@ -473,7 +473,9 @@ const translations = {
       characterRejected: {
         title: 'Character Rejected',
         message: 'Your character has been rejected. Reason: %{reason}'
-      }
+      },
+      deleteAll: 'Delete all notifications',
+      allDeleted: 'All notifications deleted'
     }
   },
   es: {
@@ -947,7 +949,9 @@ const translations = {
       characterRejected: {
         title: 'Personaje Rechazado',
         message: 'Tu personaje ha sido rechazado. Razón: %{reason}'
-      }
+      },
+      deleteAll: 'Eliminar todas las notificaciones',
+      allDeleted: 'Todas las notificaciones eliminadas'
     }
   }
 };
