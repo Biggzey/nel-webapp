@@ -190,14 +190,17 @@ export default function ExplorePage({ onClose }) {
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
           onSave={async (form) => {
-            setShowCreate(false);
-            setGlobalLoading(true);
-            try {
-              // Let PersonalityModal handle the creation logic
-              return form;
-            } finally {
-              setGlobalLoading(false);
-            }
+            // Only create the private character and return the result
+            const res = await fetch('/api/characters', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+              },
+              body: JSON.stringify({ ...form, isPublic: false })
+            });
+            if (!res.ok) throw new Error('Failed to create character');
+            return await res.json();
           }}
         />
       )}
