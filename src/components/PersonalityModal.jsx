@@ -178,6 +178,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         const updatedChar = await updateRes.json();
         await reloadCharacters();
         onSave(updatedChar);
+        addToast({
+          type: 'success',
+          message: t('character.editSuccess'),
+          duration: 3000
+        });
         return;
       }
 
@@ -199,7 +204,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       const privateChar = await privateRes.json();
 
       // If public, create public copy and submit for review
-      if (form.isPublic) {
+      if (publicOnly || form.isPublic) {
         try {
           const publicRes = await fetch('/api/characters', {
             method: 'POST',
@@ -243,6 +248,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             duration: 4000
           });
         }
+      } else {
+        addToast({
+          type: 'success',
+          message: t('character.addedToPrivate', 'Character added to private collection!'),
+          duration: 3000
+        });
       }
 
       await reloadCharacters();
@@ -275,6 +286,14 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     { label: t('character.fields.likes'), field: "likes", placeholder: t('character.fields.likesPlaceholder'), multiline: true },
     { label: t('character.fields.dislikes'), field: "dislikes", placeholder: t('character.fields.dislikesPlaceholder'), multiline: true },
   ];
+
+  function getFieldClassName(field, isRequired = false) {
+    const baseClass = "w-full p-2 border rounded focus:border-primary focus:ring-1 focus:ring-primary transition-colors";
+    if (editOnly) {
+      return `${baseClass} bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark`;
+    }
+    return `${baseClass} ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'}`;
+  }
 
   return (
     <>
@@ -394,18 +413,17 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.personality')}
+                        {!editOnly && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <textarea
                         name="personality"
                         value={form.personality || ""}
                         onChange={handleChange}
-                        rows={2}
-                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.personality ? ' border-red-500' : ''}`}
+                        className={getFieldClassName('personality', !editOnly)}
                         placeholder={t('character.fields.personalityPlaceholder')}
+                        rows={3}
                       />
-                      {attemptedSubmit && fieldErrors.personality && (
-                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.personality}</p>
-                      )}
+                      {fieldErrors.personality && <p className="text-red-500 text-xs mt-1">{fieldErrors.personality}</p>}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.traitsHelp')}
                       </p>
@@ -415,18 +433,17 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.personality.systemPrompt')}
+                        {!editOnly && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <textarea
                         name="systemPrompt"
                         value={form.systemPrompt || ""}
                         onChange={handleChange}
-                        rows={2}
-                        className={`w-full p-2 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.systemPrompt ? ' border-red-500' : ''}`}
+                        className={getFieldClassName('systemPrompt', !editOnly)}
                         placeholder={t('character.personality.systemPromptPlaceholder')}
+                        rows={3}
                       />
-                      {attemptedSubmit && fieldErrors.systemPrompt && (
-                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.systemPrompt}</p>
-                      )}
+                      {fieldErrors.systemPrompt && <p className="text-red-500 text-xs mt-1">{fieldErrors.systemPrompt}</p>}
                       <p className="mt-0.5 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                         {t('character.personality.systemPromptHelp')}
                       </p>
@@ -436,17 +453,16 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.tags')}
+                        {!editOnly && <span className="text-red-500 ml-1">*</span>}
                       </label>
                       <input
                         name="tags"
                         value={Array.isArray(form.tags) ? form.tags.join(", ") : form.tags || ""}
                         onChange={e => handleChange({ target: { name: "tags", value: e.target.value.split(/,\s*/) } })}
-                        className={`w-full h-9 px-3 border rounded bg-primary/10 dark:bg-primary/20 border-primary/30 focus:border-primary focus:ring-1 focus:ring-primary transition-colors${fieldErrors.tags ? ' border-red-500' : ''}`}
+                        className={getFieldClassName('tags', !editOnly)}
                         placeholder={t('character.fields.tagsPlaceholder')}
                       />
-                      {attemptedSubmit && fieldErrors.tags && (
-                        <p className="text-red-500 text-xs mt-1 min-h-[18px]">{fieldErrors.tags}</p>
-                      )}
+                      {fieldErrors.tags && <p className="text-red-500 text-xs mt-1">{fieldErrors.tags}</p>}
                       <p className="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">
                         {t('character.fields.tagsRequired', 'At least 3 tags are required.')}
                       </p>

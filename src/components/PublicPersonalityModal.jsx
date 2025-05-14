@@ -10,6 +10,7 @@ export default function PublicPersonalityModal(props) {
     <PersonalityModal
       {...props}
       publicOnly={true}
+      editOnly={false}
     />
   );
 } 

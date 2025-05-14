@@ -143,7 +143,8 @@ const translations = {
       submittedForApproval: 'Character submitted for approval!',
       addedToPrivate: 'Character added to private collection!',
       customInstructionsRequired: 'Custom instructions are required',
-      tagsRequired: 'At least 3 tags are required (comma separated)'
+      tagsRequired: 'At least 3 tags are required (comma separated)',
+      editSuccess: 'Character updated successfully'
     },
     sidebar: {
       characters: 'Characters',
@@ -447,7 +448,8 @@ const translations = {
       submittedForApproval: '¡Personaje enviado para aprobación!',
       addedToPrivate: '¡Personaje añadido a la colección privada!',
       customInstructionsRequired: 'Las instrucciones personalizadas son obligatorias',
-      tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)'
+      tagsRequired: 'Se requieren al menos 3 etiquetas (separadas por comas)',
+      editSuccess: 'Personaje actualizado exitosamente'
     },
     sidebar: {
       characters: 'Personajes',
