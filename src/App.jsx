@@ -12,7 +12,7 @@ import Signup from "./pages/Signup";
 import ChatWindow from "./components/ChatWindow";
 import CharacterPane from "./components/CharacterPane";
 import AdminPanel from "./pages/AdminPanel";
-import PersonalityModal from "./components/PersonalityModal";
+import EditPersonalityModal from "./components/EditPersonalityModal";
 import SettingsModal from "./components/SettingsModal";
 import { useChat } from "./hooks/useChat";
 import KeyboardShortcuts from "./components/KeyboardShortcuts";
@@ -226,7 +226,7 @@ function ProtectedContent({ addToast }) {
           onClose={() => setShowChatSearch(false)}
           onJumpToMessage={handleJumpToMessage}
         />
-        <PersonalityModal
+        <EditPersonalityModal
           isOpen={isModalOpen}
           initialData={current}
           onClose={handleCloseModal}

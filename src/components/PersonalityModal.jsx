@@ -10,7 +10,7 @@ import { useNotifications } from '../context/NotificationContext';
 
 const DEFAULT_AVATAR = '/default-avatar.png'; // Use public root for default avatar
 
-export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
+export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false, editOnly = false }) {
   console.log('Rendering PersonalityModal component');
   const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
@@ -574,7 +574,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
               </div>
             </div>
             {/* Confirmation Portal (now inside the modal) */}
-            {showConfirm && (
+            {showConfirm && !editOnly && (
               <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={e => e.stopPropagation()}>
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
                   <h2 className="text-xl font-bold mb-4 text-primary">{publicOnly ? t('character.confirmCreatePublic', 'Submit Public Character') : t('character.confirmCreate', 'Confirm Character Creation')}</h2>
