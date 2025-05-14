@@ -2344,6 +2344,10 @@ try {
 
   // Submit character for public review
   app.post("/api/characters/:id/submit-for-review", authMiddleware, async (req, res) => {
+    // Allow empty JSON body: if content-type is application/json and body is empty, just proceed
+    if (req.headers['content-type']?.includes('application/json') && (!req.body || Object.keys(req.body).length === 0)) {
+      // No-op: just continue, since we don't need the body
+    }
     try {
       const characterId = parseInt(req.params.id);
       
