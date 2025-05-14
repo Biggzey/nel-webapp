@@ -424,6 +424,22 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     const reviewData = await reviewRes.json();
                     throw new Error(reviewData.error || 'Failed to submit public character for review');
                   }
+                  // Send notification to user
+                  await fetch('/api/notifications', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                    },
+                    body: JSON.stringify({
+                      type: 'CHARACTER_SUBMITTED',
+                      title: 'Character submitted for approval',
+                      message: 'Your character has been submitted for admin review.',
+                      metadata: { characterId: publicChar.id }
+                    })
+                  });
+                  // Optionally refresh notifications
+                  if (typeof fetchNotifications === 'function') fetchNotifications();
                   addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
                 } catch (err) {
                   console.error('Error submitting for review:', err);
