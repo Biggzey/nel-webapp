@@ -95,8 +95,8 @@ export default function Notifications({ modalMode = false }) {
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <h4 className="font-semibold">{notification.title}</h4>
-                    <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                    <h4 className="font-semibold">{t(notification.title) || notification.title}</h4>
+                    <p className="text-sm text-gray-600 mt-1">{t(notification.message) || notification.message}</p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(notification.createdAt).toLocaleString()}
                     </p>
