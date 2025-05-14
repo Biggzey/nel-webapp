@@ -458,6 +458,34 @@ export function CharacterProvider({ children }) {
     }
   }
 
+  // Create a public copy of a character and submit for review
+  async function createPublicAndSubmit(characterData) {
+    // Create the public copy
+    const res = await fetch('/api/characters', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ ...characterData, isPublic: true })
+    });
+    if (!res.ok) throw new Error('Failed to create public character for review');
+    const publicChar = await res.json();
+    // Submit the public copy for review
+    const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    if (!reviewRes.ok) {
+      const reviewData = await reviewRes.json();
+      throw new Error(reviewData.error || 'Failed to submit public character for review');
+    }
+    return publicChar;
+  }
+
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -488,6 +516,7 @@ export function CharacterProvider({ children }) {
         setIsReloadingCharacters,
         submitForReview,
         addToCollection,
+        createPublicAndSubmit,
       }}
     >
       {children}

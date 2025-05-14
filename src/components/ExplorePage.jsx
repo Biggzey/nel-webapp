@@ -192,40 +192,44 @@ export default function ExplorePage({ onClose }) {
             try {
               setShowCreate(false); // Close modal immediately
               setGlobalLoading(true); // Show global spinner
-              const res = await fetch('/api/characters', {
+              // Always create private character first
+              const privateRes = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify({ ...form, isPublic: false })
               });
-              if (!res.ok) throw new Error('Failed to create character');
-              const character = await res.json();
-              // Submit for review
-              const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
+              if (!privateRes.ok) throw new Error('Failed to create character');
+              const privateChar = await privateRes.json();
+              // Now create public copy and submit for review
+              const publicRes = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify({ ...form, isPublic: true })
+              });
+              if (!publicRes.ok) throw new Error('Failed to create public character for review');
+              const publicChar = await publicRes.json();
+              const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 }
               });
-              const reviewData = await reviewRes.json();
               if (!reviewRes.ok) {
-                // Only show error toast if not the duplicate pending error
-                if (reviewData.error !== 'Character already has a pending submission') {
-                  addToast({
-                    type: 'error',
-                    message: reviewData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
-                    duration: 4000
-                  });
-                }
-              } else {
-                addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
+                const reviewData = await reviewRes.json();
+                throw new Error(reviewData.error || 'Failed to submit public character for review');
               }
+              addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
+              addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
               await reloadCharacters();
               setGlobalLoading(false); // Hide spinner
-              return character;
+              return privateChar;
             } catch (error) {
               setGlobalLoading(false);
               addToast({ type: 'error', message: error.message || t('character.createError', 'Failed to create character'), duration: 4000 });

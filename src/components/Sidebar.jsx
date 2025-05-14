@@ -378,7 +378,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           onClose={() => setShowNewCharacterModal(false)}
           onSave={async (form) => {
             try {
-              // Create the character first
+              // Always create the private character first
               const res = await fetch('/api/characters', {
                 method: 'POST',
                 headers: {
@@ -388,7 +388,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 body: JSON.stringify({
                   ...form,
                   avatar: form.avatar || '/default-avatar.png',
-                  isPublic: form.isPublic || false
+                  isPublic: false
                 })
               });
 
@@ -398,12 +398,25 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 return;
               }
 
-              const character = await res.json();
-              
-              // If public, submit for review
+              const privateChar = await res.json();
+              // If public toggle is on, create a public copy and submit for review
               if (form.isPublic) {
                 try {
-                  const reviewRes = await fetch(`/api/characters/${character.id}/submit-for-review`, {
+                  const publicRes = await fetch('/api/characters', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                    },
+                    body: JSON.stringify({
+                      ...form,
+                      avatar: form.avatar || '/default-avatar.png',
+                      isPublic: true
+                    })
+                  });
+                  if (!publicRes.ok) throw new Error('Failed to create public character for review');
+                  const publicChar = await publicRes.json();
+                  const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -411,20 +424,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     },
                     body: JSON.stringify({})
                   });
-
-                  const reviewData = await reviewRes.json();
                   if (!reviewRes.ok) {
-                    // Only show error toast if not the duplicate pending error
-                    if (reviewData.error !== 'Character already has a pending submission') {
-                      addToast({ 
-                        type: 'error', 
-                        message: reviewData.error || 'Character created but failed to submit for review. You can try submitting it later.', 
-                        duration: 4000 
-                      });
-                    }
-                  } else {
-                    addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
+                    const reviewData = await reviewRes.json();
+                    throw new Error(reviewData.error || 'Failed to submit public character for review');
                   }
+                  addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
                 } catch (err) {
                   console.error('Error submitting for review:', err);
                   addToast({ 
@@ -441,7 +445,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               // Close modal and reload characters
               setShowNewCharacterModal(false);
               await reloadCharacters();
-              return character;
+              return privateChar;
             } catch (error) {
               console.error('Error creating character:', error);
               addToast({ type: 'error', message: 'Failed to create character', duration: 4000 });

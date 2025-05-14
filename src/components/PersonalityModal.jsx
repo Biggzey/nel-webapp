@@ -170,29 +170,48 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     }
     setLoading(true);
     try {
-      // Create the character first
-      const payload = {
+      // Always create the private character first
+      const privatePayload = {
         ...form,
         avatar: form.avatar || DEFAULT_AVATAR,
-        isPublic: publicOnly ? true : confirmPublic
+        isPublic: false
       };
-      console.log('Submitting character with payload:', payload);
-      const saved = await onSave(payload);
-      console.log('Character saved:', saved);
-      if (!saved || !saved.id) {
+      const privateRes = await onSave(privatePayload);
+      if (!privateRes || !privateRes.id) {
         throw new Error('Failed to create character - no response data');
       }
       let reviewSuccess = false;
-      // If public, submit for review
-      if ((publicOnly ? true : confirmPublic) && typeof submitForReview === 'function') {
+      // If public, create a public copy and submit for review
+      if ((publicOnly ? true : confirmPublic)) {
         try {
-          console.log('Submitting for review:', saved.id);
-          const reviewRes = await submitForReview(saved.id);
-          console.log('Review submission response:', reviewRes);
-          if (reviewRes && reviewRes.error) {
-            throw new Error(reviewRes.error);
+          // Create a public copy
+          const publicPayload = {
+            ...form,
+            avatar: form.avatar || DEFAULT_AVATAR,
+            isPublic: true
+          };
+          const publicRes = await fetch('/api/characters', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify(publicPayload)
+          });
+          if (!publicRes.ok) throw new Error('Failed to create public character for review');
+          const publicChar = await publicRes.json();
+          // Submit the public copy for review
+          const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          if (!reviewRes.ok) {
+            const reviewData = await reviewRes.json();
+            throw new Error(reviewData.error || 'Failed to submit public character for review');
           }
-          reviewSuccess = true;
           // Create notification for successful submission
           await fetch('/api/notifications', {
             method: 'POST',
@@ -204,12 +223,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
               type: 'CHARACTER_SUBMITTED',
               title: t('notifications.characterSubmitted.title'),
               message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: saved.id }
+              metadata: { characterId: publicChar.id }
             })
           });
-          // Refresh notifications
           fetchNotifications();
           addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
+          reviewSuccess = true;
         } catch (reviewError) {
           console.error('Error submitting for review:', reviewError);
           addToast && addToast({ 
@@ -219,12 +238,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           });
         }
       }
-      if (!publicOnly && !confirmPublic) {
-        addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
-      } else if (!reviewSuccess) {
-        // If public submission failed, but private succeeded
-        addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
-      }
+      addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
       setLoading(false);
       setShowConfirm(false);
       onClose();
