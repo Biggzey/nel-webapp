@@ -414,11 +414,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
                   const reviewData = await reviewRes.json();
                   if (!reviewRes.ok) {
-                    addToast({ 
-                      type: 'error', 
-                      message: reviewData.error || 'Character created but failed to submit for review. You can try submitting it later.', 
-                      duration: 4000 
-                    });
+                    // Only show error toast if not the duplicate pending error
+                    if (reviewData.error !== 'Character already has a pending submission') {
+                      addToast({ 
+                        type: 'error', 
+                        message: reviewData.error || 'Character created but failed to submit for review. You can try submitting it later.', 
+                        duration: 4000 
+                      });
+                    }
                   } else {
                     addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
                   }

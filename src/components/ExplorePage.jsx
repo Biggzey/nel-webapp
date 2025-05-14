@@ -212,11 +212,14 @@ export default function ExplorePage({ onClose }) {
               });
               const reviewData = await reviewRes.json();
               if (!reviewRes.ok) {
-                addToast({
-                  type: 'error',
-                  message: reviewData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
-                  duration: 4000
-                });
+                // Only show error toast if not the duplicate pending error
+                if (reviewData.error !== 'Character already has a pending submission') {
+                  addToast({
+                    type: 'error',
+                    message: reviewData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
+                    duration: 4000
+                  });
+                }
               } else {
                 addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
               }
