@@ -80,7 +80,7 @@ export default function ProfileDropdown({ isOpen, onClose, onSettingsClick }) {
                 className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark transition-colors text-red-400"
               >
                 <i className="fas fa-sign-out-alt" />
-                <span>{t('common.logout')}</span>
+                <span>{t('common.actions.logout')}</span>
               </button>
             </div>
           </div>

@@ -483,7 +483,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
                             onClick={() => handleEdit(i)}
                             className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 text-sm md:text-base"
                           >
-                            {t('common.save')}
+                            {t('common.actions.save')}
                           </button>
                           <button
                             onClick={() => {
@@ -492,7 +492,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
                             }}
                             className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm md:text-base"
                           >
-                            {t('common.cancel')}
+                            {t('common.actions.cancel')}
                           </button>
                         </div>
                       ) : (
@@ -546,7 +546,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
                             onClick={() => handleEdit(i)}
                             className="px-3 py-1 bg-primary text-white rounded hover:bg-primary/90 text-sm md:text-base"
                           >
-                            {t('common.save')}
+                            {t('common.actions.save')}
                           </button>
                           <button
                             onClick={() => {
@@ -555,7 +555,7 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
                             }}
                             className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm md:text-base"
                           >
-                            {t('common.cancel')}
+                            {t('common.actions.cancel')}
                           </button>
                         </div>
                       ) : (

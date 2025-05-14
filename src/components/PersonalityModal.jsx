@@ -569,7 +569,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 hover:scale-105 transform"
                       disabled={publicOnly && Object.keys(validateRequiredFields()).length > 0}
                     >
-                      {t('character.actions.save')}
+                      {t('common.actions.save', 'Save')}
                     </button>
                   </div>
                 </div>
@@ -615,7 +615,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       onClick={() => { setShowConfirm(false); onClose(); }}
                       type="button"
                     >
-                      {t('common.cancel', 'Cancel')}
+                      {t('common.actions.cancel', 'Cancel')}
                     </button>
                     <button
                       className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold flex items-center justify-center min-w-[80px]"
@@ -626,7 +626,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                       {loading ? (
                         <span className="loader border-2 border-white border-t-transparent rounded-full w-5 h-5 mr-2 animate-spin" />
                       ) : null}
-                      {t('common.save', 'Save')}
+                      {t('common.actions.save', 'Save')}
                     </button>
                   </div>
                   {nameError && (

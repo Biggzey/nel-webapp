@@ -55,7 +55,8 @@ const translations = {
         pending: 'Pending Review',
         approved: 'Approved',
         rejected: 'Rejected',
-        private: 'Private'
+        private: 'Private',
+        warning: 'Note: Deleting your private character will not remove your public submission. If you wish to request deletion of your public submission, please contact support (feature coming soon).'
       },
       personality: {
         title: 'Personality Configuration',
@@ -349,7 +350,8 @@ const translations = {
         pending: 'Pendiente de Revisión',
         approved: 'Aprobado',
         rejected: 'Rechazado',
-        private: 'Privado'
+        private: 'Privado',
+        warning: 'Nota: Eliminar tu personaje privado no eliminará tu envío público. Si deseas solicitar la eliminación de tu envío público, por favor contacta con soporte (funcionalidad próximamente).'
       },
       personality: {
         title: 'Configuración de Personalidad',
