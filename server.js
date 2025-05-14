@@ -2346,77 +2346,68 @@ try {
   app.post("/api/characters/:id/submit-for-review", authMiddleware, async (req, res) => {
     try {
       const characterId = parseInt(req.params.id);
-      const userId = req.user.id;
-      console.log('[submit-for-review] Request details:', {
-        characterId,
-        userId,
-        headers: req.headers,
-        body: req.body,
-        params: req.params
-      });
-
-      // Find the character
-      const character = await prisma.character.findUnique({
-        where: { id: characterId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true
-            }
-          }
+      
+      // Get the character
+      const character = await prisma.character.findFirst({
+        where: {
+          id: characterId,
+          userId: req.user.id
         }
-      });
-
-      console.log('[submit-for-review] Character lookup result:', {
-        found: !!character,
-        characterId: character?.id,
-        characterName: character?.name,
-        characterUserId: character?.userId,
-        requestUserId: userId,
-        characterOwner: character?.user?.username
       });
 
       if (!character) {
-        console.log('[submit-for-review] Character not found');
         return res.status(404).json({ error: "Character not found" });
       }
 
-      if (character.userId !== userId) {
-        console.log('[submit-for-review] Not authorized. Character userId:', character.userId, 'Request userId:', userId);
-        return res.status(403).json({ error: "Not authorized to modify this character" });
-      }
-
-      // Additional validation: check required fields
-      if (!character.name || !character.avatar) {
-        console.log('[submit-for-review] Validation failed: missing name or avatar', { name: character.name, avatar: character.avatar });
-        return res.status(400).json({ error: "Character must have a name and avatar" });
-      }
       if (character.reviewStatus === 'pending') {
-        console.log('[submit-for-review] Validation failed: already pending review');
         return res.status(400).json({ error: "Character is already pending review" });
       }
       if (character.reviewStatus === 'approved') {
-        console.log('[submit-for-review] Validation failed: already approved');
         return res.status(400).json({ error: "Character is already approved" });
       }
 
-      const updated = await prisma.character.update({
-        where: { id: characterId },
+      // Create a pending submission
+      const pendingCharacter = await prisma.pendingCharacter.create({
         data: {
-          isPublic: true,
-          reviewStatus: 'pending'
+          name: character.name,
+          description: character.description,
+          avatar: character.avatar,
+          fullImage: character.fullImage,
+          age: character.age,
+          gender: character.gender,
+          race: character.race,
+          occupation: character.occupation,
+          likes: character.likes,
+          dislikes: character.dislikes,
+          personality: character.personality,
+          systemPrompt: character.systemPrompt,
+          customInstructions: character.customInstructions,
+          backstory: character.backstory,
+          firstMessage: character.firstMessage,
+          messageExample: character.messageExample,
+          scenario: character.scenario,
+          creatorNotes: character.creatorNotes,
+          alternateGreetings: character.alternateGreetings,
+          tags: character.tags,
+          creator: character.creator,
+          characterVersion: character.characterVersion,
+          extensions: character.extensions,
+          userId: character.userId,
+          originalCharacterId: character.id,
+          status: "pending"
         }
       });
 
-      console.log('[submit-for-review] Character submitted for review:', {
-        id: updated.id,
-        name: updated.name,
-        isPublic: updated.isPublic,
-        reviewStatus: updated.reviewStatus
+      // Update the original character's review status
+      await prisma.character.update({
+        where: { id: characterId },
+        data: { 
+          isPublic: true,
+          reviewStatus: "pending"
+        }
       });
 
-      res.json(updated);
+      res.json(pendingCharacter);
     } catch (error) {
       console.error("[submit-for-review] Error submitting character for review:", error);
       res.status(500).json({ error: "Failed to submit character for review" });
@@ -2426,7 +2417,12 @@ try {
   // Admin: Get pending characters
   app.get("/api/admin/pending-characters", authMiddleware, async (req, res) => {
     try {
-      if (!req.user.isAdmin && !req.user.isModerator) {
+      // Get the full user data to check role
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || !['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(user.role)) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
@@ -2458,7 +2454,12 @@ try {
   // Approve character (admin only)
   app.post("/api/admin/characters/:id/approve", authMiddleware, async (req, res) => {
     try {
-      if (!req.user.isAdmin && !req.user.isModerator) {
+      // Get the full user data to check role
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || !['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(user.role)) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
@@ -2541,7 +2542,12 @@ try {
   // Reject character (admin only)
   app.post("/api/admin/characters/:id/reject", authMiddleware, async (req, res) => {
     try {
-      if (!req.user.isAdmin && !req.user.isModerator) {
+      // Get the full user data to check role
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || !['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(user.role)) {
         return res.status(403).json({ error: "Unauthorized" });
       }
 
