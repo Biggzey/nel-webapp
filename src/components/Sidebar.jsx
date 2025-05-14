@@ -153,7 +153,9 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
           className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
           onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
         />
-        <span className="font-medium">{character.name}</span>
+        <span className="font-medium truncate max-w-[120px]" title={character.name}>
+          {character.name.length > 20 ? `${character.name.substring(0, 20)}...` : character.name}
+        </span>
       </button>
       {/* Ellipsis/context menu for all characters */}
       <button

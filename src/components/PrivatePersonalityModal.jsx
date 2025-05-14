@@ -197,7 +197,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
 
       // If public was requested and we got a pending submission
       if (confirmPublic) {
-        if (response.pendingSubmission) {
+        if (response.pendingSubmissionInfo) {
           // Send notification for character submission
           await fetch('/api/notifications', {
             method: 'POST',
@@ -209,7 +209,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               type: 'CHARACTER_SUBMITTED',
               title: t('notifications.characterSubmitted.title'),
               message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: response.pendingSubmission.id }
+              metadata: { characterId: response.pendingSubmissionInfo.id }
             })
           });
 

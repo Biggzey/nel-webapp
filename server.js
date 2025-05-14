@@ -1592,11 +1592,22 @@ try {
             data: { reviewStatus: "pending" }
           });
 
-          return res.json({ ...character, pendingSubmission: pendingCharacter });
+          // Return both the character and the pending submission info
+          return res.json({
+            ...character,
+            pendingSubmissionInfo: {
+              id: pendingCharacter.id,
+              status: pendingCharacter.status,
+              createdAt: pendingCharacter.createdAt
+            }
+          });
         } catch (error) {
           console.error("Error creating pending submission:", error);
           // Still return the private character even if pending submission fails
-          return res.json({ ...character, pendingError: "Failed to submit for review" });
+          return res.json({ 
+            ...character, 
+            pendingError: "Failed to submit for review" 
+          });
         }
       }
 
