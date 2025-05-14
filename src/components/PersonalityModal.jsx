@@ -204,17 +204,27 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           message: t('character.editSuccess'),
           duration: 3000
         });
+        onClose();
         return;
       }
 
-      // For new characters, create private first
+      // For new characters, always create private first
       const privateRes = await fetch('/api/characters', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
         },
-        body: JSON.stringify({ ...form, isPublic: false })
+        body: JSON.stringify({
+          ...form,
+          isPublic: false,
+          // Ensure we have all required fields
+          name: form.name.trim(),
+          description: form.description.trim(),
+          personality: form.personality.trim(),
+          systemPrompt: form.systemPrompt.trim(),
+          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
+        })
       });
 
       if (!privateRes.ok) {
@@ -224,20 +234,27 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
       const privateChar = await privateRes.json();
 
-      // If public, create public copy and submit for review
+      // If public is requested (either through publicOnly prop or toggle), create public copy
       if (publicOnly || form.isPublic) {
         try {
+          // Create public copy with same data but isPublic=true
           const publicRes = await fetch('/api/characters', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
             },
-            body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
+            body: JSON.stringify({
+              ...privateChar,
+              isPublic: true,
+              id: undefined, // Remove ID to create new character
+              status: 'pending' // Set initial status as pending
+            })
           });
 
           if (!publicRes.ok) {
-            throw new Error('Failed to create public character for review');
+            const errorData = await publicRes.json();
+            throw new Error(errorData.message || 'Failed to create public character for review');
           }
 
           const publicChar = await publicRes.json();
@@ -263,6 +280,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             duration: 3000
           });
         } catch (err) {
+          console.error('Failed to create public character:', err);
           addToast({
             type: 'error',
             message: t('character.reviewError'),
@@ -277,10 +295,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         });
       }
 
+      // Always reload characters and save the private version
       await reloadCharacters();
       onSave(privateChar);
       onClose();
     } catch (err) {
+      console.error('Character creation failed:', err);
       setGlobalError(err.message);
       addToast({
         type: 'error',
@@ -313,6 +333,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     const baseClass = "w-full p-2 border rounded focus:border-primary focus:ring-1 focus:ring-primary transition-colors";
     if (editOnly) {
       return `${baseClass} bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark`;
+    }
+    // Special handling for Name and Description fields in private/public mode
+    if ((field === 'name' || field === 'description') && !editOnly) {
+      return `${baseClass} bg-primary/10 dark:bg-primary/20 border-primary/30`;
     }
     return `${baseClass} ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'}`;
   }
