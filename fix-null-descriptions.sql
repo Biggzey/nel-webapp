@@ -1,0 +1,1 @@
+UPDATE "Character" SET "description" = '' WHERE "description" IS NULL; 
