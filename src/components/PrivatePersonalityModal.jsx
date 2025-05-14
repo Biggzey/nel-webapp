@@ -6,6 +6,7 @@ import PersonalityModal from './PersonalityModal';
  * Use this for private character creation (e.g., Sidebar).
  */
 export default function PrivatePersonalityModal(props) {
+  console.log('Rendering PrivatePersonalityModal component');
   return (
     <PersonalityModal
       {...props}

@@ -11,6 +11,7 @@ import { useNotifications } from '../context/NotificationContext';
 const DEFAULT_AVATAR = '/default-avatar.png'; // Use public root for default avatar
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false }) {
+  console.log('Rendering PersonalityModal component');
   const { resetCurrentCharacter, submitForReview } = useCharacter();
   const { t } = useLanguage();
   const isMobile = useIsMobile();

@@ -372,6 +372,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     if (showNewCharacterModal) {
       // Debug: try rendering with normal data, fallback to hardcoded if error
       privateModal = (
+        (() => { console.log('Rendering PrivatePersonalityModal from Sidebar'); return null; })(),
         <PrivatePersonalityModal
           isOpen={showNewCharacterModal}
           initialData={{ name: '', isPublic: false }}
