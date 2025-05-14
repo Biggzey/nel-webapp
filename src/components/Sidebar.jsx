@@ -408,11 +408,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       'Content-Type': 'application/json',
                       Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                     },
-                    body: JSON.stringify({
-                      ...form,
-                      avatar: form.avatar || '/default-avatar.png',
-                      isPublic: true
-                    })
+                    body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
                   });
                   if (!publicRes.ok) throw new Error('Failed to create public character for review');
                   const publicChar = await publicRes.json();

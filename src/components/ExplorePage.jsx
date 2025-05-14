@@ -210,7 +210,7 @@ export default function ExplorePage({ onClose }) {
                   'Content-Type': 'application/json',
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 },
-                body: JSON.stringify({ ...form, isPublic: true })
+                body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
               });
               if (!publicRes.ok) throw new Error('Failed to create public character for review');
               const publicChar = await publicRes.json();
