@@ -58,6 +58,7 @@ model Character {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages        ChatMessage[]
   pendingSubmissions PendingCharacter[] @relation("PendingSubmission")
+  order           Int       @default(0)
 }
 
 model ChatMessage {
