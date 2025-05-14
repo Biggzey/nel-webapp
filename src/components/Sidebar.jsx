@@ -412,19 +412,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                   });
                   if (!publicRes.ok) throw new Error('Failed to create public character for review');
                   const publicChar = await publicRes.json();
-                  const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                    },
-                    body: JSON.stringify({})
-                  });
-                  if (!reviewRes.ok) {
-                    const reviewData = await reviewRes.json();
-                    throw new Error(reviewData.error || 'Failed to submit public character for review');
-                  }
-                  // Send notification to user
+                  console.log('Sending notification...');
                   const notifRes = await fetch('/api/notifications', {
                     method: 'POST',
                     headers: {
@@ -444,6 +432,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                   if (typeof fetchNotifications === 'function') fetchNotifications();
                   addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
                 } catch (err) {
+                  console.error('Error in public submission logic:', err);
                   console.error('Error submitting for review:', err);
                   addToast({ 
                     type: 'error', 
