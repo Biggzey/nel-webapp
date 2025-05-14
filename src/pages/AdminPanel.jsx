@@ -472,8 +472,13 @@ export default function AdminPanel() {
                   </div>
                 )}
                 {/* Pending Public Characters Section */}
-                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full">
+                <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">
                   <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
+                  {pendingCharacters.length > 0 && (
+                    <span className="absolute top-2 right-2 z-10 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full shadow">
+                      {pendingCharacters.length}
+                    </span>
+                  )}
                   {loadingPending ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>
                   ) : errorPending ? (

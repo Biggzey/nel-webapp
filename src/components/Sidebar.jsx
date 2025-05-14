@@ -696,7 +696,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 onClick={handleConfirmDelete}
                 className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
               >
-                {t('common.delete')}
+                {t('common.actions.delete')}
               </button>
             </div>
           </div>

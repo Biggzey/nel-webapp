@@ -273,6 +273,7 @@ const translations = {
       allRead: 'Mark all as read',
       allDeleted: 'Delete all notifications',
       deleted: 'Notification deleted',
+      markAsRead: 'Mark as read',
       characterSubmitted: {
         title: 'Character Submitted',
         message: 'Your character has been submitted for review'
@@ -756,6 +757,7 @@ const translations = {
       allRead: 'Marcar todas como leídas',
       allDeleted: 'Eliminar todas las notificaciones',
       deleted: 'Notificación eliminada',
+      markAsRead: 'Marcar como leída',
       characterSubmitted: {
         title: 'Personaje Enviado',
         message: 'Tu personaje ha sido enviado para revisión pública. Cualquier cambio realizado en tu copia privada no afectará a la versión enviada. Serás notificado cuando sea aprobado o rechazado.'
