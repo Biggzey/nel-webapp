@@ -164,16 +164,18 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   async function handleConfirm() {
     if (isSubmitting) return; // Prevent duplicate submissions
     setIsSubmitting(true);
-    setFieldErrors({});
-    const errors = validateRequiredFields();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
-      setIsSubmitting(false);
-      return;
-    }
     setLoading(true);
+    setShowConfirm(false); // Close modal immediately to prevent multiple clicks
+    
     try {
+      setFieldErrors({});
+      const errors = validateRequiredFields();
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
+        return;
+      }
+
       // Always create the private character first
       const privatePayload = {
         ...form,
@@ -184,7 +186,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       if (!privateRes || !privateRes.id) {
         throw new Error('Failed to create character - no response data');
       }
-      let reviewSuccess = false;
+
       // If public, create a public copy and submit for review
       if ((publicOnly ? true : confirmPublic)) {
         try {
@@ -216,7 +218,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             throw new Error(reviewData.error || 'Failed to submit public character for review');
           }
           addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
-          reviewSuccess = true;
         } catch (reviewError) {
           console.error('Error submitting for review:', reviewError);
           addToast && addToast({ 
@@ -227,15 +228,13 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         }
       }
       addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
-      setLoading(false);
-      setShowConfirm(false);
       onClose();
     } catch (error) {
       console.error('Error in handleConfirm:', error);
-      setLoading(false);
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
     } finally {
+      setLoading(false);
       setIsSubmitting(false);
     }
   }
