@@ -176,7 +176,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         },
         body: JSON.stringify({
           ...form,
-          isPublic: false,
+          isPublic: true,
           name: form.name.trim(),
           description: form.description.trim(),
           personality: form.personality.trim(),
@@ -190,31 +190,11 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         throw new Error(errorData.message || 'Failed to create character');
       }
 
-      const privateChar = await privateRes.json();
+      const response = await privateRes.json();
+      const privateChar = response;
 
-      // Create public copy for review
-      try {
-        const publicRes = await fetch('/api/characters', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-          },
-          body: JSON.stringify({
-            ...privateChar,
-            isPublic: true,
-            id: undefined,
-            status: 'pending'
-          })
-        });
-
-        if (!publicRes.ok) {
-          const errorData = await publicRes.json();
-          throw new Error(errorData.message || 'Failed to create public character for review');
-        }
-
-        const publicChar = await publicRes.json();
-
+      // Check if we got a pending submission
+      if (response.pendingSubmission) {
         // Send notification for character submission
         await fetch('/api/notifications', {
           method: 'POST',
@@ -226,7 +206,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
             type: 'CHARACTER_SUBMITTED',
             title: t('notifications.characterSubmitted.title'),
             message: t('notifications.characterSubmitted.message'),
-            metadata: { characterId: publicChar.id }
+            metadata: { characterId: response.pendingSubmission.id }
           })
         });
 
@@ -235,8 +215,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           message: t('character.submittedForApproval'),
           duration: 3000
         });
-      } catch (err) {
-        console.error('Failed to create public character:', err);
+      } else if (response.pendingError) {
         addToast({
           type: 'error',
           message: t('character.reviewError'),

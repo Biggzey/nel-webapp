@@ -1544,20 +1544,65 @@ try {
       const characterData = {
         ...req.body,
         avatar: req.body.avatar || '/assets/default-avatar.png',
-        userId: req.user.id
+        userId: req.user.id,
+        isPublic: false // Always create as private first
       };
 
       const character = await prisma.character.create({
         data: characterData
       });
 
+      // If this is meant to be public, create a pending submission
+      if (isPublic) {
+        try {
+          const pendingCharacter = await prisma.pendingCharacter.create({
+            data: {
+              name: character.name,
+              description: character.description,
+              avatar: character.avatar,
+              fullImage: character.fullImage,
+              age: character.age,
+              gender: character.gender,
+              race: character.race,
+              occupation: character.occupation,
+              likes: character.likes,
+              dislikes: character.dislikes,
+              personality: character.personality,
+              systemPrompt: character.systemPrompt,
+              customInstructions: character.customInstructions,
+              backstory: character.backstory,
+              firstMessage: character.firstMessage,
+              messageExample: character.messageExample,
+              scenario: character.scenario,
+              creatorNotes: character.creatorNotes,
+              alternateGreetings: character.alternateGreetings,
+              tags: character.tags,
+              creator: character.creator,
+              characterVersion: character.characterVersion,
+              extensions: character.extensions,
+              userId: character.userId,
+              originalCharacterId: character.id,
+              status: "pending"
+            }
+          });
+
+          // Update the original character's review status
+          await prisma.character.update({
+            where: { id: character.id },
+            data: { reviewStatus: "pending" }
+          });
+
+          return res.json({ ...character, pendingSubmission: pendingCharacter });
+        } catch (error) {
+          console.error("Error creating pending submission:", error);
+          // Still return the private character even if pending submission fails
+          return res.json({ ...character, pendingError: "Failed to submit for review" });
+        }
+      }
+
       res.json(character);
     } catch (error) {
       console.error("Error creating character:", error);
-      // Check for specific Prisma errors
-      if (error.code === 'P2002') {
-        return res.status(400).json({ error: "A character with this name already exists" });
-      }
       res.status(500).json({ error: "Failed to create character" });
     }
   });
