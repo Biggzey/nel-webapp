@@ -210,11 +210,11 @@ export default function ExplorePage({ onClose }) {
                   Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                 }
               });
+              const reviewData = await reviewRes.json();
               if (!reviewRes.ok) {
-                const errorData = await reviewRes.json().catch(() => ({}));
                 addToast({
                   type: 'error',
-                  message: errorData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
+                  message: reviewData.error || t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
                   duration: 4000
                 });
               } else {

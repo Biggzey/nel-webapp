@@ -2363,10 +2363,18 @@ try {
         return res.status(404).json({ error: "Character not found" });
       }
 
-      // Allow multiple submissions: do not block if reviewStatus is 'pending'
-      // if (character.reviewStatus === 'pending') {
-      //   return res.status(400).json({ error: "Character is already pending review" });
-      // }
+      // Check for existing pending submission
+      const existingPending = await prisma.pendingCharacter.findFirst({
+        where: {
+          originalCharacterId: characterId,
+          status: "pending"
+        }
+      });
+
+      if (existingPending) {
+        return res.status(400).json({ error: "Character already has a pending submission" });
+      }
+
       if (character.reviewStatus === 'approved') {
         return res.status(400).json({ error: "Character is already approved" });
       }
