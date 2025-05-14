@@ -282,6 +282,7 @@ const translations = {
       loading: 'Loading notifications...'
     },
     admin: {
+      title: 'Admin Panel',
       searchUsers: 'Search Users',
       pendingCharacters: 'Pending Characters',
       approvedCharacters: 'Approved Characters',
@@ -295,7 +296,14 @@ const translations = {
       submittedBy: 'Submitted by',
       submittedAt: 'Submitted at',
       actions: 'Actions',
-      noPendingCharacters: 'No pending characters.'
+      noPendingCharacters: 'No pending characters.',
+      users: 'Users',
+      characters: 'Characters',
+      settings: 'Settings',
+      resetPassword: 'Reset Password',
+      blockUser: 'Block User',
+      deleteUser: 'Delete User',
+      removeDuplicatesUser: 'Remove Duplicates'
     }
   },
   es: {

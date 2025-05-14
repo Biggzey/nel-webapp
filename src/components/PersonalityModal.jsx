@@ -60,6 +60,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [fieldErrors, setFieldErrors] = useState({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [globalError, setGlobalError] = useState(null);
 
   useEffect(() => {
     setForm(prev => sanitizeForm({
@@ -151,94 +152,90 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     return errors;
   }
 
-  function handleSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setAttemptedSubmit(true);
-    const errors = validateRequiredFields();
-    setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) {
-      addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
-      return;
-    }
-    if (editOnly) {
-      // Directly call handleConfirm for editOnly (no confirmation modal)
-      handleConfirm();
-    } else {
-      setShowConfirm(true);
-    }
-  }
-
-  async function handleConfirm() {
-    if (isSubmitting) return; // Prevent duplicate submissions
     setIsSubmitting(true);
-    setLoading(true);
-    setShowConfirm(false); // Close modal immediately to prevent multiple clicks
+    setFieldErrors({});
+    setGlobalError(null);
+
     try {
-      setFieldErrors({});
-      const errors = validateRequiredFields();
-      if (Object.keys(errors).length > 0) {
-        setFieldErrors(errors);
-        addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
-        return;
+      // Create private character first
+      const privateRes = await fetch('/api/characters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+        },
+        body: JSON.stringify({ ...form, isPublic: false })
+      });
+
+      if (!privateRes.ok) {
+        const errorData = await privateRes.json();
+        throw new Error(errorData.message || 'Failed to create character');
       }
-      // Always create the private character first
-      const privatePayload = {
-        ...form,
-        avatar: form.avatar || DEFAULT_AVATAR,
-        isPublic: false
-      };
-      const privateRes = await onSave(privatePayload);
-      if (!privateRes || !privateRes.id) {
-        throw new Error('Failed to create character - no response data');
-      }
-      addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
-      // If public, create a public copy and submit for review
-      if ((publicOnly ? true : confirmPublic)) {
+
+      const privateChar = await privateRes.json();
+
+      // If public, create public copy and submit for review
+      if (form.isPublic) {
         try {
-          // Create a public copy using the private character's data, but set isPublic: true and remove id
-          const { id, ...publicPayload } = privateRes;
-          publicPayload.isPublic = true;
           const publicRes = await fetch('/api/characters', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
             },
-            body: JSON.stringify(publicPayload)
+            body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
           });
-          if (!publicRes.ok) throw new Error('Failed to create public character for review');
+
+          if (!publicRes.ok) {
+            throw new Error('Failed to create public character for review');
+          }
+
           const publicChar = await publicRes.json();
-          const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
+
+          // Send notification for character submission
+          await fetch('/api/notifications', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+              Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+            },
+            body: JSON.stringify({
+              type: 'CHARACTER_SUBMITTED',
+              title: t('notifications.characterSubmitted.title', 'Character submitted for approval'),
+              message: t('notifications.characterSubmitted.message', 'Your character has been submitted for admin review. Please note any changes to your private version of this character will have no effect on the version pending approval. For any changes please contact support.'),
+              metadata: { characterId: publicChar.id }
+            })
           });
-          if (!reviewRes.ok) {
-            const reviewData = await reviewRes.json();
-            throw new Error(reviewData.error || 'Failed to submit public character for review');
-          }
-          addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
-        } catch (reviewError) {
-          console.error('Error submitting for review:', reviewError);
-          addToast && addToast({ 
-            type: 'error', 
-            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), 
-            duration: 4000 
+
+          addToast({
+            type: 'success',
+            message: t('character.submittedForApproval', 'Character created and submitted for review!'),
+            duration: 3000
+          });
+        } catch (err) {
+          addToast({
+            type: 'error',
+            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
+            duration: 4000
           });
         }
       }
-      onClose();
-    } catch (error) {
-      console.error('Error in handleConfirm:', error);
-      const errorMessage = error.message || t('character.createError', 'Failed to create character');
-      addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
+
+      await resetCurrentCharacter();
+      onSave(privateChar);
+    } catch (err) {
+      setGlobalError(err.message);
+      addToast({
+        type: 'error',
+        message: err.message || t('character.createError', 'Failed to create character'),
+        duration: 3000
+      });
     } finally {
-      setLoading(false);
       setIsSubmitting(false);
     }
-  }
+  };
 
   function handleReset() {
     resetCurrentCharacter();
@@ -247,8 +244,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
 
   // Field configurations with custom widths and placeholders
   const fields = [
-    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder'), required: true, isRequired: true },
-    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder'), required: true, isRequired: true },
+    { label: t('character.fields.name'), field: "name", placeholder: t('character.fields.namePlaceholder') },
+    { label: t('character.fields.description'), field: "description", placeholder: t('character.fields.descriptionPlaceholder') },
     { label: t('character.fields.age'), field: "age", placeholder: t('character.fields.agePlaceholder') },
     { label: t('character.fields.gender'), field: "gender", placeholder: t('character.fields.genderPlaceholder') },
     { label: t('character.fields.race'), field: "race", placeholder: t('character.fields.racePlaceholder') },
@@ -289,11 +286,10 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                   <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {fields.map(({ label, field, placeholder, multiline, required, isRequired }) => (
+                    {fields.map(({ label, field, placeholder, multiline }) => (
                       <div key={field} className={multiline ? "col-span-1 md:col-span-2" : ""}>
                         <label className="block mb-1 text-sm font-medium">
                           {label}
-                          {required && <span className="text-red-500 ml-1">*</span>}
                         </label>
                         {multiline ? (
                           <textarea
@@ -302,7 +298,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${fieldErrors[field] ? 'border-red-500' : ''}`}
+                            className={`w-full min-h-[32px] max-h-[120px] p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none overflow-hidden ${fieldErrors[field] ? 'border-red-500' : ''}`}
                             rows={1}
                           />
                         ) : (
@@ -311,7 +307,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                             value={form[field] || ""}
                             onChange={handleChange}
                             placeholder={placeholder}
-                            className={`w-full h-9 px-3 border rounded ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'} focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
+                            className={`w-full h-9 px-3 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors ${fieldErrors[field] ? 'border-red-500' : ''}`}
                           />
                         )}
                         {attemptedSubmit && fieldErrors[field] && (
@@ -328,7 +324,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div>
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.avatar')}
-                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         name="avatar"
@@ -377,7 +372,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.personality')}
-                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <textarea
                         name="personality"
@@ -399,7 +393,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.personality.systemPrompt')}
-                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <textarea
                         name="systemPrompt"
@@ -421,7 +414,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     <div className="mb-2">
                       <label className="block mb-1 text-sm font-medium">
                         {t('character.fields.tags')}
-                        <span className="text-red-500 ml-1">*</span>
                       </label>
                       <input
                         name="tags"
@@ -623,7 +615,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
                     </button>
                     <button
                       className="px-4 py-1.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-base font-semibold flex items-center justify-center min-w-[80px]"
-                      onClick={async () => { await handleConfirm(); }}
+                      onClick={async () => { await handleSubmit(e); }}
                       type="button"
                       disabled={loading}
                     >
