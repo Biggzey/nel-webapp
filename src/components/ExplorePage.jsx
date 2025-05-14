@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
 import PublicPersonalityModal from './PublicPersonalityModal';
 import PersonalityModal from './PersonalityModal';
+import Badge from './Badge';
 
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
@@ -124,14 +125,18 @@ export default function ExplorePage({ onClose }) {
               <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
               <div className="flex flex-wrap gap-2 justify-center mb-2">
                 {(character.tags || []).map(tag => (
-                  <span key={tag} className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                  <Badge key={tag} variant="primary" size="md">{tag}</Badge>
                 ))}
               </div>
               {/* Status badge if not approved */}
               {character.reviewStatus && character.reviewStatus !== 'approved' && (
-                <span className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold ${character.reviewStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                <Badge 
+                  variant={character.reviewStatus === 'pending' ? 'warning' : 'danger'}
+                  size="md"
+                  className="absolute top-4 right-4"
+                >
                   {t(`explore.${character.reviewStatus}`)}
-                </span>
+                </Badge>
               )}
               <span className="sr-only">{t('explore.view')}</span>
             </div>
@@ -164,7 +169,7 @@ export default function ExplorePage({ onClose }) {
               <div className="mb-4 text-base text-center text-text-light dark:text-text-dark">{modal.description}</div>
               <div className="flex flex-wrap gap-2 justify-center mb-6">
                 {(modal.tags || []).map(tag => (
-                  <span key={tag} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">{tag}</span>
+                  <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
                 ))}
               </div>
               <button
