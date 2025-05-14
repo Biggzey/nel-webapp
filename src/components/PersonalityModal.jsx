@@ -137,18 +137,29 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   function validateRequiredFields() {
-    if (editOnly) return {}; // Skip required validation in edit-only mode
+    if (editOnly) return {}; // Skip validation in edit mode
     const errors = {};
-    if (!form.name || form.name.trim() === '') errors.name = t('character.fields.nameRequired', 'Name is required');
-    if (!form.description || form.description.trim() === '') errors.description = t('character.fields.descriptionRequired', 'Description is required');
-    if (!form.avatar || form.avatar.trim() === '') errors.avatar = t('character.fields.avatarRequired', 'Avatar is required');
-    if (!form.personality || form.personality.trim() === '') errors.personality = t('character.fields.personalityRequired', 'Personality is required');
-    if (!form.systemPrompt || form.systemPrompt.trim() === '') errors.systemPrompt = t('character.fields.systemPromptRequired', 'System prompt is required');
-    // Tags: always required, min 3
+    
+    // Required fields for both private and public
+    if (!form.name || form.name.trim() === '') {
+      errors.name = t('character.fields.nameRequired');
+    }
+    if (!form.description || form.description.trim() === '') {
+      errors.description = t('character.fields.descriptionRequired');
+    }
+    if (!form.personality || form.personality.trim() === '') {
+      errors.personality = t('character.fields.personalityRequired');
+    }
+    if (!form.systemPrompt || form.systemPrompt.trim() === '') {
+      errors.systemPrompt = t('character.fields.systemPromptRequired');
+    }
+    
+    // Tags validation
     const tagsArr = Array.isArray(form.tags) ? form.tags : (typeof form.tags === 'string' ? form.tags.split(/,\s*/) : []);
     if (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim())) {
-      errors.tags = t('character.fields.tagsRequired', 'At least 3 tags are required.');
+      errors.tags = t('character.fields.tagsRequired');
     }
+    
     return errors;
   }
 
@@ -218,7 +229,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         body: JSON.stringify({
           ...form,
           isPublic: false,
-          // Ensure we have all required fields
           name: form.name.trim(),
           description: form.description.trim(),
           personality: form.personality.trim(),
@@ -237,7 +247,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       // If public is requested (either through publicOnly prop or toggle), create public copy
       if (publicOnly || form.isPublic) {
         try {
-          // Create public copy with same data but isPublic=true
           const publicRes = await fetch('/api/characters', {
             method: 'POST',
             headers: {
@@ -247,8 +256,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             body: JSON.stringify({
               ...privateChar,
               isPublic: true,
-              id: undefined, // Remove ID to create new character
-              status: 'pending' // Set initial status as pending
+              id: undefined,
+              status: 'pending'
             })
           });
 
@@ -334,11 +343,11 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     if (editOnly) {
       return `${baseClass} bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark`;
     }
-    // Special handling for Name and Description fields in private/public mode
-    if ((field === 'name' || field === 'description') && !editOnly) {
+    // All required fields should have the blue/purple styling
+    if (isRequired || field === 'name' || field === 'description' || field === 'personality' || field === 'systemPrompt' || field === 'tags') {
       return `${baseClass} bg-primary/10 dark:bg-primary/20 border-primary/30`;
     }
-    return `${baseClass} ${isRequired ? 'bg-primary/10 dark:bg-primary/20 border-primary/30' : 'bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark'}`;
+    return `${baseClass} bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark`;
   }
 
   return (
