@@ -1462,7 +1462,7 @@ try {
   app.get("/api/characters", authMiddleware, async (req, res) => {
     try {
       const characters = await prisma.character.findMany({
-        where: { userId: req.user.id },
+        where: { userId: req.user.id, isPublic: false },
         orderBy: { order: 'asc' }
       });
       res.json(characters);
