@@ -153,7 +153,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
           className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
           onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
         />
-        <span className="font-medium truncate max-w-[120px]" title={character.name}>
+        <span className="font-medium truncate max-w-[160px]" title={character.name}>
           {character.name.length > 20 ? `${character.name.substring(0, 20)}...` : character.name}
         </span>
       </button>
@@ -394,7 +394,9 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 body: JSON.stringify({
                   ...form,
                   avatar: form.avatar || '/default-avatar.png',
-                  isPublic: false
+                  isPublic: false,
+                  // Remove any pendingSubmissionInfo if it exists
+                  pendingSubmissionInfo: undefined
                 })
               });
 
@@ -405,6 +407,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
               }
 
               const privateChar = await res.json();
+              
               // If public toggle is on, create a public copy and submit for review
               if (form.isPublic) {
                 try {
@@ -414,32 +417,44 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       'Content-Type': 'application/json',
                       Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
                     },
-                    body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
-                  });
-                  if (!publicRes.ok) throw new Error('Failed to create public character for review');
-                  const publicChar = await publicRes.json();
-                  console.log('Sending notification...');
-                  const notifRes = await fetch('/api/notifications', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                    },
-                    body: JSON.stringify({
-                      type: 'CHARACTER_SUBMITTED',
-                      title: 'Character submitted for approval',
-                      message: 'Your character has been submitted for admin review.',
-                      metadata: { characterId: publicChar.id }
+                    body: JSON.stringify({ 
+                      ...privateChar, 
+                      isPublic: true, 
+                      id: undefined, // Let the server generate a new ID
+                      pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
                     })
                   });
-                  const notifData = await notifRes.json().catch(() => ({}));
-                  console.log('Notification API response:', notifRes.status, notifData);
-                  // Optionally refresh notifications
-                  if (typeof fetchNotifications === 'function') fetchNotifications();
-                  addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
+                  
+                  if (!publicRes.ok) throw new Error('Failed to create public character for review');
+                  
+                  const publicChar = await publicRes.json();
+                  
+                  // Only send notification if we have a pending submission
+                  if (publicChar.pendingSubmissionInfo) {
+                    console.log('Sending notification...');
+                    const notifRes = await fetch('/api/notifications', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                      },
+                      body: JSON.stringify({
+                        type: 'CHARACTER_SUBMITTED',
+                        title: 'Character submitted for approval',
+                        message: 'Your character has been submitted for admin review.',
+                        metadata: { characterId: publicChar.pendingSubmissionInfo.id }
+                      })
+                    });
+                    
+                    const notifData = await notifRes.json().catch(() => ({}));
+                    console.log('Notification API response:', notifRes.status, notifData);
+                    
+                    // Optionally refresh notifications
+                    if (typeof fetchNotifications === 'function') fetchNotifications();
+                    addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
+                  }
                 } catch (err) {
                   console.error('Error in public submission logic:', err);
-                  console.error('Error submitting for review:', err);
                   addToast({ 
                     type: 'error', 
                     message: err.message || 'Character created but failed to submit for review. You can try submitting it later.', 
@@ -720,7 +735,20 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       )}
 
       {/* Render PersonalityModal for new character */}
-      {privateModal}
+      {showNewCharacterModal && (
+        <PrivatePersonalityModal
+          isOpen={showNewCharacterModal}
+          initialData={newCharacterInitialData}
+          onClose={() => {
+            setShowNewCharacterModal(false);
+            setNewCharacterInitialData({});
+          }}
+          onSave={async (form) => {
+            setShowNewCharacterModal(false);
+            await reloadCharacters();
+          }}
+        />
+      )}
     </div>
   );
 }

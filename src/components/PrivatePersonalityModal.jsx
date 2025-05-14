@@ -178,12 +178,13 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
         },
         body: JSON.stringify({
           ...form,
-          isPublic: confirmPublic,
+          isPublic: false,
           name: form.name.trim(),
           description: form.description.trim(),
           personality: form.personality.trim(),
           systemPrompt: form.systemPrompt.trim(),
-          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
+          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
+          pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
         })
       });
 
@@ -197,28 +198,51 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
 
       // If public was requested and we got a pending submission
       if (confirmPublic) {
-        if (response.pendingSubmissionInfo) {
-          // Send notification for character submission
-          await fetch('/api/notifications', {
+        try {
+          const publicRes = await fetch('/api/characters', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
             },
             body: JSON.stringify({
-              type: 'CHARACTER_SUBMITTED',
-              title: t('notifications.characterSubmitted.title'),
-              message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: response.pendingSubmissionInfo.id }
+              ...privateChar,
+              isPublic: true,
+              id: undefined, // Let the server generate a new ID
+              pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
             })
           });
 
-          addToast({
-            type: 'success',
-            message: t('character.submittedForApproval'),
-            duration: 3000
-          });
-        } else if (response.pendingError) {
+          if (!publicRes.ok) {
+            throw new Error('Failed to create public character for review');
+          }
+
+          const publicChar = await publicRes.json();
+
+          // Only send notification if we have a pending submission
+          if (publicChar.pendingSubmissionInfo) {
+            await fetch('/api/notifications', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+              },
+              body: JSON.stringify({
+                type: 'CHARACTER_SUBMITTED',
+                title: t('notifications.characterSubmitted.title'),
+                message: t('notifications.characterSubmitted.message'),
+                metadata: { characterId: publicChar.pendingSubmissionInfo.id }
+              })
+            });
+
+            addToast({
+              type: 'success',
+              message: t('character.submittedForApproval'),
+              duration: 3000
+            });
+          }
+        } catch (err) {
+          console.error('Error in public submission logic:', err);
           addToast({
             type: 'error',
             message: t('character.reviewError'),
