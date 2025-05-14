@@ -58,6 +58,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   const [nameError, setNameError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setForm(prev => sanitizeForm({
@@ -161,11 +162,14 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   async function handleConfirm() {
+    if (isSubmitting) return; // Prevent duplicate submissions
+    setIsSubmitting(true);
     setFieldErrors({});
     const errors = validateRequiredFields();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
+      setIsSubmitting(false);
       return;
     }
     setLoading(true);
@@ -200,7 +204,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           });
           if (!publicRes.ok) throw new Error('Failed to create public character for review');
           const publicChar = await publicRes.json();
-          // Submit the public copy for review
           const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
             method: 'POST',
             headers: {
@@ -212,21 +215,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             const reviewData = await reviewRes.json();
             throw new Error(reviewData.error || 'Failed to submit public character for review');
           }
-          // Create notification for successful submission
-          await fetch('/api/notifications', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({
-              type: 'CHARACTER_SUBMITTED',
-              title: t('notifications.characterSubmitted.title'),
-              message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: publicChar.id }
-            })
-          });
-          fetchNotifications();
           addToast && addToast({ type: 'success', message: t('character.submittedForApproval', 'Character submitted for approval!'), duration: 3000 });
           reviewSuccess = true;
         } catch (reviewError) {
@@ -247,6 +235,8 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       setLoading(false);
       const errorMessage = error.message || t('character.createError', 'Failed to create character');
       addToast && addToast({ type: 'error', message: errorMessage, duration: 4000 });
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
