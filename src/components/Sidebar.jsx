@@ -425,7 +425,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                     throw new Error(reviewData.error || 'Failed to submit public character for review');
                   }
                   // Send notification to user
-                  await fetch('/api/notifications', {
+                  const notifRes = await fetch('/api/notifications', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -438,6 +438,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       metadata: { characterId: publicChar.id }
                     })
                   });
+                  const notifData = await notifRes.json().catch(() => ({}));
+                  console.log('Notification API response:', notifRes.status, notifData);
                   // Optionally refresh notifications
                   if (typeof fetchNotifications === 'function') fetchNotifications();
                   addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
