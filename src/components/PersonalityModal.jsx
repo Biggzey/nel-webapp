@@ -136,6 +136,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
   }
 
   function validateRequiredFields() {
+    if (editOnly) return {}; // Skip required validation in edit-only mode
     const errors = {};
     if (!form.name || form.name.trim() === '') errors.name = t('character.fields.nameRequired', 'Name is required');
     if (!form.description || form.description.trim() === '') errors.description = t('character.fields.descriptionRequired', 'Description is required');
@@ -159,7 +160,12 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
       return;
     }
-    setShowConfirm(true);
+    if (editOnly) {
+      // Directly call handleConfirm for editOnly (no confirmation modal)
+      handleConfirm();
+    } else {
+      setShowConfirm(true);
+    }
   }
 
   async function handleConfirm() {

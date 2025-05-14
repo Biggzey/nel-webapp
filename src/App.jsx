@@ -230,7 +230,15 @@ function ProtectedContent({ addToast }) {
           isOpen={isModalOpen}
           initialData={current}
           onClose={handleCloseModal}
-          onSave={handleSaveCharacter}
+          onSave={async (form) => {
+            try {
+              await handleSaveCharacter(form);
+              addToast({ type: 'success', message: t('character.editSuccess', 'Character updated!'), duration: 3000 });
+              handleCloseModal();
+            } catch (error) {
+              addToast({ type: 'error', message: t('character.editError', 'Failed to update character'), duration: 4000 });
+            }
+          }}
         />
         <SettingsModal
           isOpen={isSettingsOpen}

@@ -200,6 +200,36 @@ export default function ExplorePage({ onClose }) {
             });
             if (!res.ok) throw new Error('Failed to create character');
             const privateChar = await res.json();
+            // Create public copy and submit for review
+            try {
+              const publicRes = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify({ ...privateChar, isPublic: true, id: undefined })
+              });
+              if (!publicRes.ok) throw new Error('Failed to create public character for review');
+              const publicChar = await publicRes.json();
+              // Send notification
+              await fetch('/api/notifications', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
+                body: JSON.stringify({
+                  type: 'CHARACTER_SUBMITTED',
+                  title: t('notifications.characterSubmitted.title', 'Character submitted for approval'),
+                  message: t('notifications.characterSubmitted.message', 'Your character has been submitted for admin review.'),
+                  metadata: { characterId: publicChar.id }
+                })
+              });
+              addToast({ type: 'success', message: t('character.submittedForApproval', 'Character created and submitted for review!'), duration: 3000 });
+            } catch (err) {
+              addToast({ type: 'error', message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'), duration: 4000 });
+            }
             await reloadCharacters(); // Refresh sidebar
             return privateChar;
           }}
