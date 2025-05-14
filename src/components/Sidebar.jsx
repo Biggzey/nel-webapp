@@ -6,7 +6,6 @@ import { useCharacter } from "../context/CharacterContext";
 import { useLanguage } from "../context/LanguageContext";
 import ProfileDropdown from "./ProfileDropdown";
 import { useChat } from "../hooks/useChat";
-import PersonalityModal from "./PersonalityModal";
 import CharacterImportModal from "./CharacterImportModal";
 import { useToast } from "./Toast";
 import { useIsMobile } from '../hooks/useIsMobile';
@@ -375,8 +374,11 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         (() => { console.log('Rendering PrivatePersonalityModal from Sidebar'); return null; })(),
         <PrivatePersonalityModal
           isOpen={showNewCharacterModal}
-          initialData={{ name: '', isPublic: false }}
-          onClose={() => setShowNewCharacterModal(false)}
+          initialData={newCharacterInitialData}
+          onClose={() => {
+            setShowNewCharacterModal(false);
+            setNewCharacterInitialData({});
+          }}
           onSave={async (form) => {
             console.log('PrivatePersonalityModal onSave called');
             try {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import PersonalityModal from '../components/PersonalityModal';
+import PrivatePersonalityModal from '../components/PrivatePersonalityModal';
 
 // Mock the CharacterContext
 const mockResetCurrentCharacter = jest.fn();
@@ -11,7 +11,7 @@ jest.mock('../context/CharacterContext', () => ({
   })
 }));
 
-describe('PersonalityModal Component', () => {
+describe('PrivatePersonalityModal Component', () => {
   const mockOnClose = jest.fn();
   const mockOnSave = jest.fn();
   const mockInitialData = {
@@ -27,7 +27,7 @@ describe('PersonalityModal Component', () => {
     systemPrompt: 'You are a helpful AI',
     customInstructions: 'Be concise',
     avatar: 'https://example.com/avatar.png',
-    fullImage: 'https://example.com/full.png'
+    isPublic: false
   };
 
   beforeEach(() => {
@@ -36,46 +36,33 @@ describe('PersonalityModal Component', () => {
 
   it('renders nothing when isOpen is false', () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={false}
         initialData={mockInitialData}
         onClose={mockOnClose}
         onSave={mockOnSave}
       />
     );
-    expect(screen.queryByText('Edit Character')).not.toBeInTheDocument();
+    expect(screen.queryByText('Create Private Character')).not.toBeInTheDocument();
   });
 
   it('renders modal content when isOpen is true', () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
         onSave={mockOnSave}
       />
     );
-    expect(screen.getByText('Edit Character')).toBeInTheDocument();
+    expect(screen.getByText('Create Private Character')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Test Character')).toBeInTheDocument();
     expect(screen.getByDisplayValue('25')).toBeInTheDocument();
   });
 
-  it('shows "New Character" title for new characters', () => {
-    const newCharacterData = { ...mockInitialData, name: 'New Character' };
-    render(
-      <PersonalityModal
-        isOpen={true}
-        initialData={newCharacterData}
-        onClose={mockOnClose}
-        onSave={mockOnSave}
-      />
-    );
-    expect(screen.getByText('New Character')).toBeInTheDocument();
-  });
-
   it('handles input changes correctly', async () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -91,7 +78,7 @@ describe('PersonalityModal Component', () => {
 
   it('handles form submission', async () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -103,18 +90,19 @@ describe('PersonalityModal Component', () => {
     await userEvent.clear(nameInput);
     await userEvent.type(nameInput, 'New Name');
 
-    const submitButton = screen.getByText('Save');
+    const submitButton = screen.getByText('Create');
     await userEvent.click(submitButton);
 
     expect(mockOnSave).toHaveBeenCalledWith(expect.objectContaining({
-      name: 'New Name'
+      name: 'New Name',
+      isPublic: false
     }));
   });
 
   it('handles file uploads', async () => {
     const file = new File(['test'], 'test.png', { type: 'image/png' });
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -122,8 +110,7 @@ describe('PersonalityModal Component', () => {
       />
     );
 
-    const fileInputs = screen.getAllByDisplayValue('');
-    const avatarFileInput = fileInputs.find(input => input.type === 'file');
+    const fileInput = screen.getByLabelText('Avatar');
     
     // Mock FileReader before uploading
     const mockFileReader = {
@@ -139,16 +126,16 @@ describe('PersonalityModal Component', () => {
       };
     });
 
-    await userEvent.upload(avatarFileInput, file);
+    await userEvent.upload(fileInput, file);
 
-    // Verify the avatar URL input has been updated
-    const avatarInput = screen.getByPlaceholderText('https://example.com/avatar.png');
-    expect(avatarInput).toBeInTheDocument();
+    // Verify the avatar preview is shown
+    const avatarPreview = screen.getByAltText('Avatar preview');
+    expect(avatarPreview).toBeInTheDocument();
   });
 
   it('handles modal close', async () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -161,26 +148,36 @@ describe('PersonalityModal Component', () => {
     expect(mockOnClose).toHaveBeenCalled();
   });
 
-  it('handles character reset for existing characters', async () => {
+  it('validates required fields', async () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
-        initialData={mockInitialData}
+        initialData={{}}
         onClose={mockOnClose}
         onSave={mockOnSave}
       />
     );
 
-    const resetButton = screen.getByTitle('Reset to Defaults');
-    await userEvent.click(resetButton);
+    const submitButton = screen.getByText('Create');
+    await userEvent.click(submitButton);
 
-    expect(mockResetCurrentCharacter).toHaveBeenCalled();
-    expect(mockOnClose).toHaveBeenCalled();
+    // Check for validation messages
+    expect(screen.getByText('Name is required')).toBeInTheDocument();
+    expect(screen.getByText('Age is required')).toBeInTheDocument();
+    expect(screen.getByText('Gender is required')).toBeInTheDocument();
+    expect(screen.getByText('Race is required')).toBeInTheDocument();
+    expect(screen.getByText('Occupation is required')).toBeInTheDocument();
+    expect(screen.getByText('Personality is required')).toBeInTheDocument();
+    expect(screen.getByText('Backstory is required')).toBeInTheDocument();
+    expect(screen.getByText('System prompt is required')).toBeInTheDocument();
+
+    // Verify onSave was not called
+    expect(mockOnSave).not.toHaveBeenCalled();
   });
 
   it('handles textarea auto-resize', async () => {
     render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -199,7 +196,7 @@ describe('PersonalityModal Component', () => {
 
   it('updates form when initialData changes', () => {
     const { rerender } = render(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
         initialData={mockInitialData}
         onClose={mockOnClose}
@@ -207,16 +204,22 @@ describe('PersonalityModal Component', () => {
       />
     );
 
-    const newData = { ...mockInitialData, name: 'Updated Character' };
+    const newInitialData = {
+      ...mockInitialData,
+      name: 'Updated Name',
+      age: '30'
+    };
+
     rerender(
-      <PersonalityModal
+      <PrivatePersonalityModal
         isOpen={true}
-        initialData={newData}
+        initialData={newInitialData}
         onClose={mockOnClose}
         onSave={mockOnSave}
       />
     );
 
-    expect(screen.getByDisplayValue('Updated Character')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Updated Name')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('30')).toBeInTheDocument();
   });
 }); 

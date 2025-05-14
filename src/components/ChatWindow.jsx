@@ -18,7 +18,6 @@ import { useIsMobile } from '../hooks/useIsMobile';
 const DEFAULT_USER_AVATAR = "/user-avatar.png";
 const DEFAULT_AGENT_AVATAR = "/agent-avatar.png";
 
-const PersonalityModal = React.lazy(() => import('./PersonalityModal'));
 const SettingsModal = React.lazy(() => import('./SettingsModal'));
 const CharacterImportModal = React.lazy(() => import('./CharacterImportModal'));
 const ProfileDropdown = React.lazy(() => import('./ProfileDropdown'));

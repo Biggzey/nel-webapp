@@ -3,7 +3,6 @@ import { useCharacter } from '../context/CharacterContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
 import PublicPersonalityModal from './PublicPersonalityModal';
-import PersonalityModal from './PersonalityModal';
 import Badge from './Badge';
 
 export default function ExplorePage({ onClose }) {
