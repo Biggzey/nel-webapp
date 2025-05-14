@@ -158,6 +158,27 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     setFieldErrors({});
     setGlobalError(null);
 
+    // Validate required fields
+    const errors = validateRequiredFields();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setAttemptedSubmit(true);
+      setIsSubmitting(false);
+      addToast({
+        type: 'error',
+        message: t('character.fields.missingFields'),
+        duration: 3000
+      });
+      return;
+    }
+
+    // Show confirmation dialog for new characters
+    if (!initialData.id && !showConfirm) {
+      setShowConfirm(true);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       // For existing characters, use PUT to update
       if (initialData.id) {
@@ -230,39 +251,40 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
             },
             body: JSON.stringify({
               type: 'CHARACTER_SUBMITTED',
-              title: t('notifications.characterSubmitted.title', 'Character submitted for approval'),
-              message: t('notifications.characterSubmitted.message', 'Your character has been submitted for admin review. Please note any changes to your private version of this character will have no effect on the version pending approval. For any changes please contact support.'),
+              title: t('notifications.characterSubmitted.title'),
+              message: t('notifications.characterSubmitted.message'),
               metadata: { characterId: publicChar.id }
             })
           });
 
           addToast({
             type: 'success',
-            message: t('character.submittedForApproval', 'Character created and submitted for review!'),
+            message: t('character.submittedForApproval'),
             duration: 3000
           });
         } catch (err) {
           addToast({
             type: 'error',
-            message: t('character.reviewError', 'Character created but failed to submit for review. You can try submitting it later.'),
+            message: t('character.reviewError'),
             duration: 4000
           });
         }
       } else {
         addToast({
           type: 'success',
-          message: t('character.addedToPrivate', 'Character added to private collection!'),
+          message: t('character.addedToPrivate'),
           duration: 3000
         });
       }
 
       await reloadCharacters();
       onSave(privateChar);
+      onClose();
     } catch (err) {
       setGlobalError(err.message);
       addToast({
         type: 'error',
-        message: err.message || t('character.createError', 'Failed to create character'),
+        message: err.message || t('character.createError'),
         duration: 3000
       });
     } finally {
