@@ -12,7 +12,7 @@ const DEFAULT_AVATAR = '/default-avatar.png'; // Use public root for default ava
 
 export default function PersonalityModal({ isOpen, initialData = {}, onClose, onSave, publicOnly = false, editOnly = false }) {
   console.log('Rendering PersonalityModal component');
-  const { resetCurrentCharacter, submitForReview } = useCharacter();
+  const { resetCurrentCharacter, submitForReview, reloadCharacters } = useCharacter();
   const { t } = useLanguage();
   const isMobile = useIsMobile();
   // Defensive: ensure initialData is always an object
@@ -159,7 +159,29 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     setGlobalError(null);
 
     try {
-      // Create private character first
+      // For existing characters, use PUT to update
+      if (initialData.id) {
+        const updateRes = await fetch(`/api/characters/${initialData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+          },
+          body: JSON.stringify(form)
+        });
+
+        if (!updateRes.ok) {
+          const errorData = await updateRes.json();
+          throw new Error(errorData.message || 'Failed to update character');
+        }
+
+        const updatedChar = await updateRes.json();
+        await reloadCharacters();
+        onSave(updatedChar);
+        return;
+      }
+
+      // For new characters, create private first
       const privateRes = await fetch('/api/characters', {
         method: 'POST',
         headers: {
@@ -223,7 +245,7 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         }
       }
 
-      await resetCurrentCharacter();
+      await reloadCharacters();
       onSave(privateChar);
     } catch (err) {
       setGlobalError(err.message);
