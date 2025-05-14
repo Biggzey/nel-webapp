@@ -125,6 +125,7 @@ try {
   app.use(express.json({
     limit: '10mb', // Increase payload size limit
     verify: (req, res, buf) => {
+      if (!buf || buf.length === 0) return; // Only parse if not empty
       try {
         JSON.parse(buf);
       } catch (e) {
