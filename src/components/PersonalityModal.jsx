@@ -166,7 +166,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
     setIsSubmitting(true);
     setLoading(true);
     setShowConfirm(false); // Close modal immediately to prevent multiple clicks
-    
     try {
       setFieldErrors({});
       const errors = validateRequiredFields();
@@ -175,7 +174,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
         addToast && addToast({ type: 'error', message: t('character.fields.missingFields', 'Please fill all required fields.'), duration: 3000 });
         return;
       }
-
       // Always create the private character first
       const privatePayload = {
         ...form,
@@ -186,16 +184,13 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
       if (!privateRes || !privateRes.id) {
         throw new Error('Failed to create character - no response data');
       }
-
+      addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
       // If public, create a public copy and submit for review
       if ((publicOnly ? true : confirmPublic)) {
         try {
-          // Create a public copy
-          const publicPayload = {
-            ...form,
-            avatar: form.avatar || DEFAULT_AVATAR,
-            isPublic: true
-          };
+          // Create a public copy using the private character's data, but set isPublic: true and remove id
+          const { id, ...publicPayload } = privateRes;
+          publicPayload.isPublic = true;
           const publicRes = await fetch('/api/characters', {
             method: 'POST',
             headers: {
@@ -227,7 +222,6 @@ export default function PersonalityModal({ isOpen, initialData = {}, onClose, on
           });
         }
       }
-      addToast && addToast({ type: 'success', message: t('character.addedToPrivate', 'Character added to private collection!'), duration: 3000 });
       onClose();
     } catch (error) {
       console.error('Error in handleConfirm:', error);
