@@ -118,18 +118,16 @@ const AdminPanel = () => {
       ) : (
         <div className="space-y-8">
           {/* Pending Characters Section */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold">{t('admin.pendingCharacters')}</h2>
-              {pendingCharacters.length > 0 && (
-                <Badge variant="default" className="ml-2">
-                  {pendingCharacters.length}
-                </Badge>
-              )}
-            </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow relative">
+            <h2 className="text-xl font-semibold mb-4">{t('admin.pendingCharacters')}</h2>
+            {pendingCharacters.length > 0 && (
+              <Badge variant="default" className="absolute top-4 right-4 z-10">
+                {pendingCharacters.length}
+              </Badge>
+            )}
             <div className="space-y-4">
               {pendingCharacters.length === 0 ? (
-                <p className="text-gray-500">{t('admin.noPendingCharacters')}</p>
+                <p className="text-gray-500">{t('admin.noPendingCharacters') || 'No pending characters.'}</p>
               ) : (
                 pendingCharacters.map((character) => (
                   <div key={character.id} className="border-b dark:border-gray-700 pb-4 last:border-0">
@@ -149,7 +147,12 @@ const AdminPanel = () => {
                           {t('admin.approve')}
                         </button>
                         <button
-                          onClick={() => handleRejectCharacter(character.id)}
+                          onClick={(() => {
+                            if (!character._rejecting) {
+                              character._rejecting = true;
+                              handleRejectCharacter(character.id).finally(() => { character._rejecting = false; });
+                            }
+                          })}
                           className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                         >
                           {t('admin.reject')}

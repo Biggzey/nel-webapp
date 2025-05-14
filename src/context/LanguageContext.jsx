@@ -264,7 +264,8 @@ const translations = {
       tags: 'Tags',
       popularity: 'Popularity',
       newest: 'Newest',
-      rating: 'Rating'
+      rating: 'Rating',
+      create: 'Create Public Character'
     },
     notifications: {
       title: 'Notifications',
@@ -274,7 +275,9 @@ const translations = {
       characterSubmitted: {
         title: 'Character Submitted',
         message: 'Your character has been submitted for review'
-      }
+      },
+      empty: 'No notifications',
+      loading: 'Loading notifications...'
     },
     admin: {
       searchUsers: 'Search Users',
@@ -289,7 +292,8 @@ const translations = {
       status: 'Status',
       submittedBy: 'Submitted by',
       submittedAt: 'Submitted at',
-      actions: 'Actions'
+      actions: 'Actions',
+      noPendingCharacters: 'No pending characters.'
     }
   },
   es: {
@@ -727,7 +731,8 @@ const translations = {
       status: 'Estado',
       submittedBy: 'Enviado por',
       submittedAt: 'Enviado en',
-      actions: 'Acciones'
+      actions: 'Acciones',
+      noPendingCharacters: 'No hay personajes pendientes.'
     },
     explore: {
       back: 'Volver al chat',
@@ -741,35 +746,20 @@ const translations = {
       tags: 'Etiquetas',
       popularity: 'Popularidad',
       newest: 'Más nuevos',
-      rating: 'Calificación'
+      rating: 'Calificación',
+      create: 'Crear personaje público'
     },
     notifications: {
       title: 'Notificaciones',
-      loading: 'Cargando notificaciones...',
-      empty: 'No hay notificaciones',
-      markAsRead: 'Marcar como leída',
-      markAllRead: 'Marcar todas como leídas',
-      delete: 'Eliminar',
+      allRead: 'Marcar todas como leídas',
+      allDeleted: 'Eliminar todas las notificaciones',
       deleted: 'Notificación eliminada',
-      fetchError: 'Error al cargar notificaciones',
-      markReadError: 'Error al marcar notificación como leída',
-      markAllReadError: 'Error al marcar todas las notificaciones como leídas',
-      deleteError: 'Error al eliminar notificación',
-      allRead: 'Todas las notificaciones marcadas como leídas',
       characterSubmitted: {
         title: 'Personaje Enviado',
         message: 'Tu personaje ha sido enviado para revisión pública. Cualquier cambio realizado en tu copia privada no afectará a la versión enviada. Serás notificado cuando sea aprobado o rechazado.'
       },
-      characterApproved: {
-        title: 'Personaje Aprobado',
-        message: '¡Tu personaje ha sido aprobado y ahora es público!'
-      },
-      characterRejected: {
-        title: 'Personaje Rechazado',
-        message: 'Tu personaje ha sido rechazado. Razón: %{reason}'
-      },
-      deleteAll: 'Eliminar todas las notificaciones',
-      allDeleted: 'Todas las notificaciones eliminadas'
+      empty: 'No hay notificaciones',
+      loading: 'Cargando notificaciones...'
     }
   }
 };
