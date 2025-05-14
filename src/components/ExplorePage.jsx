@@ -17,6 +17,7 @@ export default function ExplorePage({ onClose }) {
   const [error, setError] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch public/explore characters
   useEffect(() => {
@@ -189,6 +190,8 @@ export default function ExplorePage({ onClose }) {
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
           onSave={async (form) => {
+            if (isSubmitting) return; // Prevent duplicate submissions
+            setIsSubmitting(true);
             try {
               setShowCreate(false); // Close modal immediately
               setGlobalLoading(true); // Show global spinner
@@ -233,6 +236,8 @@ export default function ExplorePage({ onClose }) {
             } catch (error) {
               setGlobalLoading(false);
               addToast({ type: 'error', message: error.message || t('character.createError', 'Failed to create character'), duration: 4000 });
+            } finally {
+              setIsSubmitting(false);
             }
           }}
         />
