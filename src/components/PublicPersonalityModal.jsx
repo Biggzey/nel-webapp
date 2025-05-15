@@ -203,7 +203,8 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           body: JSON.stringify({
             ...privateChar,
             isPublic: true,
-            id: undefined // Let server generate new ID
+            id: undefined, // Let server generate new ID
+            reviewStatus: 'pending' // Add review status
           })
         });
 
@@ -214,31 +215,29 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         const publicChar = await publicRes.json();
 
         // Send notification for public submission
-        if (publicChar.pendingSubmissionInfo) {
-          await fetch('/api/notifications', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-            },
-            body: JSON.stringify({
-              type: 'CHARACTER_SUBMITTED',
-              title: t('notifications.characterSubmitted.title'),
-              message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: publicChar.pendingSubmissionInfo.id }
-            })
-          });
+        await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+          },
+          body: JSON.stringify({
+            type: 'CHARACTER_SUBMITTED',
+            title: t('notifications.characterSubmitted.title'),
+            message: t('notifications.characterSubmitted.message'),
+            metadata: { characterId: publicChar.id }
+          })
+        });
 
-          if (typeof fetchNotifications === 'function') {
-            await fetchNotifications();
-          }
-
-          addToast({
-            type: 'success',
-            message: t('character.submittedForApproval'),
-            duration: 3000
-          });
+        if (typeof fetchNotifications === 'function') {
+          await fetchNotifications();
         }
+
+        addToast({
+          type: 'success',
+          message: t('character.submittedForApproval'),
+          duration: 3000
+        });
       } catch (err) {
         console.error('Error creating public copy:', err);
         addToast({
