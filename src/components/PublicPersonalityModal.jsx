@@ -179,7 +179,15 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
             reviewStatus: 'pending',
             pendingSubmissionInfo: {
               submittedAt: new Date().toISOString(),
-              status: 'pending'
+              status: 'pending',
+              submittedBy: localStorage.getItem('userId'),
+              reviewNotes: '',
+              reviewHistory: []
+            },
+            user: {
+              id: localStorage.getItem('userId'),
+              username: localStorage.getItem('username'),
+              email: localStorage.getItem('email')
             }
           })
         });
@@ -204,7 +212,8 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
             metadata: { 
               characterId: publicChar.id,
               reviewStatus: 'pending',
-              submittedAt: new Date().toISOString()
+              submittedAt: new Date().toISOString(),
+              submittedBy: localStorage.getItem('userId')
             }
           })
         });
