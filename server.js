@@ -1597,14 +1597,32 @@ try {
         return res.status(403).json({ error: "Not authorized to modify this character" });
       }
 
+      // Remove any fields that shouldn't be updated
+      const updateData = { ...req.body };
+      delete updateData.id;
+      delete updateData.userId;
+      delete updateData.createdAt;
+      delete updateData.updatedAt;
+      delete updateData.isPublic;
+      delete updateData.reviewStatus;
+      delete updateData.pendingSubmissions;
+
+      // Update the character
       const character = await prisma.character.update({
         where: { id: characterId },
-        data: req.body
+        data: updateData
       });
+
       res.json(character);
     } catch (error) {
       console.error("Error updating character:", error);
-      res.status(500).json({ error: "Failed to update character" });
+      console.error("Request body:", req.body);
+      console.error("Stack trace:", error.stack);
+      res.status(500).json({ 
+        error: "Failed to update character", 
+        details: error.message,
+        body: req.body 
+      });
     }
   });
 
