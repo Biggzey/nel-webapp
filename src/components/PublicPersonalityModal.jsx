@@ -176,7 +176,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         },
         body: JSON.stringify({
           ...form,
-          isPublic: true, // Always true for public modal
+          isPublic: false, // Always create private copy first
           name: form.name.trim(),
           description: form.description.trim(),
           personality: form.personality.trim(),
@@ -191,7 +191,33 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         throw new Error(errorData.message || 'Failed to create character');
       }
 
-      const response = await res.json();
+      const privateChar = await res.json();
+
+      // Now create the public version for pending approval
+      const publicRes = await fetch('/api/characters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+        },
+        body: JSON.stringify({
+          ...form,
+          isPublic: true,
+          name: form.name.trim(),
+          description: form.description.trim(),
+          personality: form.personality.trim(),
+          systemPrompt: form.systemPrompt.trim(),
+          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
+          pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
+        })
+      });
+
+      if (!publicRes.ok) {
+        const errorData = await publicRes.json();
+        throw new Error(errorData.message || 'Failed to create public character');
+      }
+
+      const response = await publicRes.json();
 
       // If we have a pending submission, send notification
       if (response.pendingSubmissionInfo) {
@@ -223,7 +249,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
 
       // Always reload characters and save
       await reloadCharacters();
-      onSave(response);
+      onSave(privateChar); // Save the private copy to the sidebar
       onClose();
     } catch (err) {
       console.error('Character creation failed:', err);
