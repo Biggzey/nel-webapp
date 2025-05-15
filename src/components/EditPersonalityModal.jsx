@@ -70,32 +70,49 @@ export default function EditPersonalityModal({ isOpen, initialData = {}, onClose
     setGlobalError(null);
     try {
       if (!initialData.id) throw new Error('No character ID provided');
+      
+      // Ensure we have all required fields
+      const updatedData = {
+        ...form,
+        name: form.name.trim(),
+        description: form.description.trim(),
+        personality: form.personality.trim(),
+        systemPrompt: form.systemPrompt.trim(),
+        tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
+      };
+
       const updateRes = await fetch(`/api/characters/${initialData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
         },
-        body: JSON.stringify(form)
+        body: JSON.stringify(updatedData)
       });
+
       if (!updateRes.ok) {
         const errorData = await updateRes.json();
-        throw new Error(errorData.message || 'Failed to update character');
+        throw new Error(errorData.error || 'Failed to update character');
       }
+
       const updatedChar = await updateRes.json();
-      await reloadCharacters();
+      
+      // Call onSave with the updated character
       onSave(updatedChar);
+      
       addToast({
         type: 'success',
         message: t('character.editSuccess'),
         duration: 3000
       });
+      
       onClose();
     } catch (err) {
+      console.error('Error updating character:', err);
       setGlobalError(err.message);
       addToast({
         type: 'error',
-        message: err.message || t('character.createError'),
+        message: err.message || t('character.editError'),
         duration: 3000
       });
     } finally {

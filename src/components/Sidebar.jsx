@@ -379,92 +379,10 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
           }}
           onSave={async (form) => {
             console.log('PrivatePersonalityModal onSave called');
-            try {
-              // Always create the private character first
-              const res = await fetch('/api/characters', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                },
-                body: JSON.stringify({
-                  ...form,
-                  avatar: form.avatar || '/default-avatar.png',
-                  isPublic: false,
-                  // Remove any pendingSubmissionInfo if it exists
-                  pendingSubmissionInfo: undefined
-                })
-              });
-
-              if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                addToast({ type: 'error', message: errorData.error || 'Failed to create character', duration: 4000 });
-                return;
-              }
-
-              const privateChar = await res.json();
-              
-              // If public toggle is on, create public copy with pending submission
-              if (form.isPublic) {
-                const publicRes = await fetch('/api/characters', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                  },
-                  body: JSON.stringify({
-                    ...privateChar,
-                    isPublic: true,
-                    id: undefined, // Let server generate new ID
-                    pendingSubmissions: {
-                      create: {
-                        status: 'pending',
-                        name: form.name.trim(),
-                        description: form.description.trim(),
-                        avatar: form.avatar || '/default-avatar.png',
-                        personality: form.personality.trim(),
-                        systemPrompt: form.systemPrompt.trim(),
-                        tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
-                        user: {
-                          connect: {
-                            id: privateChar.userId
-                          }
-                        }
-                      }
-                    }
-                  })
-                });
-
-                if (!publicRes.ok) {
-                  const errorData = await publicRes.json().catch(() => ({}));
-                  addToast({ 
-                    type: 'error', 
-                    message: errorData.error || t('character.reviewError') || 'Failed to submit for review', 
-                    duration: 4000 
-                  });
-                  return;
-                }
-              }
-
-              // Reload characters to get the new one
-              await reloadCharacters();
-              setShowNewCharacterModal(false);
-              setNewCharacterInitialData({});
-              addToast({ 
-                type: 'success', 
-                message: form.isPublic ? 
-                  (t('character.submittedForApproval') || 'Character submitted for approval!') : 
-                  (t('character.created') || 'Character created!'), 
-                duration: 3000 
-              });
-            } catch (error) {
-              console.error('Error creating character:', error);
-              addToast({ 
-                type: 'error', 
-                message: t('character.createError') || 'Failed to create character', 
-                duration: 4000 
-              });
-            }
+            // Reload characters to get the new one
+            await reloadCharacters();
+            setShowNewCharacterModal(false);
+            setNewCharacterInitialData({});
           }}
         />
       );
