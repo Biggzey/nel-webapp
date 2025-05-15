@@ -480,28 +480,6 @@ export default function AdminPanel() {
                       <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-base font-bold px-3 py-1.5 rounded-full shadow-lg" style={{ minWidth: '2rem', minHeight: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {pendingCharacters.length}
                       </span>
-                      {role === 'SUPER_ADMIN' && (
-                        <button
-                          onClick={async () => {
-                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
-                              try {
-                                const res = await fetch('/api/admin/characters/reject-all', {
-                                  method: 'POST',
-                                  headers: { Authorization: `Bearer ${token}` }
-                                });
-                                if (!res.ok) throw new Error('Failed to reject all characters');
-                                setPendingCharacters([]);
-                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
-                              } catch (err) {
-                                addToast({ type: 'error', message: err.message, duration: 4000 });
-                              }
-                            }
-                          }}
-                          className="absolute top-2 right-16 z-10 bg-red-500 text-white text-sm font-semibold px-3 py-1.5 rounded-lg shadow-lg hover:bg-red-600 transition-colors"
-                        >
-                          Reject All
-                        </button>
-                      )}
                     </>
                   )}
                   {loadingPending ? (
@@ -546,6 +524,28 @@ export default function AdminPanel() {
                           <div className="text-xs text-gray-500">By: {pendingCharacters[currentCharacterIndex]?.user?.username || pendingCharacters[currentCharacterIndex]?.user?.email || 'Unknown'}</div>
                         </div>
                       </div>
+                      {role === 'SUPER_ADMIN' && pendingCharacters.length > 0 && (
+                        <button
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
+                              try {
+                                const res = await fetch('/api/admin/characters/reject-all', {
+                                  method: 'POST',
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                if (!res.ok) throw new Error('Failed to reject all characters');
+                                setPendingCharacters([]);
+                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                              } catch (err) {
+                                addToast({ type: 'error', message: err.message, duration: 4000 });
+                              }
+                            }
+                          }}
+                          className="absolute right-6 bottom-6 z-10 bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition-colors"
+                        >
+                          Reject All
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

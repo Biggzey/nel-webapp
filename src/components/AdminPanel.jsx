@@ -1,3 +1,4 @@
+/*
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -230,4 +231,5 @@ const AdminPanel = () => {
   );
 };
 
-export default AdminPanel; 
+export default AdminPanel;
+*/ 
