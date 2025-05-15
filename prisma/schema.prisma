@@ -41,7 +41,6 @@ model Character {
   dislikes        String?
   personality     String
   systemPrompt    String
-  customInstructions String?
   backstory       String?
   firstMessage    String?
   messageExample  String?
@@ -111,7 +110,6 @@ model PendingCharacter {
   dislikes        String?
   personality     String
   systemPrompt    String
-  customInstructions String?
   backstory       String?
   firstMessage    String?
   messageExample  String?
