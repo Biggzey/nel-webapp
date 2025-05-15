@@ -452,7 +452,7 @@ export default function ExplorePage({ onClose }) {
                   setDeleteReason('');
                 }}
               >
-                {t('common.cancel')}
+                {t('common.actions.cancel')}
               </button>
               <button
                 className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200"

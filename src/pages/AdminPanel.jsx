@@ -18,6 +18,7 @@ export default function AdminPanel() {
   const [currentCharacterIndex, setCurrentCharacterIndex] = useState(0);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showRejectAllModal, setShowRejectAllModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const navigate = useNavigate();
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
@@ -487,21 +488,7 @@ export default function AdminPanel() {
                         </span>
                         {userRole === 'SUPER_ADMIN' && (
                           <button
-                            onClick={async () => {
-                              if (window.confirm('Are you sure you want to reject all pending characters?')) {
-                                try {
-                                  const res = await fetch('/api/admin/characters/reject-all', {
-                                    method: 'POST',
-                                    headers: { Authorization: `Bearer ${token}` }
-                                  });
-                                  if (!res.ok) throw new Error('Failed to reject all characters');
-                                  setPendingCharacters([]);
-                                  addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
-                                } catch (err) {
-                                  addToast({ type: 'error', message: err.message, duration: 4000 });
-                                }
-                              }
-                            }}
+                            onClick={() => setShowRejectAllModal(true)}
                             className="ml-4 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-lg hover:bg-red-600 transition-colors"
                           >
                             Reject All
@@ -713,6 +700,76 @@ export default function AdminPanel() {
                         disabled={!rejectReason.trim()}
                       >
                         Submit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Reject All Modal */}
+              {showRejectAllModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up">
+                  <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-lg w-full mx-4 relative animate-fade-in-up">
+                    <button
+                      className="absolute top-3 right-3 text-gray-400 hover:text-primary text-2xl focus:outline-none"
+                      onClick={() => {
+                        setShowRejectAllModal(false);
+                        setRejectReason('');
+                      }}
+                      title={t('common.close')}
+                    >
+                      <i className="fas fa-times" />
+                    </button>
+                    <h3 className="text-xl font-semibold mb-4">Reject All Characters</h3>
+                    <p className="mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+                      Are you sure you want to reject all pending characters? This action cannot be undone.
+                    </p>
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium mb-2">
+                        Reason for Rejection
+                      </label>
+                      <textarea
+                        value={rejectReason}
+                        onChange={(e) => setRejectReason(e.target.value)}
+                        placeholder="Please provide a reason for rejecting all characters..."
+                        className="w-full px-4 py-2 rounded-lg border-2 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary bg-background-container-light dark:bg-background-container-dark"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-4">
+                      <button
+                        className="px-4 py-2 rounded-lg border-2 border-primary/30 hover:border-primary transition-all duration-200"
+                        onClick={() => {
+                          setShowRejectAllModal(false);
+                          setRejectReason('');
+                        }}
+                      >
+                        {t('common.cancel')}
+                      </button>
+                      <button
+                        className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/admin/characters/reject-all', {
+                              method: 'POST',
+                              headers: { 
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                              },
+                              body: JSON.stringify({ reason: rejectReason })
+                            });
+                            if (!res.ok) throw new Error('Failed to reject all characters');
+                            setPendingCharacters([]);
+                            addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                            setShowRejectAllModal(false);
+                            setRejectReason('');
+                          } catch (err) {
+                            addToast({ type: 'error', message: err.message, duration: 4000 });
+                          }
+                        }}
+                        disabled={!rejectReason.trim()}
+                      >
+                        Reject All
                       </button>
                     </div>
                   </div>
