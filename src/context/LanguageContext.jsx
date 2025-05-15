@@ -285,6 +285,10 @@ const translations = {
         title: 'Character Submitted',
         message: 'Your character has been submitted for review'
       },
+      characterDeleted: {
+        title: 'Character Deleted',
+        message: 'Your character "{{name}}" has been deleted from the public database by an administrator.'
+      },
       empty: 'No notifications',
       loading: 'Loading notifications...'
     },
@@ -827,6 +831,10 @@ const translations = {
       characterSubmitted: {
         title: 'Personaje Enviado',
         message: 'Tu personaje ha sido enviado para revisión pública. Cualquier cambio realizado en tu copia privada no afectará a la versión enviada. Serás notificado cuando sea aprobado o rechazado.'
+      },
+      characterDeleted: {
+        title: 'Personaje Eliminado',
+        message: 'Tu personaje "{{name}}" ha sido eliminado de la base de datos pública por un administrador.'
       },
       empty: 'No hay notificaciones',
       loading: 'Cargando notificaciones...'

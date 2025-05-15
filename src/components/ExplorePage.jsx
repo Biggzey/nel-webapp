@@ -21,6 +21,7 @@ export default function ExplorePage({ onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const menuRef = useRef(null);
+  const modalRef = useRef(null);
 
   // Fetch public/explore characters
   useEffect(() => {
@@ -55,7 +56,7 @@ export default function ExplorePage({ onClose }) {
       await addToCollection(character.id);
       addToast({
         type: 'success',
-        message: t('explore.added', { name: character.name }) || `${character.name} added to your characters!`,
+        message: t('explore.added', { name: character.name }),
         duration: 3000,
       });
       setModal(null);
@@ -78,20 +79,62 @@ export default function ExplorePage({ onClose }) {
         }
       });
       if (!res.ok) throw new Error('Failed to delete character');
+
+      // Send notification to original creator
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+        },
+        body: JSON.stringify({
+          userId: character.userId,
+          type: 'character_deleted',
+          title: t('notifications.characterDeleted.title'),
+          message: t('notifications.characterDeleted.message', { name: character.name }),
+          data: {
+            characterId: character.id,
+            characterName: character.name
+          }
+        })
+      });
+
       setCharacters(prev => prev.filter(c => c.id !== character.id));
       addToast({
         type: 'success',
-        message: t('explore.deleteSuccess', 'Character deleted successfully'),
+        message: t('explore.deleteSuccess'),
         duration: 3000
       });
     } catch (err) {
       addToast({
         type: 'error',
-        message: t('explore.deleteError', 'Failed to delete character'),
+        message: t('explore.deleteError'),
         duration: 3000
       });
     }
   }
+
+  // Add click outside handler for context menu
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuIndex(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Add click outside handler for modal
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setModal(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen w-full bg-gradient-to-b from-primary/10 via-background-light to-background-container-light dark:from-primary/20 dark:via-background-dark dark:to-background-container-dark px-2 py-8 animate-fade-in-up">
@@ -214,10 +257,10 @@ export default function ExplorePage({ onClose }) {
       )}
       {/* Modal for character details */}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up" onClick={() => setModal(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up">
           <div
+            ref={modalRef}
             className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-7xl w-full mx-4 relative animate-fade-in-up overflow-y-auto max-h-[90vh]"
-            onClick={e => e.stopPropagation()}
           >
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-primary text-2xl focus:outline-none"
