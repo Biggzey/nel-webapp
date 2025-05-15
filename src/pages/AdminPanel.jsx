@@ -173,7 +173,7 @@ export default function AdminPanel() {
   async function handleApprove(id) {
     try {
       const res = await fetch(`/api/admin/characters/${id}/approve`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Failed to approve character');
@@ -215,18 +215,6 @@ export default function AdminPanel() {
 
   return (
     <>
-      <div style={{
-        color: 'yellow',
-        background: 'black',
-        padding: 8,
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 9999,
-        fontSize: '1.5rem'
-      }}>
-        ROLE: {String(userRole)}
-      </div>
       <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
         <AdminSidebar
           onUserSelect={setSelectedUserId}
