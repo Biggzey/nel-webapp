@@ -10,6 +10,7 @@ export default function AdminPanel() {
   const { t } = useLanguage();
   const { addToast } = useToast();
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const { role } = useAuth();
   const [userDetails, setUserDetails] = useState(null);
   const [systemStats, setSystemStats] = useState(null);
   const [pendingCharacters, setPendingCharacters] = useState([]);
@@ -475,9 +476,33 @@ export default function AdminPanel() {
                 <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">
                   <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
                   {pendingCharacters.length > 0 && (
-                    <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-base font-bold px-3 py-1.5 rounded-full shadow-lg" style={{ minWidth: '2rem', minHeight: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {pendingCharacters.length}
-                    </span>
+                    <>
+                      <span className="absolute top-2 right-2 z-10 bg-red-600 text-white text-base font-bold px-3 py-1.5 rounded-full shadow-lg" style={{ minWidth: '2rem', minHeight: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {pendingCharacters.length}
+                      </span>
+                      {role === 'SUPER_ADMIN' && (
+                        <button
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
+                              try {
+                                const res = await fetch('/api/admin/characters/reject-all', {
+                                  method: 'POST',
+                                  headers: { Authorization: `Bearer ${token}` }
+                                });
+                                if (!res.ok) throw new Error('Failed to reject all characters');
+                                setPendingCharacters([]);
+                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                              } catch (err) {
+                                addToast({ type: 'error', message: err.message, duration: 4000 });
+                              }
+                            }
+                          }}
+                          className="absolute top-2 right-16 z-10 bg-red-500 text-white text-sm font-semibold px-3 py-1.5 rounded-lg shadow-lg hover:bg-red-600 transition-colors"
+                        >
+                          Reject All
+                        </button>
+                      )}
+                    </>
                   )}
                   {loadingPending ? (
                     <div className="text-text-secondary-light dark:text-text-secondary-dark">Loading...</div>

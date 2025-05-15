@@ -1508,110 +1508,79 @@ try {
   // Create a new character
   app.post("/api/characters", authMiddleware, async (req, res) => {
     try {
-      // First verify the user still exists
+      // Check if user exists
       const user = await prisma.user.findUnique({
         where: { id: req.user.id }
       });
 
       if (!user) {
-        return res.status(401).json({ error: "User no longer exists" });
+        return res.status(404).json({ error: "User not found" });
       }
 
-      // Validate required fields for all characters
-      if (!req.body.name || req.body.name.trim() === '') {
-        return res.status(400).json({ error: "Character name is required" });
-      }
-      // Validate avatar
-      if (!req.body.avatar || req.body.avatar.trim() === '') {
-        return res.status(400).json({ error: "Character avatar is required" });
+      // Validate required fields
+      const { name, avatar, isPublic } = req.body;
+      if (!name || !avatar) {
+        return res.status(400).json({ error: "Name and avatar are required" });
       }
 
-      // If public, validate additional required fields
-      const isPublic = req.body.isPublic === true || req.body.isPublic === 'true';
+      // Additional validation for public characters
       if (isPublic) {
-        if (!req.body.description || req.body.description.trim() === '') {
-          return res.status(400).json({ error: "Description is required for public characters" });
-        }
-        if (!req.body.systemPrompt || req.body.systemPrompt.trim() === '') {
-          return res.status(400).json({ error: "System prompt is required for public characters" });
-        }
-        if (!req.body.personality || req.body.personality.trim() === '') {
-          return res.status(400).json({ error: "Personality is required for public characters" });
+        const { description, systemPrompt, personality } = req.body;
+        if (!description || !systemPrompt || !personality) {
+          return res.status(400).json({ error: "Description, system prompt, and personality are required for public characters" });
         }
       }
 
-      // Ensure avatar and userId are set
+      // Create the private character first
       const characterData = {
         ...req.body,
         avatar: req.body.avatar || '/assets/default-avatar.png',
         userId: req.user.id,
-        isPublic: isPublic,
-        reviewStatus: isPublic ? "pending" : "private"
+        isPublic: false,
+        reviewStatus: "private"
       };
 
       // Remove any pendingSubmissionInfo and id from the character data
       delete characterData.pendingSubmissionInfo;
       delete characterData.id;
 
-      // Create the character
-      const character = await prisma.character.create({
+      // Create the private character
+      const privateCharacter = await prisma.character.create({
         data: characterData
       });
 
-      // If this is meant to be public, create a pending submission
+      // If this is a public character, create a pending submission
       if (isPublic) {
         try {
-          const pendingCharacter = await prisma.pendingCharacter.create({
+          const pendingSubmission = await prisma.pendingCharacter.create({
             data: {
-              name: character.name,
-              description: character.description,
-              avatar: character.avatar,
-              fullImage: character.fullImage,
-              age: character.age,
-              gender: character.gender,
-              race: character.race,
-              occupation: character.occupation,
-              likes: character.likes,
-              dislikes: character.dislikes,
-              personality: character.personality,
-              systemPrompt: character.systemPrompt,
-              customInstructions: character.customInstructions,
-              backstory: character.backstory,
-              firstMessage: character.firstMessage,
-              messageExample: character.messageExample,
-              scenario: character.scenario,
-              creatorNotes: character.creatorNotes,
-              alternateGreetings: character.alternateGreetings,
-              tags: character.tags,
-              creator: character.creator,
-              characterVersion: character.characterVersion,
-              extensions: character.extensions,
-              userId: character.userId,
-              originalCharacterId: character.id,
+              ...characterData,
+              userId: req.user.id,
+              originalCharacterId: privateCharacter.id,
               status: "pending"
             }
           });
 
-          // Return both the character and the pending submission info
+          // Update the private character's review status
+          await prisma.character.update({
+            where: { id: privateCharacter.id },
+            data: { reviewStatus: "pending" }
+          });
+
+          // Return both the character and pending submission info
           return res.json({
-            ...character,
-            pendingSubmissionInfo: {
-              id: pendingCharacter.id,
-              status: pendingCharacter.status,
-              createdAt: pendingCharacter.createdAt
-            }
+            ...privateCharacter,
+            pendingSubmissionInfo: pendingSubmission
           });
-        } catch (error) {
-          console.error("Error creating pending submission:", error);
-          // Still return the character even if pending submission fails
-          return res.json({ 
-            ...character, 
-            pendingError: "Failed to submit for review" 
-          });
+        } catch (pendingError) {
+          console.error("Error creating pending submission:", pendingError);
+          // Return the private character even if pending submission fails
+          return res.json(privateCharacter);
         }
       }
 
-      res.json(character);
+      // Return just the private character
+      res.json(privateCharacter);
     } catch (error) {
       console.error("Error creating character:", error);
       res.status(500).json({ error: "Failed to create character" });
@@ -2874,6 +2843,61 @@ try {
     } catch (error) {
       console.error("Error submitting character for review:", error);
       res.status(500).json({ error: "Failed to submit character for review" });
+    }
+  });
+
+  // Reject all pending characters (SUPER_ADMIN only)
+  app.post("/api/admin/characters/reject-all", authMiddleware, async (req, res) => {
+    try {
+      // Get the full user data to check role
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id }
+      });
+
+      if (!user || user.role !== 'SUPER_ADMIN') {
+        return res.status(403).json({ error: "Unauthorized" });
+      }
+
+      // Get all pending characters
+      const pendingCharacters = await prisma.pendingCharacter.findMany({
+        where: { status: "pending" }
+      });
+
+      // Update all pending characters to rejected
+      await prisma.pendingCharacter.updateMany({
+        where: { status: "pending" },
+        data: { 
+          status: "rejected",
+          rejectionReason: "Bulk rejected by admin"
+        }
+      });
+
+      // Update all original characters to rejected
+      await prisma.character.updateMany({
+        where: { 
+          reviewStatus: "pending",
+          id: { in: pendingCharacters.map(pc => pc.originalCharacterId).filter(Boolean) }
+        },
+        data: { reviewStatus: "rejected" }
+      });
+
+      // Create notifications for all users
+      await Promise.all(pendingCharacters.map(pc => 
+        prisma.notification.create({
+          data: {
+            userId: pc.userId,
+            type: "CHARACTER_REJECTED",
+            title: "Character Rejected",
+            message: `Your character "${pc.name}" has been rejected.`,
+            metadata: { characterId: pc.originalCharacterId }
+          }
+        })
+      ));
+
+      res.json({ message: "All pending characters rejected successfully" });
+    } catch (error) {
+      console.error("Error rejecting all characters:", error);
+      res.status(500).json({ error: "Failed to reject all characters" });
     }
   });
 
