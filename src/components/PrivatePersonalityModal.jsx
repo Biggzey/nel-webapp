@@ -28,7 +28,6 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
     fullImage: '',
     personality: '',
     systemPrompt: '',
-    customInstructions: '',
     backstory: '',
     firstMessage: '',
     messageExample: '',
@@ -108,10 +107,6 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
     const tagsArr = Array.isArray(form.tags) ? form.tags : (typeof form.tags === 'string' ? form.tags.split(/,\s*/) : []);
     if (!tagsArr || tagsArr.length < 3 || tagsArr.some(tag => !tag.trim())) {
       errors.tags = t('character.fields.tagsRequired');
-    }
-    
-    if (!form.customInstructions || !form.customInstructions.trim()) {
-      errors.customInstructions = true;
     }
     
     return errors;
@@ -460,7 +455,6 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
                 {/* Other fields */}
                 <div className="space-y-2">
                   {[
-                    { label: t('character.personality.customInstructions'), field: "customInstructions", placeholder: t('character.personality.customInstructionsPlaceholder') },
                     { label: t('character.personality.backstory'), field: "backstory", placeholder: t('character.personality.backstoryPlaceholder') },
                     { label: t('character.personality.firstMessage'), field: "firstMessage", placeholder: t('character.personality.firstMessagePlaceholder') },
                     { label: t('character.personality.messageExample'), field: "messageExample", placeholder: t('character.personality.messageExamplePlaceholder') },
@@ -468,37 +462,15 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
                     { label: t('character.personality.creatorNotes'), field: "creatorNotes", placeholder: t('character.personality.creatorNotesPlaceholder') }
                   ].map(({ label, field, placeholder }) => (
                     <div key={field}>
-                      {field === 'customInstructions' ? (
-                        <>
-                          <label className="block mb-1 text-sm font-medium">
-                            {label} <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            name={field}
-                            value={form[field] || ""}
-                            onChange={handleChange}
-                            className={`w-full p-2 border-2 rounded bg-background-container-light dark:bg-background-container-dark border-primary focus:border-primary focus:ring-2 focus:ring-primary transition-colors ${fieldErrors.customInstructions && attemptedSubmit ? 'border-red-500' : ''}`}
-                            placeholder={placeholder}
-                            rows={2}
-                            required
-                          />
-                          {fieldErrors.customInstructions && attemptedSubmit && (
-                            <div className="text-red-500 text-xs mt-1">{t('character.fields.customInstructionsRequired')}</div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <label className="block mb-1 text-sm font-medium">{label}</label>
-                          <textarea
-                            name={field}
-                            value={form[field] || ""}
-                            onChange={handleChange}
-                            className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                            placeholder={placeholder}
-                            rows={2}
-                          />
-                        </>
-                      )}
+                      <label className="block mb-1 text-sm font-medium">{label}</label>
+                      <textarea
+                        name={field}
+                        value={form[field] || ""}
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                        placeholder={placeholder}
+                        rows={2}
+                      />
                     </div>
                   ))}
                 </div>
