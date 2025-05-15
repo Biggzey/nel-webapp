@@ -176,13 +176,12 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         },
         body: JSON.stringify({
           ...form,
-          isPublic: true, // Always true for public modal
+          isPublic: true,
           name: form.name.trim(),
           description: form.description.trim(),
           personality: form.personality.trim(),
           systemPrompt: form.systemPrompt.trim(),
-          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
-          pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
+          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
         })
       });
 

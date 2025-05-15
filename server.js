@@ -1531,21 +1531,21 @@ try {
         }
       }
 
-      // Create the private character first
+      // Create the character data
       const characterData = {
         ...req.body,
         avatar: req.body.avatar || '/assets/default-avatar.png',
         userId: req.user.id,
-        isPublic: false,
-        reviewStatus: "private"
+        isPublic: isPublic,
+        reviewStatus: isPublic ? "pending" : "private"
       };
 
       // Remove any pendingSubmissionInfo and id from the character data
       delete characterData.pendingSubmissionInfo;
       delete characterData.id;
 
-      // Create the private character
-      const privateCharacter = await prisma.character.create({
+      // Create the character
+      const character = await prisma.character.create({
         data: characterData
       });
 
@@ -1556,31 +1556,25 @@ try {
             data: {
               ...characterData,
               userId: req.user.id,
-              originalCharacterId: privateCharacter.id,
+              originalCharacterId: character.id,
               status: "pending"
             }
           });
 
-          // Update the private character's review status
-          await prisma.character.update({
-            where: { id: privateCharacter.id },
-            data: { reviewStatus: "pending" }
-          });
-
           // Return both the character and pending submission info
           return res.json({
-            ...privateCharacter,
+            ...character,
             pendingSubmissionInfo: pendingSubmission
           });
         } catch (pendingError) {
           console.error("Error creating pending submission:", pendingError);
-          // Return the private character even if pending submission fails
-          return res.json(privateCharacter);
+          // Return the character even if pending submission fails
+          return res.json(character);
         }
       }
 
-      // Return just the private character
-      res.json(privateCharacter);
+      // Return just the character for private characters
+      res.json(character);
     } catch (error) {
       console.error("Error creating character:", error);
       res.status(500).json({ error: "Failed to create character" });
