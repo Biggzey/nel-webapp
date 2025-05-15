@@ -25,7 +25,6 @@ export default function EditPersonalityModal({ isOpen, initialData = {}, onClose
     fullImage: '',
     personality: '',
     systemPrompt: '',
-    customInstructions: '',
     backstory: '',
     firstMessage: '',
     messageExample: '',
@@ -281,7 +280,6 @@ export default function EditPersonalityModal({ isOpen, initialData = {}, onClose
                 {/* Other fields */}
                 <div className="space-y-2">
                   {[
-                    { label: t('character.personality.customInstructions'), field: "customInstructions", placeholder: t('character.personality.customInstructionsPlaceholder') },
                     { label: t('character.personality.backstory'), field: "backstory", placeholder: t('character.personality.backstoryPlaceholder') },
                     { label: t('character.personality.firstMessage'), field: "firstMessage", placeholder: t('character.personality.firstMessagePlaceholder') },
                     { label: t('character.personality.messageExample'), field: "messageExample", placeholder: t('character.personality.messageExamplePlaceholder') },

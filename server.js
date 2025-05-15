@@ -1606,6 +1606,7 @@ try {
       delete updateData.isPublic;
       delete updateData.reviewStatus;
       delete updateData.pendingSubmissions;
+      delete updateData.customInstructions; // Remove customInstructions as it's no longer in the schema
 
       // Update the character
       const character = await prisma.character.update({
