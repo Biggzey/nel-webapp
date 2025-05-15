@@ -179,7 +179,11 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               ...privateChar,
               isPublic: true,
               id: undefined, // Let server generate new ID
-              status: 'pending'
+              pendingSubmissions: {
+                create: {
+                  status: 'pending'
+                }
+              }
             })
           });
 
