@@ -141,34 +141,6 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
     }
 
     try {
-      // For existing characters, use PUT to update
-      if (initialData.id) {
-        const updateRes = await fetch(`/api/characters/${initialData.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-          },
-          body: JSON.stringify(form)
-        });
-
-        if (!updateRes.ok) {
-          const errorData = await updateRes.json();
-          throw new Error(errorData.message || 'Failed to update character');
-        }
-
-        const updatedChar = await updateRes.json();
-        await reloadCharacters();
-        onSave(updatedChar);
-        addToast({
-          type: 'success',
-          message: t('character.editSuccess'),
-          duration: 3000
-        });
-        onClose();
-        return;
-      }
-
       // Always create private character first
       const privateRes = await fetch('/api/characters', {
         method: 'POST',
@@ -265,7 +237,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
         });
       }
 
-      // Always reload characters and save
+      // Always reload characters and save the private character
       await reloadCharacters();
       onSave(privateChar);
       onClose();

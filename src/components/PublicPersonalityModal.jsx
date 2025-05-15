@@ -139,34 +139,6 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
     }
 
     try {
-      // For existing characters, use PUT to update
-      if (initialData.id) {
-        const updateRes = await fetch(`/api/characters/${initialData.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-          },
-          body: JSON.stringify(form)
-        });
-
-        if (!updateRes.ok) {
-          const errorData = await updateRes.json();
-          throw new Error(errorData.message || 'Failed to update character');
-        }
-
-        const updatedChar = await updateRes.json();
-        await reloadCharacters();
-        onSave(updatedChar);
-        addToast({
-          type: 'success',
-          message: t('character.editSuccess'),
-          duration: 3000
-        });
-        onClose();
-        return;
-      }
-
       // Always create private character first
       const privateRes = await fetch('/api/characters', {
         method: 'POST',
@@ -255,7 +227,7 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
         });
       }
 
-      // Always reload characters and save
+      // Always reload characters and save the private character
       await reloadCharacters();
       onSave(privateChar);
       onClose();
@@ -516,8 +488,11 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           {showConfirm && (
             <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={e => e.stopPropagation()}>
               <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-md w-full mx-4 relative animate-fade-in-up flex flex-col items-center">
-                <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreate')}</h2>
-                <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreateDesc')}</p>
+                <h2 className="text-xl font-bold mb-4 text-primary">{t('character.confirmCreatePublic')}</h2>
+                <p className="mb-4 text-base text-center text-text-light dark:text-text-dark">{t('character.confirmCreatePublicDesc')}</p>
+                <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-4">
+                  {t('character.public.warning')}
+                </p>
                 
                 <div className="flex gap-3 mt-4 w-full justify-center">
                   <button
