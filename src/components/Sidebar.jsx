@@ -424,7 +424,7 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                       pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
                     })
                   });
-                  
+
                   if (!publicRes.ok) throw new Error('Failed to create public character for review');
                   
                   const publicChar = await publicRes.json();

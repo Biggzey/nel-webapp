@@ -207,7 +207,11 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               ...privateChar,
               isPublic: true,
               id: undefined, // Let server generate new ID
-              reviewStatus: 'pending' // Add review status
+              reviewStatus: 'pending',
+              pendingSubmissionInfo: {
+                submittedAt: new Date().toISOString(),
+                status: 'pending'
+              }
             })
           });
 
@@ -228,7 +232,11 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               type: 'CHARACTER_SUBMITTED',
               title: t('notifications.characterSubmitted.title'),
               message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: publicChar.id }
+              metadata: { 
+                characterId: publicChar.id,
+                reviewStatus: 'pending',
+                submittedAt: new Date().toISOString()
+              }
             })
           });
 

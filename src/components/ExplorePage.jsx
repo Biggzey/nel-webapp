@@ -189,17 +189,17 @@ export default function ExplorePage({ onClose }) {
           initialData={{ name: '', isPublic: true }}
           onClose={() => setShowCreate(false)}
           onSave={async (form) => {
-            const res = await fetch('/api/characters', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-              },
+              const res = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                },
               body: JSON.stringify({ ...form, isPublic: true })
-            });
-            if (!res.ok) throw new Error('Failed to create character');
+              });
+              if (!res.ok) throw new Error('Failed to create character');
             const response = await res.json();
-            await reloadCharacters();
+              await reloadCharacters();
             return response;
           }}
         />
