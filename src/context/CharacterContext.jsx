@@ -8,7 +8,6 @@ const defaultCharacters = [
     name: "Nelliel",
     personality: "Your custom AI companion.",
     avatar: "/nel-avatar.png",
-    bookmarked: false,
     systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
     customInstructions: "",
   },
@@ -124,11 +123,6 @@ export function CharacterProvider({ children }) {
 
   const current = characters[selectedIndex];
 
-  // Which ones are bookmarked
-  const bookmarks = characters
-    .map((c, i) => (c.bookmarked ? i : null))
-    .filter((i) => i !== null);
-
   function generateUniqueId() {
     return Date.now(); // PostgreSQL will handle the actual ID
   }
@@ -139,7 +133,6 @@ export function CharacterProvider({ children }) {
         name: "New Character",
         personality: "",
         avatar: "/nel-avatar.png",
-        bookmarked: false,
         systemPrompt: "",
         customInstructions: "",
       };
@@ -300,38 +293,6 @@ export function CharacterProvider({ children }) {
     }
   }
 
-  async function toggleBookmark(idx = selectedIndex) {
-    try {
-      const char = characters[idx];
-      const res = await fetch(`/api/characters/${char.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...char,
-          bookmarked: !char.bookmarked
-        }),
-      });
-
-      if (res.status === 429) {
-        handleRateLimit();
-        return;
-      }
-      if (!res.ok) {
-        throw new Error("Failed to update bookmark");
-      }
-
-      const updated = await res.json();
-      setCharacters(prev =>
-        prev.map((c, i) => (i === idx ? updated : c))
-      );
-    } catch (error) {
-      console.error("Error toggling bookmark:", error);
-    }
-  }
-
   let reloadTimeout = null;
   let last429 = 0;
   async function reloadCharacters() {
@@ -355,22 +316,13 @@ export function CharacterProvider({ children }) {
       }
       if (res.ok) {
         const userChars = await res.json();
-        // Remove duplicates by id
-        const uniqueChars = [];
-        const seenIds = new Set();
-        for (const c of userChars) {
-          if (!seenIds.has(c.id)) {
-            uniqueChars.push(c);
-            seenIds.add(c.id);
-          }
-        }
         // Sort so Nelliel is always first if she exists
-        uniqueChars.sort((a, b) => {
+        userChars.sort((a, b) => {
           if (a.name === 'Nelliel') return -1;
           if (b.name === 'Nelliel') return 1;
           return 0;
         });
-        setCharacters(uniqueChars);
+        setCharacters(userChars);
       }
       reloadCharacters._reloading = false;
       setIsReloadingCharacters(false);
@@ -410,31 +362,6 @@ export function CharacterProvider({ children }) {
   }
 
   // Add new functions for explore functionality
-  async function submitForReview(characterId) {
-    try {
-      const res = await fetch(`/api/characters/${characterId}/submit-for-review`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to submit character for review');
-      }
-
-      const updated = await res.json();
-      setCharacters(prev =>
-        prev.map(c => (c.id === characterId ? updated : c))
-      );
-      return updated;
-    } catch (error) {
-      console.error('Error submitting character for review:', error);
-      throw error;
-    }
-  }
-
   async function addToCollection(characterId) {
     try {
       const res = await fetch(`/api/explore/characters/${characterId}/add`, {
@@ -458,34 +385,6 @@ export function CharacterProvider({ children }) {
     }
   }
 
-  // Create a public copy of a character and submit for review
-  async function createPublicAndSubmit(characterData) {
-    // Create the public copy
-    const res = await fetch('/api/characters', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ ...characterData, isPublic: true })
-    });
-    if (!res.ok) throw new Error('Failed to create public character for review');
-    const publicChar = await res.json();
-    // Submit the public copy for review
-    const reviewRes = await fetch(`/api/characters/${publicChar.id}/submit-for-review`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      }
-    });
-    if (!reviewRes.ok) {
-      const reviewData = await reviewRes.json();
-      throw new Error(reviewData.error || 'Failed to submit public character for review');
-    }
-    return publicChar;
-  }
-
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
@@ -497,7 +396,6 @@ export function CharacterProvider({ children }) {
         selectedIndex,
         current,
         isModalOpen,
-        bookmarks,
         setSelectedIndex,
         setSelectedIndexRaw: _setSelectedIndex,
         handleNewCharacter,
@@ -506,7 +404,6 @@ export function CharacterProvider({ children }) {
         handleCloseModal,
         handleDeleteCharacter,
         resetCurrentCharacter,
-        toggleBookmark,
         reloadCharacters,
         reorderCharacters,
         isLoading,
@@ -514,9 +411,7 @@ export function CharacterProvider({ children }) {
         setIsImporting,
         isReloadingCharacters,
         setIsReloadingCharacters,
-        submitForReview,
         addToCollection,
-        createPublicAndSubmit,
       }}
     >
       {children}

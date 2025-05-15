@@ -1556,7 +1556,6 @@ try {
             data: {
               ...characterData,
               userId: req.user.id,
-              originalCharacterId: character.id,
               status: "pending"
             }
           });
@@ -2507,7 +2506,7 @@ try {
         return res.status(404).json({ error: "Pending character not found" });
       }
 
-      // Create the public character
+      // Create a new public character from the pending one
       const publicCharacter = await prisma.character.create({
         data: {
           name: pendingCharacter.name,
@@ -2544,14 +2543,6 @@ try {
         where: { id: pendingId },
         data: { status: "approved" }
       });
-
-      // If there's an original character, update its status
-      if (pendingCharacter.originalCharacterId) {
-        await prisma.character.update({
-          where: { id: pendingCharacter.originalCharacterId },
-          data: { reviewStatus: "approved" }
-        });
-      }
 
       // Create notification for the user
       await prisma.notification.create({
