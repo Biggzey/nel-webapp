@@ -1545,7 +1545,8 @@ try {
         ...req.body,
         avatar: req.body.avatar || '/assets/default-avatar.png',
         userId: req.user.id,
-        isPublic: false // Always create as private first
+        isPublic: isPublic,
+        reviewStatus: isPublic ? "pending" : "private"
       };
 
       const character = await prisma.character.create({
@@ -1586,12 +1587,6 @@ try {
             }
           });
 
-          // Update the original character's review status
-          await prisma.character.update({
-            where: { id: character.id },
-            data: { reviewStatus: "pending" }
-          });
-
           // Return both the character and the pending submission info
           return res.json({
             ...character,
@@ -1603,7 +1598,7 @@ try {
           });
         } catch (error) {
           console.error("Error creating pending submission:", error);
-          // Still return the private character even if pending submission fails
+          // Still return the character even if pending submission fails
           return res.json({ 
             ...character, 
             pendingError: "Failed to submit for review" 
