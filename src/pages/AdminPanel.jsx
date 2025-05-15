@@ -480,7 +480,6 @@ export default function AdminPanel() {
                       <span className="bg-red-600 text-white text-base font-bold px-3 py-1.5 rounded-full shadow-lg" style={{ minWidth: '2rem', minHeight: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {pendingCharacters.length}
                       </span>
-                      <div style={{ background: 'yellow', color: 'black', fontWeight: 'bold', padding: 8, marginLeft: 8 }}>TEST</div>
                       <button
                         onClick={async () => {
                           if (window.confirm('Are you sure you want to reject all pending characters?')) {
