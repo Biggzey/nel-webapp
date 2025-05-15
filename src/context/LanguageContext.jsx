@@ -267,7 +267,13 @@ const translations = {
       popularity: 'Popularity',
       newest: 'Newest',
       rating: 'Rating',
-      create: 'Create Public Character'
+      create: 'Create Public Character',
+      add: 'Add to Sidebar',
+      delete: 'Delete Character',
+      added: '{{name}} added to your characters!',
+      addError: 'Failed to add character',
+      deleteSuccess: 'Character deleted successfully',
+      deleteError: 'Failed to delete character'
     },
     notifications: {
       title: 'Notifications',

@@ -216,7 +216,7 @@ export default function ExplorePage({ onClose }) {
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up" onClick={() => setModal(null)}>
           <div
-            className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-4xl w-full mx-4 relative animate-fade-in-up overflow-y-auto max-h-[90vh]"
+            className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-7xl w-full mx-4 relative animate-fade-in-up overflow-y-auto max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -226,7 +226,7 @@ export default function ExplorePage({ onClose }) {
             >
               <i className="fas fa-times" />
             </button>
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-3 gap-8">
               {/* Left Column - Images */}
               <div className="space-y-4">
                 <div>
@@ -249,7 +249,7 @@ export default function ExplorePage({ onClose }) {
                 )}
               </div>
 
-              {/* Right Column - Details */}
+              {/* Middle Column - Basic Details */}
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
@@ -281,6 +281,15 @@ export default function ExplorePage({ onClose }) {
                   </dl>
                 </div>
 
+                <div className="flex flex-wrap gap-2">
+                  {(modal.tags || []).map(tag => (
+                    <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column - Personality Configuration */}
+              <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
                   <dl className="space-y-2">
@@ -314,20 +323,17 @@ export default function ExplorePage({ onClose }) {
                     </div>
                   </dl>
                 </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {(modal.tags || []).map(tag => (
-                    <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
-                  ))}
-                </div>
-
-                <button
-                  className="w-full bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90"
-                  onClick={() => handleAdd(modal)}
-                >
-                  {t('explore.add')}
-                </button>
               </div>
+            </div>
+
+            {/* Add button centered at bottom */}
+            <div className="mt-8 flex justify-center">
+              <button
+                className="bg-primary text-white px-8 py-3 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90"
+                onClick={() => handleAdd(modal)}
+              >
+                {t('explore.add')}
+              </button>
             </div>
           </div>
         </div>
