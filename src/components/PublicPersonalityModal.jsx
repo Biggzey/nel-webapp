@@ -176,7 +176,22 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
             ...privateChar,
             isPublic: true,
             id: undefined, // Let server generate new ID
-            status: 'pending'
+            pendingSubmissions: {
+              create: {
+                status: 'pending',
+                name: form.name.trim(),
+                description: form.description.trim(),
+                avatar: form.avatar || '/default-avatar.png',
+                personality: form.personality.trim(),
+                systemPrompt: form.systemPrompt.trim(),
+                tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
+                user: {
+                  connect: {
+                    id: privateChar.userId
+                  }
+                }
+              }
+            }
           })
         });
 
