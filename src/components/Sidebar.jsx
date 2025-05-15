@@ -207,7 +207,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   const {
     characters,
     selectedIndex,
-    bookmarks,
     current,
     setSelectedIndex,
     setSelectedIndexRaw,
@@ -215,7 +214,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     handleOpenModal,
     handleSaveCharacter,
     handleDeleteCharacter,
-    toggleBookmark,
     setCurrent,
     setCharacters,
     reloadCharacters,
@@ -269,8 +267,6 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       reorderCharacters(newOrder);
     }
   }
-
-  const isBookmarked = bookmarks.includes(selectedIndex);
 
   // Click-away handler for context menu
   useEffect(() => {
@@ -408,87 +404,77 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
 
               const privateChar = await res.json();
               
-              // If public toggle is on, create a public copy and submit for review
+              // If public toggle is on, create public copy with pending submission
               if (form.isPublic) {
-                try {
-                  const publicRes = await fetch('/api/characters', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                    },
-                    body: JSON.stringify({ 
-                      ...privateChar, 
-                      isPublic: true, 
-                      id: undefined, // Let the server generate a new ID
-                      pendingSubmissionInfo: undefined // Remove any pendingSubmissionInfo
-                    })
-                  });
+                const publicRes = await fetch('/api/characters', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+                  },
+                  body: JSON.stringify({
+                    ...privateChar,
+                    isPublic: true,
+                    id: undefined, // Let server generate new ID
+                    pendingSubmissions: {
+                      create: {
+                        status: 'pending',
+                        name: form.name.trim(),
+                        description: form.description.trim(),
+                        avatar: form.avatar || '/default-avatar.png',
+                        personality: form.personality.trim(),
+                        systemPrompt: form.systemPrompt.trim(),
+                        tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
+                        user: {
+                          connect: {
+                            id: privateChar.userId
+                          }
+                        }
+                      }
+                    }
+                  })
+                });
 
-                  if (!publicRes.ok) throw new Error('Failed to create public character for review');
-                  
-                  const publicChar = await publicRes.json();
-                  
-                  // Only send notification if we have a pending submission
-                  if (publicChar.pendingSubmissionInfo) {
-                    console.log('Sending notification...');
-                    const notifRes = await fetch('/api/notifications', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-                      },
-                      body: JSON.stringify({
-                        type: 'CHARACTER_SUBMITTED',
-                        title: 'Character submitted for approval',
-                        message: 'Your character has been submitted for admin review.',
-                        metadata: { characterId: publicChar.pendingSubmissionInfo.id }
-                      })
-                    });
-                    
-                    const notifData = await notifRes.json().catch(() => ({}));
-                    console.log('Notification API response:', notifRes.status, notifData);
-                    
-                    // Optionally refresh notifications
-                    if (typeof fetchNotifications === 'function') fetchNotifications();
-                    addToast({ type: 'success', message: 'Character created and submitted for review!', duration: 3000 });
-                  }
-                } catch (err) {
-                  console.error('Error in public submission logic:', err);
+                if (!publicRes.ok) {
+                  const errorData = await publicRes.json().catch(() => ({}));
                   addToast({ 
                     type: 'error', 
-                    message: err.message || 'Character created but failed to submit for review. You can try submitting it later.', 
+                    message: errorData.error || t('character.reviewError') || 'Failed to submit for review', 
                     duration: 4000 
                   });
+                  return;
                 }
-              } else {
-                // Private creation success
-                addToast({ type: 'success', message: 'Character created!', duration: 3000 });
               }
 
-              // Close modal and reload characters
-              setShowNewCharacterModal(false);
+              // Reload characters to get the new one
               await reloadCharacters();
-              return privateChar;
+              setShowNewCharacterModal(false);
+              setNewCharacterInitialData({});
+              addToast({ 
+                type: 'success', 
+                message: form.isPublic ? 
+                  (t('character.submittedForApproval') || 'Character submitted for approval!') : 
+                  (t('character.created') || 'Character created!'), 
+                duration: 3000 
+              });
             } catch (error) {
               console.error('Error creating character:', error);
-              addToast({ type: 'error', message: 'Failed to create character', duration: 4000 });
+              addToast({ 
+                type: 'error', 
+                message: t('character.createError') || 'Failed to create character', 
+                duration: 4000 
+              });
             }
           }}
         />
       );
     }
-  } catch (err) {
-    console.error('Error rendering PrivatePersonalityModal:', err);
-    privateModal = <div>Error rendering modal</div>;
+  } catch (error) {
+    console.error('Error rendering PrivatePersonalityModal:', error);
   }
 
   return (
-    <div className={`sidebar flex flex-col h-full w-sidebar bg-background-container-light dark:bg-background-container-dark border-2 border-primary rounded-2xl shadow-purple-glow ${className}`}>
-      {/* Decorative background patterns */}
-      
-
-      {/* Content container with backdrop blur */}
+    <aside className={`w-72 md:w-80 flex-shrink-0 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark ${className}`}>
       <div className="relative w-full h-full flex flex-col items-center">
         {/* Top controls section */}
         <div className="w-full px-2 flex flex-row gap-x-2 mb-6 mt-4">
@@ -590,7 +576,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                 }
                 return null;
               })()}
-              {/* Render all other characters in drag-and-drop context, filtered */}
+
+              {/* Render other characters */}
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -600,31 +587,29 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
                   items={filteredCharacters.filter(c => c.name !== 'Nelliel').map(c => c.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {filteredCharacters.filter(c => c.name !== 'Nelliel').map((c, i) => {
-                    // The index here is for the full list
-                    const globalIdx = characters.findIndex(x => x.id === c.id);
-                    return (
+                  {filteredCharacters
+                    .filter(c => c.name !== 'Nelliel')
+                    .map((character, index) => (
                       <SortableCharacterItem
-                        key={c.id}
-                        character={c}
-                        index={globalIdx}
-                        isSelected={globalIdx === selectedIndex}
+                        key={character.id}
+                        character={character}
+                        index={characters.findIndex(c => c.id === character.id)}
+                        isSelected={characters.findIndex(c => c.id === character.id) === selectedIndex}
                         onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
                         onClearChat={handleClearChat}
                         onDelete={handleDeleteCharacterWithConfirm}
                         onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
-                        isMenuOpen={openMenuIndex === globalIdx}
+                        isMenuOpen={openMenuIndex === characters.findIndex(c => c.id === character.id)}
                         menuRef={menuRef}
                       />
-                    );
-                  })}
+                    ))}
                 </SortableContext>
               </DndContext>
             </>
           )}
         </div>
 
-        {/* Bottom controls in container */}
+        {/* Bottom section */}
         <div className="w-full mt-auto px-2 pb-2">
           <div className="bg-background-container-light dark:bg-background-container-dark rounded-xl border-2 border-container-border-light dark:border-container-border-dark shadow-lg shadow-container-shadow-light dark:shadow-container-shadow-dark p-2 transition-all duration-300 hover:border-primary/40 hover:shadow-xl flex flex-col space-y-1">
             {isModerator && (
@@ -669,47 +654,14 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
       </div>
 
       {/* Import Modal */}
-      {showImportModal && (
-        <CharacterImportModal
-          open={showImportModal}
-          onClose={() => setShowImportModal(false)}
-          onImport={async (characterData) => {
-            try {
-              setIsImporting(true);
-              const res = await fetch("/api/characters", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(characterData),
-              });
-
-              if (!res.ok) {
-                throw new Error("Failed to import character");
-              }
-
-              const imported = await res.json();
-              // Close modal immediately after successful POST
-              setShowImportModal(false);
-              
-              // Reload the character list and select the new character
-              await reloadCharacters();
-              setSelectedIndexRaw(characters.length); // select the last character (newly imported)
-              setPendingImportToast(true);
-            } catch (error) {
-              console.error("Error importing character:", error);
-              setIsImporting(false);
-              addToast({
-                type: "error",
-                message: "Failed to import character: " + error.message,
-                duration: 5000,
-              });
-              setPendingImportToast(false);
-            }
-          }}
-        />
-      )}
+      <CharacterImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={() => {
+          setPendingImportToast(true);
+          setShowImportModal(false);
+        }}
+      />
 
       {/* Delete Confirmation Modal */}
       {confirmDelete && (
@@ -734,21 +686,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
         </div>
       )}
 
-      {/* Render PersonalityModal for new character */}
-      {showNewCharacterModal && (
-        <PrivatePersonalityModal
-          isOpen={showNewCharacterModal}
-          initialData={newCharacterInitialData}
-          onClose={() => {
-            setShowNewCharacterModal(false);
-            setNewCharacterInitialData({});
-          }}
-          onSave={async (form) => {
-            setShowNewCharacterModal(false);
-            await reloadCharacters();
-          }}
-        />
-      )}
-    </div>
+      {/* New Character Modal */}
+      {privateModal}
+    </aside>
   );
 }
