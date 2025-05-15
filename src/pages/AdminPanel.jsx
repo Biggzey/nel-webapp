@@ -525,26 +525,37 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       {role === 'SUPER_ADMIN' && pendingCharacters.length > 0 && (
-                        <button
-                          onClick={async () => {
-                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
-                              try {
-                                const res = await fetch('/api/admin/characters/reject-all', {
-                                  method: 'POST',
-                                  headers: { Authorization: `Bearer ${token}` }
-                                });
-                                if (!res.ok) throw new Error('Failed to reject all characters');
-                                setPendingCharacters([]);
-                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
-                              } catch (err) {
-                                addToast({ type: 'error', message: err.message, duration: 4000 });
+                        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+                          <button
+                            onClick={async () => {
+                              if (window.confirm('Are you sure you want to reject all pending characters?')) {
+                                try {
+                                  const res = await fetch('/api/admin/characters/reject-all', {
+                                    method: 'POST',
+                                    headers: { Authorization: `Bearer ${token}` }
+                                  });
+                                  if (!res.ok) throw new Error('Failed to reject all characters');
+                                  setPendingCharacters([]);
+                                  addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                                } catch (err) {
+                                  addToast({ type: 'error', message: err.message, duration: 4000 });
+                                }
                               }
-                            }
-                          }}
-                          className="absolute right-6 bottom-6 z-10 bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-red-600 transition-colors"
-                        >
-                          Reject All
-                        </button>
+                            }}
+                            style={{
+                              background: 'red',
+                              color: 'white',
+                              fontWeight: 'bold',
+                              padding: '16px 32px',
+                              borderRadius: '12px',
+                              border: '4px solid yellow',
+                              fontSize: '1.2rem',
+                              zIndex: 1000
+                            }}
+                          >
+                            Reject All
+                          </button>
+                        </div>
                       )}
                     </div>
                   )}
