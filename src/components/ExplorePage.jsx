@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCharacter } from '../context/CharacterContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
 import PublicPersonalityModal from './PublicPersonalityModal';
 import Badge from './Badge';
+import { useAuth } from '../context/AuthContext';
 
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
   const { addToCollection, characters: userCharacters, setSelectedIndex, reloadCharacters } = useCharacter();
   const { addToast } = useToast();
+  const { isAdmin, isSuperAdmin } = useAuth();
   const [search, setSearch] = useState('');
   const [modal, setModal] = useState(null);
   const [characters, setCharacters] = useState([]);
@@ -17,6 +19,8 @@ export default function ExplorePage({ onClose }) {
   const [showCreate, setShowCreate] = useState(false);
   const [globalLoading, setGlobalLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const menuRef = useRef(null);
 
   // Fetch public/explore characters
   useEffect(() => {
@@ -60,6 +64,31 @@ export default function ExplorePage({ onClose }) {
         type: 'error',
         message: t('explore.addError'),
         duration: 3000,
+      });
+    }
+  }
+
+  // Add delete handler
+  async function handleDelete(character) {
+    try {
+      const res = await fetch(`/api/characters/${character.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
+        }
+      });
+      if (!res.ok) throw new Error('Failed to delete character');
+      setCharacters(prev => prev.filter(c => c.id !== character.id));
+      addToast({
+        type: 'success',
+        message: t('explore.deleteSuccess', 'Character deleted successfully'),
+        duration: 3000
+      });
+    } catch (err) {
+      addToast({
+        type: 'error',
+        message: t('explore.deleteError', 'Failed to delete character'),
+        duration: 3000
       });
     }
   }
@@ -138,6 +167,46 @@ export default function ExplorePage({ onClose }) {
                   {t(`explore.${character.reviewStatus}`)}
                 </Badge>
               )}
+              {/* Context menu button */}
+              <button
+                ref={menuRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setOpenMenuIndex(openMenuIndex === character.id ? null : character.id);
+                }}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-primary focus:outline-none"
+                title="More options"
+              >
+                <i className="fas fa-ellipsis-v" />
+              </button>
+              {/* Context menu */}
+              {openMenuIndex === character.id && (
+                <div
+                  ref={menuRef}
+                  className="absolute top-12 right-4 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-container-border-light dark:border-container-border-dark rounded-lg shadow-lg py-2"
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAdd(character);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
+                  >
+                    <i className="fas fa-plus mr-2" /> {t('explore.add')}
+                  </button>
+                  {(isAdmin || isSuperAdmin) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(character);
+                      }}
+                      className="w-full text-left px-4 py-2 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
+                    >
+                      <i className="fas fa-trash mr-2" /> {t('explore.delete')}
+                    </button>
+                  )}
+                </div>
+              )}
               <span className="sr-only">{t('explore.view')}</span>
             </div>
           ))}
@@ -147,7 +216,7 @@ export default function ExplorePage({ onClose }) {
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up" onClick={() => setModal(null)}>
           <div
-            className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-lg w-full mx-4 relative animate-fade-in-up"
+            className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-4xl w-full mx-4 relative animate-fade-in-up overflow-y-auto max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             <button
@@ -157,27 +226,108 @@ export default function ExplorePage({ onClose }) {
             >
               <i className="fas fa-times" />
             </button>
-            <div className="flex flex-col items-center">
-              <img
-                src={modal.avatar || '/default-avatar.png'}
-                alt={modal.name}
-                className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-primary/30 shadow-lg"
-                onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
-              />
-              <h2 className="text-2xl font-bold mb-2 text-primary drop-shadow">{modal.name}</h2>
-              <div className="text-lg text-text-secondary-light dark:text-text-secondary-dark mb-4">{modal.tagline}</div>
-              <div className="mb-4 text-base text-center text-text-light dark:text-text-dark">{modal.description}</div>
-              <div className="flex flex-wrap gap-2 justify-center mb-6">
-                {(modal.tags || []).map(tag => (
-                  <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
-                ))}
+            <div className="grid grid-cols-2 gap-8">
+              {/* Left Column - Images */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">{t('character.fields.avatar')}</h3>
+                  <img
+                    src={modal.avatar || '/default-avatar.png'}
+                    alt="Avatar"
+                    className="w-32 h-32 rounded-full object-cover border-2 border-primary/30"
+                  />
+                </div>
+                {modal.fullImage && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">{t('character.fields.fullImage')}</h3>
+                    <img
+                      src={modal.fullImage}
+                      alt="Full Image"
+                      className="w-full rounded-lg border-2 border-primary/30"
+                    />
+                  </div>
+                )}
               </div>
-              <button
-                className="bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90"
-                onClick={() => handleAdd(modal)}
-              >
-                {t('explore.add')}
-              </button>
+
+              {/* Right Column - Details */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">{t('character.details')}</h3>
+                  <dl className="space-y-2">
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.name')}</dt>
+                      <dd className="font-medium">{modal.name}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.description')}</dt>
+                      <dd className="font-medium">{modal.description}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.age')}</dt>
+                      <dd className="font-medium">{modal.age || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.gender')}</dt>
+                      <dd className="font-medium">{modal.gender || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.race')}</dt>
+                      <dd className="font-medium">{modal.race || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.occupation')}</dt>
+                      <dd className="font-medium">{modal.occupation || 'N/A'}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">{t('character.personality.title')}</h3>
+                  <dl className="space-y-2">
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.fields.personality')}</dt>
+                      <dd className="font-medium">{modal.personality || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.systemPrompt')}</dt>
+                      <dd className="font-medium">{modal.systemPrompt || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.backstory')}</dt>
+                      <dd className="font-medium">{modal.backstory || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.firstMessage')}</dt>
+                      <dd className="font-medium">{modal.firstMessage || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.messageExample')}</dt>
+                      <dd className="font-medium">{modal.messageExample || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.scenario')}</dt>
+                      <dd className="font-medium">{modal.scenario || 'N/A'}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-gray-500">{t('character.personality.creatorNotes')}</dt>
+                      <dd className="font-medium">{modal.creatorNotes || 'N/A'}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {(modal.tags || []).map(tag => (
+                    <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
+                  ))}
+                </div>
+
+                <button
+                  className="w-full bg-primary text-white px-6 py-2 rounded-xl shadow-lg transition-all duration-200 text-base font-semibold hover:bg-primary/90"
+                  onClick={() => handleAdd(modal)}
+                >
+                  {t('explore.add')}
+                </button>
+              </div>
             </div>
           </div>
         </div>
