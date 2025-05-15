@@ -107,6 +107,31 @@ const AdminPanel = () => {
     }
   };
 
+  const handleRejectAllCharacters = async () => {
+    if (!window.confirm(t('admin.confirmRejectAll') || 'Are you sure you want to reject all pending characters?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/admin/characters/reject-all', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setPendingCharacters([]);
+        toast.success(t('admin.allCharactersRejected') || 'All characters rejected successfully');
+      } else {
+        throw new Error('Failed to reject all characters');
+      }
+    } catch (error) {
+      console.error('Error rejecting all characters:', error);
+      toast.error(t('admin.rejectAllError') || 'Failed to reject all characters');
+    }
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">{t('admin.title')}</h1>
@@ -119,12 +144,22 @@ const AdminPanel = () => {
         <div className="space-y-8">
           {/* Pending Characters Section */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow relative">
-            <h2 className="text-xl font-semibold mb-4">{t('admin.pendingCharacters')}</h2>
-            {pendingCharacters.length > 0 && (
-              <Badge variant="default" className="absolute top-4 right-4 z-10">
-                {pendingCharacters.length}
-              </Badge>
-            )}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">{t('admin.pendingCharacters')}</h2>
+              {pendingCharacters.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <Badge variant="default">
+                    {pendingCharacters.length}
+                  </Badge>
+                  <button
+                    onClick={handleRejectAllCharacters}
+                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    {t('admin.rejectAll') || 'Reject All'}
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="space-y-4">
               {pendingCharacters.length === 0 ? (
                 <p className="text-gray-500">{t('admin.noPendingCharacters') || 'No pending characters.'}</p>
