@@ -181,7 +181,8 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               id: undefined, // Let server generate new ID
               pendingSubmissions: {
                 create: {
-                  status: 'pending'
+                  status: 'pending',
+                  name: form.name.trim()
                 }
               }
             })
