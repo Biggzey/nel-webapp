@@ -291,7 +291,7 @@ const translations = {
       },
       characterDeleted: {
         title: 'Character Deleted',
-        message: 'Your character "%{name}" has been deleted from the public database by an administrator. Reason: %{reason}'
+        message: 'Your character "${name}" has been deleted from the public database by an administrator. Reason: ${reason}'
       },
       empty: 'No notifications',
       loading: 'Loading notifications...'

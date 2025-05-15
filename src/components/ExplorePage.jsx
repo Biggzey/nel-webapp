@@ -93,7 +93,7 @@ export default function ExplorePage({ onClose }) {
           userId: character.userId,
           type: 'character_deleted',
           title: t('notifications.characterDeleted.title'),
-          message: t('notifications.characterDeleted.message', { name: character.name, reason }),
+          message: `Your character "${character.name}" has been deleted from the public database by an administrator. Reason: ${reason}`,
           data: {
             characterId: character.id,
             characterName: character.name,
