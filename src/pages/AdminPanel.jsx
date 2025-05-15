@@ -6,11 +6,10 @@ import AdminSidebar from '../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminPanel() {
-  const { token } = useAuth();
+  const { token, userRole } = useAuth();
   const { t } = useLanguage();
   const { addToast } = useToast();
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const { role } = useAuth();
   const [userDetails, setUserDetails] = useState(null);
   const [systemStats, setSystemStats] = useState(null);
   const [pendingCharacters, setPendingCharacters] = useState([]);
@@ -22,6 +21,11 @@ export default function AdminPanel() {
   const [rejectReason, setRejectReason] = useState('');
   const navigate = useNavigate();
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
+
+  // Restrict access to admin panel
+  if (!['SUPER_ADMIN', 'ADMIN', 'MODERATOR'].includes(String(userRole))) {
+    return <div style={{ color: 'red', fontWeight: 'bold', padding: 32, fontSize: '2rem' }}>Access denied</div>;
+  }
 
   // Load user details when selected
   useEffect(() => {
@@ -221,7 +225,7 @@ export default function AdminPanel() {
         zIndex: 9999,
         fontSize: '1.5rem'
       }}>
-        ROLE: {String(role)}
+        ROLE: {String(userRole)}
       </div>
       <div className="flex h-screen w-full bg-background-light dark:bg-background-dark">
         <AdminSidebar
@@ -493,26 +497,28 @@ export default function AdminPanel() {
                         <span className="bg-red-600 text-white text-base font-bold px-3 py-1.5 rounded-full shadow-lg" style={{ minWidth: '2rem', minHeight: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {pendingCharacters.length}
                         </span>
-                        <button
-                          onClick={async () => {
-                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
-                              try {
-                                const res = await fetch('/api/admin/characters/reject-all', {
-                                  method: 'POST',
-                                  headers: { Authorization: `Bearer ${token}` }
-                                });
-                                if (!res.ok) throw new Error('Failed to reject all characters');
-                                setPendingCharacters([]);
-                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
-                              } catch (err) {
-                                addToast({ type: 'error', message: err.message, duration: 4000 });
+                        {userRole === 'SUPER_ADMIN' && (
+                          <button
+                            onClick={async () => {
+                              if (window.confirm('Are you sure you want to reject all pending characters?')) {
+                                try {
+                                  const res = await fetch('/api/admin/characters/reject-all', {
+                                    method: 'POST',
+                                    headers: { Authorization: `Bearer ${token}` }
+                                  });
+                                  if (!res.ok) throw new Error('Failed to reject all characters');
+                                  setPendingCharacters([]);
+                                  addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                                } catch (err) {
+                                  addToast({ type: 'error', message: err.message, duration: 4000 });
+                                }
                               }
-                            }
-                          }}
-                          className="ml-4 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-lg hover:bg-red-600 transition-colors"
-                        >
-                          Reject All
-                        </button>
+                            }}
+                            className="ml-4 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-lg hover:bg-red-600 transition-colors"
+                          >
+                            Reject All
+                          </button>
+                        )}
                       </div>
                     )}
                     {loadingPending ? (
