@@ -20,6 +20,8 @@ export default function ExplorePage({ onClose }) {
   const [globalLoading, setGlobalLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteReason, setDeleteReason] = useState('');
   const menuRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -70,7 +72,7 @@ export default function ExplorePage({ onClose }) {
   }
 
   // Add delete handler
-  async function handleDelete(character) {
+  async function handleDelete(character, reason) {
     try {
       const res = await fetch(`/api/characters/${character.id}`, {
         method: 'DELETE',
@@ -91,10 +93,11 @@ export default function ExplorePage({ onClose }) {
           userId: character.userId,
           type: 'character_deleted',
           title: t('notifications.characterDeleted.title'),
-          message: t('notifications.characterDeleted.message', { name: character.name }),
+          message: t('notifications.characterDeleted.message', { name: character.name, reason }),
           data: {
             characterId: character.id,
-            characterName: character.name
+            characterName: character.name,
+            reason
           }
         })
       });
@@ -105,6 +108,8 @@ export default function ExplorePage({ onClose }) {
         message: t('explore.deleteSuccess'),
         duration: 3000
       });
+      setDeleteConfirm(null);
+      setDeleteReason('');
     } catch (err) {
       addToast({
         type: 'error',
@@ -241,7 +246,8 @@ export default function ExplorePage({ onClose }) {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(character);
+                        setDeleteConfirm(character);
+                        setOpenMenuIndex(null);
                       }}
                       className="w-full text-left px-4 py-2 text-red-500 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
                     >
@@ -406,6 +412,57 @@ export default function ExplorePage({ onClose }) {
       {globalLoading && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40">
           <div className="loader border-4 border-primary border-t-transparent rounded-full w-16 h-16 animate-spin" />
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in-up">
+          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/30 shadow-2xl p-8 max-w-lg w-full mx-4 relative animate-fade-in-up">
+            <button
+              className="absolute top-3 right-3 text-gray-400 hover:text-primary text-2xl focus:outline-none"
+              onClick={() => {
+                setDeleteConfirm(null);
+                setDeleteReason('');
+              }}
+              title={t('common.close')}
+            >
+              <i className="fas fa-times" />
+            </button>
+            <h3 className="text-xl font-semibold mb-4">{t('explore.deleteConfirm')}</h3>
+            <p className="mb-4 text-text-secondary-light dark:text-text-secondary-dark">
+              {t('explore.deleteConfirmMessage')}
+            </p>
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">
+                {t('explore.deleteReason')}
+              </label>
+              <textarea
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder={t('explore.deleteReasonPlaceholder')}
+                className="w-full px-4 py-2 rounded-lg border-2 border-primary/30 focus:border-primary focus:ring-2 focus:ring-primary bg-background-container-light dark:bg-background-container-dark"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 rounded-lg border-2 border-primary/30 hover:border-primary transition-all duration-200"
+                onClick={() => {
+                  setDeleteConfirm(null);
+                  setDeleteReason('');
+                }}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
+                onClick={() => handleDelete(deleteConfirm, deleteReason)}
+                disabled={!deleteReason.trim()}
+              >
+                {t('explore.delete')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

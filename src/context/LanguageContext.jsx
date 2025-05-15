@@ -270,10 +270,14 @@ const translations = {
       create: 'Create Public Character',
       add: 'Add to Sidebar',
       delete: 'Delete Character',
-      added: '{{name}} added to your characters!',
+      added: '%{name} added to your characters!',
       addError: 'Failed to add character',
       deleteSuccess: 'Character deleted successfully',
-      deleteError: 'Failed to delete character'
+      deleteError: 'Failed to delete character',
+      deleteConfirm: 'Delete Character',
+      deleteConfirmMessage: 'Are you sure you want to delete this character? This action cannot be undone.',
+      deleteReason: 'Reason for deletion',
+      deleteReasonPlaceholder: 'Enter the reason for deleting this character...'
     },
     notifications: {
       title: 'Notifications',
@@ -287,7 +291,7 @@ const translations = {
       },
       characterDeleted: {
         title: 'Character Deleted',
-        message: 'Your character "{{name}}" has been deleted from the public database by an administrator.'
+        message: 'Your character "%{name}" has been deleted from the public database by an administrator. Reason: %{reason}'
       },
       empty: 'No notifications',
       loading: 'Loading notifications...'
