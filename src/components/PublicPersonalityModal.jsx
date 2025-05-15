@@ -108,6 +108,10 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
       errors.tags = t('character.fields.tagsRequired');
     }
     
+    if (!form.customInstructions || !form.customInstructions.trim()) {
+      errors.customInstructions = true;
+    }
+    
     return errors;
   }
 
@@ -454,15 +458,37 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
                     { label: t('character.personality.creatorNotes'), field: "creatorNotes", placeholder: t('character.personality.creatorNotesPlaceholder') }
                   ].map(({ label, field, placeholder }) => (
                     <div key={field}>
-                      <label className="block mb-1 text-sm font-medium">{label}</label>
-                      <textarea
-                        name={field}
-                        value={form[field] || ""}
-                        onChange={handleChange}
-                        className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
-                        placeholder={placeholder}
-                        rows={2}
-                      />
+                      {field === 'customInstructions' ? (
+                        <>
+                          <label className="block mb-1 text-sm font-medium">
+                            {label} <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            name={field}
+                            value={form[field] || ""}
+                            onChange={handleChange}
+                            className={`w-full p-2 border-2 rounded bg-background-container-light dark:bg-background-container-dark border-primary focus:border-primary focus:ring-2 focus:ring-primary transition-colors ${fieldErrors.customInstructions && attemptedSubmit ? 'border-red-500' : ''}`}
+                            placeholder={placeholder}
+                            rows={2}
+                            required
+                          />
+                          {fieldErrors.customInstructions && attemptedSubmit && (
+                            <div className="text-red-500 text-xs mt-1">{t('character.fields.customInstructionsRequired')}</div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <label className="block mb-1 text-sm font-medium">{label}</label>
+                          <textarea
+                            name={field}
+                            value={form[field] || ""}
+                            onChange={handleChange}
+                            className="w-full p-2 border rounded bg-background-container-light dark:bg-background-container-dark border-border-light dark:border-border-dark focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+                            placeholder={placeholder}
+                            rows={2}
+                          />
+                        </>
+                      )}
                     </div>
                   ))}
                 </div>
