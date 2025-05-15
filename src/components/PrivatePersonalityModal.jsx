@@ -183,7 +183,11 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
                 create: {
                   status: 'pending',
                   name: form.name.trim(),
-                  description: form.description.trim()
+                  description: form.description.trim(),
+                  avatar: form.avatar || '/default-avatar.png',
+                  personality: form.personality.trim(),
+                  systemPrompt: form.systemPrompt.trim(),
+                  tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
                 }
               }
             })
