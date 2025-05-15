@@ -1549,8 +1549,9 @@ try {
         reviewStatus: isPublic ? "pending" : "private"
       };
 
-      // Remove any pendingSubmissionInfo from the character data
+      // Remove any pendingSubmissionInfo and id from the character data
       delete characterData.pendingSubmissionInfo;
+      delete characterData.id;
 
       // Create the character
       const character = await prisma.character.create({
