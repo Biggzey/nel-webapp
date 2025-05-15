@@ -481,28 +481,26 @@ export default function AdminPanel() {
                         {pendingCharacters.length}
                       </span>
                       <div style={{ background: 'yellow', color: 'black', fontWeight: 'bold', padding: 8, marginLeft: 8 }}>TEST</div>
-                      {role === 'SUPER_ADMIN' && (
-                        <button
-                          onClick={async () => {
-                            if (window.confirm('Are you sure you want to reject all pending characters?')) {
-                              try {
-                                const res = await fetch('/api/admin/characters/reject-all', {
-                                  method: 'POST',
-                                  headers: { Authorization: `Bearer ${token}` }
-                                });
-                                if (!res.ok) throw new Error('Failed to reject all characters');
-                                setPendingCharacters([]);
-                                addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
-                              } catch (err) {
-                                addToast({ type: 'error', message: err.message, duration: 4000 });
-                              }
+                      <button
+                        onClick={async () => {
+                          if (window.confirm('Are you sure you want to reject all pending characters?')) {
+                            try {
+                              const res = await fetch('/api/admin/characters/reject-all', {
+                                method: 'POST',
+                                headers: { Authorization: `Bearer ${token}` }
+                              });
+                              if (!res.ok) throw new Error('Failed to reject all characters');
+                              setPendingCharacters([]);
+                              addToast({ type: 'success', message: 'All characters rejected', duration: 3000 });
+                            } catch (err) {
+                              addToast({ type: 'error', message: err.message, duration: 4000 });
                             }
-                          }}
-                          className="ml-4 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-lg hover:bg-red-600 transition-colors"
-                        >
-                          Reject All
-                        </button>
-                      )}
+                          }
+                        }}
+                        className="ml-4 px-4 py-2 rounded-lg bg-red-500 text-white font-semibold shadow-lg hover:bg-red-600 transition-colors"
+                      >
+                        Reject All
+                      </button>
                     </div>
                   )}
                   {loadingPending ? (
