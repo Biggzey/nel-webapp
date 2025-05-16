@@ -2959,6 +2959,38 @@ try {
     }
   });
 
+  // Admin database export endpoint
+  app.get("/api/admin/export-db", adminMiddleware, async (req, res) => {
+    try {
+      // Get all tables from the database
+      const tables = await prisma.$queryRaw`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public'
+        AND table_type = 'BASE TABLE'
+      `;
+
+      const exportData = {};
+
+      // Export each table
+      for (const table of tables) {
+        const tableName = table.table_name;
+        const data = await prisma.$queryRaw`SELECT * FROM "${tableName}"`;
+        exportData[tableName] = data;
+      }
+
+      // Set headers for file download
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', 'attachment; filename=database-export.json');
+
+      // Send the data
+      res.json(exportData);
+    } catch (error) {
+      console.error('Database export error:', error);
+      res.status(500).json({ error: 'Failed to export database' });
+    }
+  });
+
   // Start server
   const PORT = process.env.PORT || 3001;
   await testDbConnection(); // Test DB connection before starting server
