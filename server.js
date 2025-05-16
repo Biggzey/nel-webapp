@@ -16,6 +16,8 @@ import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 // Import monitoring dependencies
 let expressWinston, responseTime, logger, metrics;
@@ -420,6 +422,39 @@ try {
     return passwordRegex.test(password);
   }
 
+  // Create email transporter
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+
+  // Generate verification token
+  function generateVerificationToken() {
+    return crypto.randomBytes(32).toString('hex');
+  }
+
+  // Send verification email
+  async function sendVerificationEmail(email, token) {
+    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+    
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to: email,
+      subject: 'Verify your email address',
+      html: `
+        <h1>Welcome to our platform!</h1>
+        <p>Please click the link below to verify your email address:</p>
+        <a href="${verificationUrl}">${verificationUrl}</a>
+        <p>This link will expire in 24 hours.</p>
+      `
+    });
+  }
+
   // — AUTH ROUTES —
 
   /**
@@ -520,7 +555,11 @@ try {
         return res.status(400).json({ error: "Username already taken" });
       }
 
-      // Create user first
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Create user with verification token
       const hash = await bcrypt.hash(password, 10);
       try {
         const user = await prisma.user.create({
@@ -528,10 +567,16 @@ try {
             email, 
             username,
             passwordHash: hash,
+            verificationToken,
+            verificationTokenExpires
           }
         });
-        console.log('User created successfully:', { id: user.id, email: user.email });
 
+        // Send verification email
+        await sendVerificationEmail(email, verificationToken);
+
+        console.log('User created successfully:', { id: user.id, email: user.email });
+        
         // Then create Nelliel character
         try {
           const nelliel = await prisma.character.create({
@@ -675,6 +720,13 @@ try {
 
       if (!user) {
         return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      if (!user.emailVerified) {
+        return res.status(401).json({ 
+          error: "Please verify your email before logging in",
+          needsVerification: true
+        });
       }
 
       // Check if user is blocked
@@ -2818,6 +2870,44 @@ try {
     } catch (error) {
       console.error("Error rejecting all characters:", error);
       res.status(500).json({ error: "Failed to reject all characters" });
+    }
+  });
+
+  // Add email verification endpoint
+  app.get("/api/verify-email", async (req, res) => {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: "Verification token is required" });
+    }
+
+    try {
+      const user = await prisma.user.findFirst({
+        where: {
+          verificationToken: token,
+          verificationTokenExpires: {
+            gt: new Date()
+          }
+        }
+      });
+
+      if (!user) {
+        return res.status(400).json({ error: "Invalid or expired verification token" });
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          emailVerified: true,
+          verificationToken: null,
+          verificationTokenExpires: null
+        }
+      });
+
+      res.json({ success: true, message: "Email verified successfully" });
+    } catch (err) {
+      console.error("Email verification error:", err);
+      res.status(500).json({ error: "Failed to verify email" });
     }
   });
 

@@ -23,6 +23,7 @@ import ExplorePage from './components/ExplorePage';
 import { OnboardingProvider, useOnboarding } from './context/OnboardingContext';
 import SpotlightOnboarding from './components/SpotlightOnboarding';
 import { NotificationProvider } from './context/NotificationContext';
+import VerifyEmail from './pages/VerifyEmail';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -181,6 +182,7 @@ function ProtectedContent({ addToast }) {
         )}
         <Routes>
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/*" element={
             <>
               {/* Only show spinner during loading/importing/reloading, nothing else */}

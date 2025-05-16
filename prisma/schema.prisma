@@ -15,6 +15,9 @@ model User {
   role         String          @default("USER")
   blocked      Boolean         @default(false)
   blockedUntil DateTime?
+  emailVerified Boolean   @default(false)
+  verificationToken String? @unique
+  verificationTokenExpires DateTime?
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt
   lastLogin    DateTime?

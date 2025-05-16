@@ -369,6 +369,23 @@ const translations = {
       loopDetectedError: "Loop detected.",
       notExtendedError: "Not extended.",
       networkAuthenticationRequiredError: "Network authentication required."
+    },
+    auth: {
+      login: 'Log In',
+      signup: 'Sign Up',
+      logout: 'Log Out',
+      email: 'Email',
+      username: 'Username',
+      password: 'Password',
+      confirmPassword: 'Confirm Password',
+      forgotPassword: 'Forgot Password?',
+      emailVerification: {
+        title: 'Email Verification',
+        verifying: 'Verifying your email...',
+        success: 'Email verified successfully!',
+        redirecting: 'Redirecting to login...',
+        backToLogin: 'Back to Login'
+      }
     }
   },
   es: {
@@ -842,6 +859,23 @@ const translations = {
       },
       empty: 'No hay notificaciones',
       loading: 'Cargando notificaciones...'
+    },
+    auth: {
+      login: 'Iniciar Sesión',
+      signup: 'Registrarse',
+      logout: 'Cerrar Sesión',
+      email: 'Correo Electrónico',
+      username: 'Nombre de Usuario',
+      password: 'Contraseña',
+      confirmPassword: 'Confirmar Contraseña',
+      forgotPassword: '¿Olvidaste tu contraseña?',
+      emailVerification: {
+        title: 'Verificación de Correo Electrónico',
+        verifying: 'Verificando tu correo electrónico...',
+        success: '¡Correo electrónico verificado exitosamente!',
+        redirecting: 'Redirigiendo a inicio de sesión...',
+        backToLogin: 'Volver a Iniciar Sesión'
+      }
     }
   }
 };
