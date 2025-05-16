@@ -16,8 +16,8 @@ import cookieParser from 'cookie-parser';
 import csrf from 'csurf';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 // Import monitoring dependencies
 let expressWinston, responseTime, logger, metrics;
