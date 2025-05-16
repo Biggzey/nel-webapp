@@ -440,17 +440,30 @@ try {
   }
 
   // Create Mailjet client
-  const mailjet = new Mailjet({
-    apiKey: process.env.MAILJET_API_KEY,
-    apiSecret: process.env.MAILJET_SECRET_KEY
-  });
+  let mailjet;
+  try {
+    if (!process.env.MAILJET_API_KEY || !process.env.MAILJET_SECRET_KEY) {
+      console.warn('Mailjet API credentials not found. Email functionality will be disabled.');
+    } else {
+      mailjet = new Mailjet({
+        apiKey: process.env.MAILJET_API_KEY,
+        apiSecret: process.env.MAILJET_SECRET_KEY
+      });
+    }
+  } catch (error) {
+    console.error('Failed to initialize Mailjet client:', error);
+  }
 
   // Send verification email
   async function sendVerificationEmail(email, token) {
     try {
       // Verify Mailjet configuration
-      if (!process.env.MAILJET_API_KEY || !process.env.MAILJET_SECRET_KEY || !process.env.SMTP_FROM || !process.env.FRONTEND_URL) {
-        throw new Error('Missing required Mailjet configuration');
+      if (!mailjet) {
+        throw new Error('Mailjet client not initialized. Please check your environment variables.');
+      }
+
+      if (!process.env.SMTP_FROM || !process.env.FRONTEND_URL) {
+        throw new Error('Missing required email configuration (SMTP_FROM or FRONTEND_URL)');
       }
 
       const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
