@@ -597,32 +597,33 @@ try {
       });
     }
 
-    try {
-      // Check if username already exists
-      const existingUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { email },
-            { username }
-          ]
-        }
-      });
-
-      if (existingUser) {
-        if (existingUser.email === email) {
-          return res.status(400).json({ error: "Email already in use" });
-        }
-        return res.status(400).json({ error: "Username already taken" });
-      }
-
-      // Generate verification token
-      const verificationToken = generateVerificationToken();
-      const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-      // Create user with verification token
-      const hash = await bcrypt.hash(password, 10);
+    // Start a transaction
+    const transaction = await prisma.$transaction(async (tx) => {
       try {
-        const user = await prisma.user.create({
+        // Check if username or email already exists
+        const existingUser = await tx.user.findFirst({
+          where: {
+            OR: [
+              { email },
+              { username }
+            ]
+          }
+        });
+
+        if (existingUser) {
+          if (existingUser.email === email) {
+            throw new Error("Email already in use");
+          }
+          throw new Error("Username already taken");
+        }
+
+        // Generate verification token
+        const verificationToken = generateVerificationToken();
+        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+        // Create user with verification token
+        const hash = await bcrypt.hash(password, 10);
+        const user = await tx.user.create({
           data: { 
             email, 
             username,
@@ -632,77 +633,53 @@ try {
           }
         });
 
-        // Send verification email
-        await sendVerificationEmail(email, verificationToken);
-
-        console.log('User created successfully:', { id: user.id, email: user.email });
-        
-        // Then create Nelliel character
-        try {
-          const nelliel = await prisma.character.create({
-            data: {
-              userId: user.id,
-              name: "Nelliel",
-              personality: "Your custom AI companion.",
-              avatar: "/nel-avatar.png",
-              bookmarked: false,
-              systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
-              customInstructions: "",
-              status: "Ready to chat"
-            }
-          });
-          console.log('Nelliel character created:', { id: nelliel.id });
-
-          // Create user preferences with Nelliel as default character
-          try {
-            await prisma.userPreference.create({
-              data: {
-                userId: user.id,
-                selectedCharId: nelliel.id
-              }
-            });
-            console.log('User preferences created successfully');
-            res.json({ success: true });
-          } catch (prefErr) {
-            console.error("Failed to create user preferences:", {
-              error: prefErr.message,
-              code: prefErr.code,
-              meta: prefErr.meta,
-              stack: prefErr.stack
-            });
-            // Cleanup on failure
-            await prisma.character.delete({ where: { id: nelliel.id } });
-            await prisma.user.delete({ where: { id: user.id } });
-            throw prefErr;
+        // Create Nelliel character
+        const nelliel = await tx.character.create({
+          data: {
+            userId: user.id,
+            name: "Nelliel",
+            personality: "Your custom AI companion.",
+            avatar: "/nel-avatar.png",
+            bookmarked: false,
+            systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
+            customInstructions: "",
+            status: "Ready to chat"
           }
-        } catch (charErr) {
-          console.error("Failed to create Nelliel character:", {
-            error: charErr.message,
-            code: charErr.code,
-            meta: charErr.meta,
-            stack: charErr.stack
-          });
-          // Cleanup on failure
-          await prisma.user.delete({ where: { id: user.id } });
-          throw charErr;
-        }
-      } catch (userErr) {
-        console.error("Failed to create user:", {
-          error: userErr.message,
-          code: userErr.code,
-          meta: userErr.meta,
-          stack: userErr.stack
         });
-        throw userErr;
+
+        return { user, nelliel };
+      } catch (error) {
+        // If any error occurs, the transaction will be rolled back automatically
+        throw error;
       }
-    } catch (err) {
-      console.error("Signup error:", {
-        error: err.message,
-        code: err.code,
-        meta: err.meta,
-        stack: err.stack
+    });
+
+    try {
+      // If we get here, the transaction was successful
+      const { user, nelliel } = transaction;
+
+      // Try to send verification email
+      try {
+        await sendVerificationEmail(email, user.verificationToken);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Don't fail the signup if email fails, but log it
+        // The user can request a new verification email later
+      }
+
+      console.log('User created successfully:', { id: user.id, email: user.email });
+      
+      return res.status(200).json({ 
+        message: "User registered successfully. Please check your email to verify your account.",
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username
+        }
       });
-      res.status(500).json({ error: "Failed to create account" });
+    } catch (error) {
+      console.error('Signup error:', error);
+      return res.status(400).json({ error: error.message });
     }
   });
 
