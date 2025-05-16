@@ -18,6 +18,7 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import Mailjet from 'node-mailjet';
 
 // Import monitoring dependencies
 let expressWinston, responseTime, logger, metrics;
@@ -438,21 +439,67 @@ try {
     return crypto.randomBytes(32).toString('hex');
   }
 
+  // Create Mailjet client
+  const mailjet = new Mailjet({
+    apiKey: process.env.MAILJET_API_KEY,
+    apiSecret: process.env.MAILJET_SECRET_KEY
+  });
+
   // Send verification email
   async function sendVerificationEmail(email, token) {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
-    
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: email,
-      subject: 'Verify your email address',
-      html: `
-        <h1>Welcome to our platform!</h1>
-        <p>Please click the link below to verify your email address:</p>
-        <a href="${verificationUrl}">${verificationUrl}</a>
-        <p>This link will expire in 24 hours.</p>
-      `
-    });
+    try {
+      // Verify Mailjet configuration
+      if (!process.env.MAILJET_API_KEY || !process.env.MAILJET_SECRET_KEY || !process.env.SMTP_FROM || !process.env.FRONTEND_URL) {
+        throw new Error('Missing required Mailjet configuration');
+      }
+
+      const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+      
+      console.log('Sending verification email:', {
+        to: email,
+        from: process.env.SMTP_FROM
+      });
+
+      const data = {
+        Messages: [
+          {
+            From: {
+              Email: process.env.SMTP_FROM,
+              Name: "NEL Webapp"
+            },
+            To: [
+              {
+                Email: email
+              }
+            ],
+            Subject: "Verify your email address",
+            HTMLPart: `
+              <h1>Welcome to our platform!</h1>
+              <p>Please click the link below to verify your email address:</p>
+              <a href="${verificationUrl}">${verificationUrl}</a>
+              <p>This link will expire in 24 hours.</p>
+            `
+          }
+        ]
+      };
+
+      const result = await mailjet.post("send", { version: 'v3.1' }).request(data);
+
+      console.log('Verification email sent successfully:', {
+        messageId: result.body.Messages[0].To[0].MessageID,
+        status: result.body.Messages[0].Status
+      });
+
+      return result;
+    } catch (error) {
+      console.error('Failed to send verification email:', {
+        error: error.message,
+        code: error.ErrorCode,
+        statusCode: error.statusCode,
+        stack: error.stack
+      });
+      throw error;
+    }
   }
 
   // — AUTH ROUTES —

@@ -30,6 +30,17 @@ NODE_ENV="development" # or "production"
 ALLOWED_ORIGINS="http://localhost:5173,https://your-production-domain.com"
 ```
 
+### SMTP Configuration
+```env
+SMTP_HOST="smtp.example.com"
+SMTP_PORT="587"
+SMTP_SECURE="false"
+SMTP_USER="your-smtp-username"
+SMTP_PASS="your-smtp-password"
+SMTP_FROM="noreply@example.com"
+FRONTEND_URL="http://localhost:5173" # or your production URL
+```
+
 ## Optional Environment Variables
 
 ### Monitoring Configuration
@@ -111,4 +122,11 @@ MAX_LOG_FILES=5
 | NODE_ENV | Environment mode | No | "development" |
 | ALLOWED_ORIGINS | Comma-separated list of allowed origins | No | http://localhost:5173 |
 | ENABLE_MONITORING | Enable Prometheus metrics | No | false |
-| LOG_LEVEL | Logging level | No | "info" | 
+| LOG_LEVEL | Logging level | No | "info" |
+| SMTP_HOST | SMTP server hostname | Yes | - |
+| SMTP_PORT | SMTP server port | Yes | - |
+| SMTP_SECURE | Use TLS for SMTP | Yes | false |
+| SMTP_USER | SMTP username | Yes | - |
+| SMTP_PASS | SMTP password | Yes | - |
+| SMTP_FROM | From email address | Yes | - |
+| FRONTEND_URL | Frontend application URL | Yes | - |
