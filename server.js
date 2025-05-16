@@ -597,9 +597,9 @@ try {
       });
     }
 
-    // Start a transaction
-    const transaction = await prisma.$transaction(async (tx) => {
-      try {
+    try {
+      // Start a transaction
+      const { user, nelliel } = await prisma.$transaction(async (tx) => {
         // Check if username or email already exists
         const existingUser = await tx.user.findFirst({
           where: {
@@ -647,17 +647,18 @@ try {
           }
         });
 
+        // Create user preferences with Nelliel as default character
+        await tx.userPreference.create({
+          data: {
+            userId: user.id,
+            selectedCharId: nelliel.id
+          }
+        });
+
         return { user, nelliel };
-      } catch (error) {
-        // If any error occurs, the transaction will be rolled back automatically
-        throw error;
-      }
-    });
+      });
 
-    try {
       // If we get here, the transaction was successful
-      const { user, nelliel } = transaction;
-
       // Try to send verification email
       try {
         await sendVerificationEmail(email, user.verificationToken);
@@ -679,7 +680,11 @@ try {
       });
     } catch (error) {
       console.error('Signup error:', error);
-      return res.status(400).json({ error: error.message });
+      // Ensure we always return a JSON response
+      if (error.message === "Email already in use" || error.message === "Username already taken") {
+        return res.status(400).json({ error: error.message });
+      }
+      return res.status(500).json({ error: "An unexpected error occurred during signup" });
     }
   });
 
