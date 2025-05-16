@@ -17,7 +17,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -252,19 +251,12 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
   // Handle drag end
   function handleDragEnd(event) {
     const { active, over } = event;
-    
     if (active.id !== over.id) {
-      const oldIndex = characters.findIndex((c) => c.id === active.id);
-      const newIndex = characters.findIndex((c) => c.id === over.id);
-      
-      // Don't allow moving characters above Nelliel if she exists
-      const nellielIndex = characters.findIndex(c => c.name === 'Nelliel');
-      if (nellielIndex !== -1 && newIndex < nellielIndex) {
-        return;
-      }
-
-      const newOrder = arrayMove(characters, oldIndex, newIndex);
-      reorderCharacters(newOrder);
+      setCharacters((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
   }
 
