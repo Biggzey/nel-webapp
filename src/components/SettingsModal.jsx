@@ -8,9 +8,6 @@ import { nanoid } from 'nanoid';
 import { useToast } from './Toast';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useCharacter } from '../context/CharacterContext';
-import AdminPanel from './AdminPanel';
-import DatabaseExportPanel from './DatabaseExportPanel';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 
 // Tab components
 function Profile({ user, onSave }) {

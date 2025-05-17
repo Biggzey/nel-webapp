@@ -280,8 +280,8 @@ export default function ExplorePage({ onClose }) {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-2">{t('character.fields.avatar')}</h3>
-                  <img
-                    src={modal.avatar || '/default-avatar.png'}
+              <img
+                src={modal.avatar || '/default-avatar.png'}
                     alt="Avatar"
                     className="w-32 h-32 rounded-full object-cover border-2 border-primary/30"
                   />
@@ -331,9 +331,9 @@ export default function ExplorePage({ onClose }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {(modal.tags || []).map(tag => (
-                    <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
-                  ))}
+                {(modal.tags || []).map(tag => (
+                  <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
+                ))}
                 </div>
               </div>
 
