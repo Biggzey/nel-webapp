@@ -2960,7 +2960,7 @@ try {
   });
 
   // Start server
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 8080;
   await testDbConnection(); // Test DB connection before starting server
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
