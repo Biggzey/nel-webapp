@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { useToast } from '../components/Toast';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { addToast } = useToast();
   const [status, setStatus] = useState('verifying');
   const [error, setError] = useState('');
 
@@ -16,27 +14,27 @@ export default function VerifyEmail() {
     if (!token) {
       setStatus('error');
       setError('No verification token provided');
-      addToast({ type: 'error', message: 'No verification token provided', duration: 5000 });
       return;
     }
-    fetch(`/api/verify-email?token=${token}`)
-      .then(async (response) => {
+    const verifyEmail = async () => {
+      try {
+        const response = await fetch(`/api/verify-email?token=${token}`);
         const data = await response.json();
-        if (response.ok && data.success) {
+        if (response.ok) {
           setStatus('success');
-          addToast({ type: 'success', message: t('auth.emailVerification.success'), duration: 5000 });
+          // Redirect to login after 3 seconds
+          setTimeout(() => navigate('/login'), 3000);
         } else {
           setStatus('error');
           setError(data.error || 'Failed to verify email');
-          addToast({ type: 'error', message: data.error || 'Failed to verify email', duration: 5000 });
         }
-      })
-      .catch(() => {
+      } catch (err) {
         setStatus('error');
         setError('An unexpected error occurred');
-        addToast({ type: 'error', message: 'An unexpected error occurred', duration: 5000 });
-      });
-  }, [searchParams, addToast, t]);
+      }
+    };
+    verifyEmail();
+  }, [searchParams, navigate]);
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#0f0f0f]">
@@ -45,7 +43,6 @@ export default function VerifyEmail() {
           <h1 className="text-2xl font-semibold mb-6 text-white">
             {t('auth.emailVerification.title')}
           </h1>
-          
           {status === 'verifying' && (
             <div className="text-white">
               <p>{t('auth.emailVerification.verifying')}</p>
@@ -54,19 +51,14 @@ export default function VerifyEmail() {
               </div>
             </div>
           )}
-
           {status === 'success' && (
             <div className="text-green-400">
               <p>{t('auth.emailVerification.success')}</p>
-              <button
-                onClick={() => navigate('/login')}
-                className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition"
-              >
-                {t('auth.emailVerification.backToLogin')}
-              </button>
+              <p className="mt-2 text-sm text-gray-400">
+                {t('auth.emailVerification.redirecting')}
+              </p>
             </div>
           )}
-
           {status === 'error' && (
             <div className="text-red-500">
               <p>{error}</p>
