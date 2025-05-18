@@ -2961,14 +2961,22 @@ try {
 
   // Start server
   const PORT = process.env.PORT || 8080;
-  await testDbConnection(); // Test DB connection before starting server
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+  });
+
+  // Test DB connection after server starts
+  testDbConnection().catch(err => {
+    console.error('Database connection test failed:', err);
+    // Don't exit the process, just log the error
   });
 
   // Handle graceful shutdown
   process.on('SIGTERM', async () => {
     console.log('SIGTERM signal received. Closing HTTP server...');
+    server.close(() => {
+      console.log('HTTP server closed');
+    });
     await prisma.$disconnect();
     process.exit(0);
   });
