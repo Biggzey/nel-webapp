@@ -346,8 +346,6 @@ try {
   // Production static file serving and client routing
   if (process.env.NODE_ENV === "production") {
     const distPath = join(__dirname, "dist");
-    
-    // First try to serve static files
     app.use(express.static(distPath, {
       maxAge: '1y',
       etag: true,
@@ -363,12 +361,11 @@ try {
 
     // For any requests that don't match static files or API routes,
     // send the index.html file for client-side routing
-    app.use((req, res, next) => {
+    app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) {
-        next();
-      } else {
-        res.sendFile(join(distPath, 'index.html'));
+        return next();
       }
+      res.sendFile(join(distPath, 'index.html'));
     });
   }
 
