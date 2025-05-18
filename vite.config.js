@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from 'vite-plugin-pwa';
+import history from 'connect-history-api-fallback';
 
 export default defineConfig({
   plugins: [
@@ -50,6 +51,11 @@ export default defineConfig({
         ws: true
       }
     },
+    middlewareMode: true,
+    setupMiddlewares: (middlewares, devServer) => {
+      middlewares.use(history());
+      return middlewares;
+    }
   },
   build: {
     // Enable minification and tree-shaking
