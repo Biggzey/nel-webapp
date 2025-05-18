@@ -638,7 +638,6 @@ try {
             avatar: "/nel-avatar.png",
             fullImage: "/nel-avatar.png",
             systemPrompt: "You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.",
-            customInstructions: "",
             status: "Ready to chat",
             tags: ["AI", "Companion", "Helper"],
             alternateGreetings: ["Hello! How can I help you today?", "Hi there! What's on your mind?"],
