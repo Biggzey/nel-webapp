@@ -10,6 +10,7 @@ export default function VerifyEmail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log("[VerifyEmail] useEffect running", searchParams.get('token'));
     const verifyEmail = async () => {
       const token = searchParams.get('token');
       
