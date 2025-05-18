@@ -341,7 +341,7 @@ try {
   app.use('/api/', apiLimiter);
 
   // Swagger documentation - must be before static files
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+  // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
   // Production static file serving and client routing
   if (process.env.NODE_ENV === "production") {
