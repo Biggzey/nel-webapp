@@ -553,6 +553,13 @@ try {
    *         description: Invalid input data
    */
   app.post("/api/signup", async (req, res) => {
+    console.error("SIGNUP ATTEMPT", req.body, {
+      SMTP_FROM: process.env.SMTP_FROM,
+      MAILJET_API_KEY: process.env.MAILJET_API_KEY,
+      MAILJET_SECRET_KEY: process.env.MAILJET_SECRET_KEY,
+      FRONTEND_URL: process.env.FRONTEND_URL
+    });
+
     console.log('Signup request received:', {
       path: req.path,
       method: req.method,
