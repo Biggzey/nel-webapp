@@ -10,16 +10,20 @@ export default function VerifyEmail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (!token) {
-      setStatus('error');
-      setError('No verification token provided');
-      return;
-    }
+    console.log("[VerifyEmail] useEffect running", searchParams.get('token'));
     const verifyEmail = async () => {
+      const token = searchParams.get('token');
+      
+      if (!token) {
+        setStatus('error');
+        setError('No verification token provided');
+        return;
+      }
+
       try {
         const response = await fetch(`/api/verify-email?token=${token}`);
         const data = await response.json();
+
         if (response.ok) {
           setStatus('success');
           // Redirect to login after 3 seconds
@@ -33,6 +37,7 @@ export default function VerifyEmail() {
         setError('An unexpected error occurred');
       }
     };
+
     verifyEmail();
   }, [searchParams, navigate]);
 
@@ -43,6 +48,7 @@ export default function VerifyEmail() {
           <h1 className="text-2xl font-semibold mb-6 text-white">
             {t('auth.emailVerification.title')}
           </h1>
+          
           {status === 'verifying' && (
             <div className="text-white">
               <p>{t('auth.emailVerification.verifying')}</p>
@@ -51,6 +57,7 @@ export default function VerifyEmail() {
               </div>
             </div>
           )}
+
           {status === 'success' && (
             <div className="text-green-400">
               <p>{t('auth.emailVerification.success')}</p>
@@ -59,6 +66,7 @@ export default function VerifyEmail() {
               </p>
             </div>
           )}
+
           {status === 'error' && (
             <div className="text-red-500">
               <p>{error}</p>
