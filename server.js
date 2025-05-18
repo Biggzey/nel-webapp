@@ -61,18 +61,6 @@ process.on('unhandledRejection', (reason, promise) => {
   });
 });
 
-// Force synchronous logging
-const originalConsoleLog = console.log;
-const originalConsoleError = console.error;
-
-console.log = function() {
-  process.stdout.write(JSON.stringify(Array.from(arguments)) + '\n');
-};
-
-console.error = function() {
-  process.stderr.write(JSON.stringify(Array.from(arguments)) + '\n');
-};
-
 // Wrap server startup in try-catch
 try {
   const app = express();
