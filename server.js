@@ -1561,9 +1561,9 @@ try {
    *       401:
    *         description: Not authenticated
    */
-  console.log('Fetching characters for user:', req.user.id);
   app.get("/api/characters", authMiddleware, async (req, res) => {
     try {
+      console.log('Fetching characters for user:', req.user.id);
       const characters = await prisma.character.findMany({
         where: { userId: req.user.id, isPublic: false },
         orderBy: { order: 'asc' }
