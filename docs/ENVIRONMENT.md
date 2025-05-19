@@ -37,7 +37,7 @@ SMTP_PORT="587"
 SMTP_SECURE="false"
 SMTP_USER="your-smtp-username"
 SMTP_PASS="your-smtp-password"
-SMTP_FROM="verification@nel-ai.uk"
+SMTP_FROM="support@nel-ai.uk"
 FRONTEND_URL="https://nel-ai.uk" # or your production URL
 ```
 

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from './Toast';
+import AdminPasswordResetModal from './AdminPasswordResetModal';
 
 export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey }) {
   const { token } = useAuth();
@@ -11,6 +12,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
   const [searchQuery, setSearchQuery] = useState('');
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const menuRef = useRef(null);
+  const [resetUser, setResetUser] = useState(null);
 
   // Move loadUsers outside of useEffect
   async function loadUsers() {
@@ -60,28 +62,8 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
   }, [openMenuIndex]);
 
   // Quick action handlers
-  const handleResetPassword = async (userId) => {
-    try {
-      const res = await fetch(`/api/admin/users/${userId}/reset-password`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      if (!res.ok) throw new Error('Failed to reset password');
-      addToast({
-        type: 'success',
-        message: 'Password reset email sent',
-        duration: 3000
-      });
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      addToast({
-        type: 'error',
-        message: 'Failed to reset password',
-        duration: 5000
-      });
-    }
+  const handleResetPassword = (user) => {
+    setResetUser(user);
     setOpenMenuIndex(null);
   };
 
@@ -230,7 +212,7 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
                 className="absolute right-0 top-12 z-50 min-w-[180px] bg-background-container-light dark:bg-background-container-dark border border-border-light dark:border-border-dark rounded-lg shadow-lg py-2"
               >
                 <button
-                  onClick={() => handleResetPassword(user.id)}
+                  onClick={() => handleResetPassword(user)}
                   className="w-full text-left px-4 py-2 hover:bg-background-container-hover-light dark:hover:bg-background-container-hover-dark"
                 >
                   <i className="fas fa-key mr-2" /> {t('admin.resetPassword')}
@@ -269,6 +251,12 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
           <span className="font-medium text-sm">Back to Chats</span>
         </button>
       </div>
+
+      <AdminPasswordResetModal
+        isOpen={!!resetUser}
+        onClose={() => setResetUser(null)}
+        user={resetUser}
+      />
     </aside>
   );
 } 
