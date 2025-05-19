@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
+import { useOnboarding } from '../context/OnboardingContext';
 
 // Onboarding steps with selectors and custom tooltip placement logic
 const steps = [
@@ -74,17 +75,23 @@ function getRect(selector) {
   return rect;
 }
 
-const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [rect, setRect] = useState(null);
-  const [viewport, setViewport] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const [active, setActive] = useState(true);
+const SpotlightOnboarding = ({ onFinish }) => {
+  const {
+    onboardingStep,
+    setOnboardingStep,
+    onboardingActive,
+    setOnboardingActive,
+    markOnboardingComplete
+  } = useOnboarding();
+  const [rect, setRect] = React.useState(null);
+  const [viewport, setViewport] = React.useState({ width: window.innerWidth, height: window.innerHeight });
   const prevHtmlOverflow = useRef();
   const prevBodyOverflow = useRef();
+  const retryTimeout = useRef();
 
   // Only set overflow: hidden when overlay is visible, and always clean up
   useEffect(() => {
-    if (!active) return;
+    if (!onboardingActive) return;
     prevHtmlOverflow.current = document.documentElement.style.overflow;
     prevBodyOverflow.current = document.body.style.overflow;
     document.documentElement.style.overflow = 'hidden';
@@ -93,26 +100,36 @@ const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
       document.documentElement.style.overflow = prevHtmlOverflow.current || '';
       document.body.style.overflow = prevBodyOverflow.current || '';
     };
-  }, [active]);
+  }, [onboardingActive]);
 
-  // Update rect and viewport on step change/resize/scroll
+  // Update rect and viewport on step change/resize/scroll, with retry for missing elements
   useEffect(() => {
-    if (!active) return;
+    if (!onboardingActive) return;
+    let cancelled = false;
     function update() {
-      const r = getRect(steps[currentStep].selector);
-      setRect(r);
-      setViewport({ width: window.innerWidth, height: window.innerHeight });
+      const r = getRect(steps[onboardingStep].selector);
+      if (!r) {
+        // Retry after a short delay if element is missing
+        retryTimeout.current = setTimeout(update, 200);
+        return;
+      }
+      if (!cancelled) {
+        setRect(r);
+        setViewport({ width: window.innerWidth, height: window.innerHeight });
+      }
     }
     update();
     window.addEventListener('resize', update);
     window.addEventListener('scroll', update, true);
     return () => {
+      cancelled = true;
       window.removeEventListener('resize', update);
       window.removeEventListener('scroll', update, true);
+      if (retryTimeout.current) clearTimeout(retryTimeout.current);
     };
-  }, [currentStep, active]);
+  }, [onboardingStep, onboardingActive]);
 
-  if (!active) return null;
+  if (!onboardingActive) return null;
   if (!rect) return null;
 
   // SVG mask for spotlight effect
@@ -144,19 +161,19 @@ const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
   );
 
   // Tooltip style for this step
-  const tooltipStyle = steps[currentStep].getTooltipStyle(rect);
+  const tooltipStyle = steps[onboardingStep].getTooltipStyle(rect);
 
   function handleSkip() {
-    setActive(false);
-    if (markOnboardingComplete) markOnboardingComplete();
+    setOnboardingActive(false);
+    markOnboardingComplete && markOnboardingComplete();
     if (onFinish) onFinish();
   }
 
   function handleNext() {
-    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+    if (onboardingStep < steps.length - 1) setOnboardingStep(onboardingStep + 1);
     else {
-      setActive(false);
-      if (markOnboardingComplete) markOnboardingComplete();
+      setOnboardingActive(false);
+      markOnboardingComplete && markOnboardingComplete();
       if (onFinish) onFinish();
     }
   }
@@ -175,8 +192,8 @@ const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
           boxSizing: 'border-box',
         }}
       >
-        <h3 className="text-xl font-bold mb-2">{steps[currentStep].title}</h3>
-        <p className="mb-6 text-gray-700 dark:text-gray-200">{steps[currentStep].description}</p>
+        <h3 className="text-xl font-bold mb-2">{steps[onboardingStep].title}</h3>
+        <p className="mb-6 text-gray-700 dark:text-gray-200">{steps[onboardingStep].description}</p>
         <div className="flex justify-between items-center">
           <button
             onClick={handleSkip}
@@ -184,7 +201,7 @@ const SpotlightOnboarding = ({ onFinish, markOnboardingComplete }) => {
           >
             Skip
           </button>
-          {steps[currentStep].isFinal ? (
+          {steps[onboardingStep].isFinal ? (
             <button
               onClick={handleNext}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"

@@ -13,6 +13,8 @@ export const useOnboarding = () => {
 
 export const OnboardingProvider = ({ children }) => {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState(null);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [onboardingActive, setOnboardingActive] = useState(true);
   const { user, token } = useAuth();
 
   useEffect(() => {
@@ -29,13 +31,17 @@ export const OnboardingProvider = ({ children }) => {
         if (response.ok) {
           const data = await response.json();
           setHasSeenOnboarding(data.hasSeenOnboarding);
+          if (data.hasSeenOnboarding) {
+            setOnboardingActive(false);
+          }
         } else {
-          // If there's an error, default to showing onboarding
           setHasSeenOnboarding(false);
+          setOnboardingActive(true);
         }
       } catch (error) {
         console.error('Error fetching onboarding status:', error);
         setHasSeenOnboarding(false);
+        setOnboardingActive(true);
       }
     };
 
@@ -55,6 +61,7 @@ export const OnboardingProvider = ({ children }) => {
 
       if (response.ok) {
         setHasSeenOnboarding(true);
+        setOnboardingActive(false);
       }
     } catch (error) {
       console.error('Error marking onboarding complete:', error);
@@ -64,6 +71,10 @@ export const OnboardingProvider = ({ children }) => {
   const value = {
     hasSeenOnboarding,
     markOnboardingComplete,
+    onboardingStep,
+    setOnboardingStep,
+    onboardingActive,
+    setOnboardingActive,
   };
 
   return (
