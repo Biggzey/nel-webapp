@@ -14,6 +14,7 @@ export default function VerifyEmail() {
   useEffect(() => {
     const token = searchParams.get('token');
     console.log("[VerifyEmail] useEffect running. Token:", token);
+    
     const verifyEmail = async () => {
       if (!token) {
         setStatus('error');
@@ -23,12 +24,22 @@ export default function VerifyEmail() {
       }
 
       try {
+        // Get the API URL from environment or use the current origin
         const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-        const fetchUrl = `${apiUrl}/api/verify-email?token=${token}`;
+        const fetchUrl = `${apiUrl}/api/verify-email?token=${encodeURIComponent(token)}`;
         console.log("[VerifyEmail] About to fetch:", fetchUrl);
-        const response = await fetch(fetchUrl);
+        
+        const response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log("[VerifyEmail] Response status:", response.status);
         const data = await response.json();
-        console.log("[VerifyEmail] Fetch response:", response, data);
+        console.log("[VerifyEmail] Response data:", data);
 
         if (response.ok) {
           setStatus('success');
@@ -42,7 +53,7 @@ export default function VerifyEmail() {
       } catch (err) {
         console.error('[VerifyEmail] Verification error:', err);
         setStatus('error');
-        setError('An unexpected error occurred');
+        setError('An unexpected error occurred while verifying your email');
       }
     };
 
