@@ -115,8 +115,9 @@ export default function Signup() {
         confirmPassword: ""
       });
 
-      // Navigate to login
-      nav("/login");
+      // Show verification message instead of navigating to login
+      setErr("Account created! Please check your email for a verification link.");
+      // nav("/login");
     } catch (error) {
       console.error('Signup error:', error);
       setErr(error.message || "Failed to create account");

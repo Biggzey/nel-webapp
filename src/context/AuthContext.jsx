@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 // In development, use the proxy. In production, this will be replaced with the actual API URL
-const API_BASE_URL = "";
+const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 const AuthContext = createContext(null);
 

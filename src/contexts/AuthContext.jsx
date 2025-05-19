@@ -1,3 +1,4 @@
+// WARNING: This is a legacy/duplicate AuthContext. Use src/context/AuthContext.jsx instead.
 import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
