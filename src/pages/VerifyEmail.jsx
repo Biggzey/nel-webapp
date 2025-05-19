@@ -21,7 +21,8 @@ export default function VerifyEmail() {
       }
 
       try {
-        const response = await fetch(`/api/verify-email?token=${token}`);
+        const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+        const response = await fetch(`${apiUrl}/api/verify-email?token=${token}`);
         const data = await response.json();
 
         if (response.ok) {
@@ -33,6 +34,7 @@ export default function VerifyEmail() {
           setError(data.error || 'Failed to verify email');
         }
       } catch (err) {
+        console.error('Verification error:', err);
         setStatus('error');
         setError('An unexpected error occurred');
       }
