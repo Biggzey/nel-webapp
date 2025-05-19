@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../components/Toast';
 
 // In development, use the proxy. In production, this will be replaced with the actual API URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || window.location.origin;
@@ -8,6 +9,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
+  const { addToast } = useToast();
 
   // Initialize token from localStorage (or null)
   const [token, setToken] = useState(() => {
@@ -48,49 +50,30 @@ export function AuthProvider({ children }) {
   // Add user state
   const [user, setUser] = useState(null);
 
-  // Global fetch interceptor for handling auth errors
-  const authenticatedFetch = async (url, options = {}) => {
-    if (!token) {
-      console.log('No token available, redirecting to login');
-      logout();
-      return null;
+  let global429Until = 0;
+  async function authenticatedFetch(url, options = {}) {
+    if (Date.now() < global429Until) {
+      addToast({ type: 'error', message: 'You are being rate limited. Please wait a moment before trying again.', duration: 5000 });
+      throw new Error('Rate limited. Please wait a moment.');
     }
-
-    // Validate token before making request
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (Date.now() >= payload.exp * 1000) {
-        console.log('Token expired, logging out');
-        logout();
-        return null;
-      }
-    } catch (error) {
-      console.error('Token validation error:', error);
-      logout();
-      return null;
-    }
-
-    options.headers = {
-      ...options.headers,
-      Authorization: `Bearer ${token}`
+    const headers = {
+      ...(options.headers || {}),
+      Authorization: token ? `Bearer ${token}` : undefined,
     };
-
-    try {
-      const response = await fetch(url, options);
-      
-      // Handle authentication errors globally
-      if (response.status === 401 || response.status === 403) {
-        console.log('Session invalid, logging out');
-        logout();
-        return null;
-      }
-      
-      return response;
-    } catch (error) {
-      console.error('Fetch error:', error);
-      throw error;
+    const opts = { ...options, headers };
+    const res = await fetch(url, opts);
+    if (res.status === 429) {
+      global429Until = Date.now() + 5000; // 5 seconds backoff
+      addToast({ type: 'error', message: 'You are being rate limited. Please wait a moment before trying again.', duration: 5000 });
+      throw new Error('Too many requests. Please wait a moment.');
     }
-  };
+    if (res.status === 401) {
+      logout();
+      navigate('/login');
+      throw new Error('Session expired. Please log in again.');
+    }
+    return res;
+  }
 
   // Add refreshUser function
   const refreshUser = async () => {
@@ -113,30 +96,20 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // Load user data when token changes
+  // Only fetch user and role if not already loaded or if token changes
   useEffect(() => {
     if (token) {
-      console.log('Token present, loading user data');
-      refreshUser().catch(console.error);
-      
-      // Fetch user role
-      authenticatedFetch(`${API_BASE_URL}/api/user/role`)
-        .then(res => {
-          if (!res) return; // User was logged out
-          if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-          return res.json();
-        })
-        .then(data => {
-          if (data) {
-            setUserRole(data.role);
-          }
-        })
-        .catch(err => {
-          console.error('Error fetching user role:', err);
-          logout();
-        });
+      if (!user) refreshUser().catch(console.error);
+      if (!userRole) {
+        authenticatedFetch(`${API_BASE_URL}/api/user/role`)
+          .then(res => {
+            if (!res) return;
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+          })
+          .then(data => { if (data) setUserRole(data.role); })
+          .catch(err => { console.error('Error fetching user role:', err); logout(); });
+      }
     } else {
       setUser(null);
       setUserRole(null);
@@ -242,22 +215,6 @@ export function AuthProvider({ children }) {
     return currentRank > targetRank;
   };
 
-  // Centralized fetch with auth and auto-logout on 401
-  const fetchWithAuth = async (url, options = {}) => {
-    const headers = {
-      ...(options.headers || {}),
-      Authorization: token ? `Bearer ${token}` : undefined,
-    };
-    const opts = { ...options, headers };
-    const res = await fetch(url, opts);
-    if (res.status === 401) {
-      logout();
-      navigate('/login');
-      throw new Error('Session expired. Please log in again.');
-    }
-    return res;
-  };
-
   return (
     <AuthContext.Provider value={{ 
       token, 
@@ -271,8 +228,7 @@ export function AuthProvider({ children }) {
       signup,
       authenticatedFetch,
       user,
-      refreshUser,
-      fetchWithAuth
+      refreshUser
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../components/Toast';
 
 const defaultCharacters = [
   {
@@ -17,6 +18,7 @@ const CharacterContext = createContext();
 
 export function CharacterProvider({ children }) {
   const { token, logout, fetchWithAuth } = useAuth();
+  const { addToast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
@@ -27,9 +29,18 @@ export function CharacterProvider({ children }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReloadingCharacters, setIsReloadingCharacters] = useState(false);
 
+  let global429Until = 0;
+  function shouldRateLimit() {
+    return Date.now() < global429Until;
+  }
+  function setRateLimit() {
+    global429Until = Date.now() + 5000;
+  }
+
   // Load characters and preferences on mount
   useEffect(() => {
     if (!token) return;
+    if (shouldRateLimit()) return;
 
     async function loadData() {
       try {
@@ -39,6 +50,7 @@ export function CharacterProvider({ children }) {
         const charsRes = await fetchWithAuth("/api/characters");
 
         if (charsRes.status === 429) {
+          setRateLimit();
           handleRateLimit();
           return;
         }
@@ -70,6 +82,7 @@ export function CharacterProvider({ children }) {
         const prefsRes = await fetchWithAuth("/api/preferences");
 
         if (prefsRes.status === 429) {
+          setRateLimit();
           handleRateLimit();
           return;
         }
@@ -335,9 +348,7 @@ export function CharacterProvider({ children }) {
 
   // Helper to show a toast or alert for 429 errors
   function handleRateLimit() {
-    if (window && window.alert) {
-      alert('You are being rate limited (429 Too Many Requests). Please wait and try again later.');
-    }
+    addToast && addToast({ type: 'error', message: 'You are being rate limited (429 Too Many Requests). Please wait and try again later.', duration: 5000 });
   }
 
   // Reorder characters and persist to backend
