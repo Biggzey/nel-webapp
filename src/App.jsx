@@ -24,6 +24,7 @@ import { OnboardingProvider, useOnboarding } from './context/OnboardingContext';
 import SpotlightOnboarding from './components/SpotlightOnboarding';
 import { NotificationProvider } from './context/NotificationContext';
 import VerifyEmail from './pages/VerifyEmail';
+import VerifyRedirect from './pages/VerifyRedirect';
 
 const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
@@ -331,6 +332,7 @@ function InnerApp() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/verify/:token" element={<VerifyRedirect />} />
            {/* ✅ Protect the admin panel properly */}
   <Route 
     path="/admin" 

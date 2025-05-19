@@ -451,6 +451,7 @@ try {
         throw new Error('Missing required email configuration (SMTP_FROM or FRONTEND_URL)');
       }
 
+      const shortLink = `${process.env.FRONTEND_URL}/verify/${token}`;
       const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
       
       console.log('Sending verification email:', {
@@ -470,12 +471,15 @@ try {
                 Email: email
               }
             ],
-            Subject: "Verify your email address",
+            Subject: "Confirm your email to start using Nel-AI",
             HTMLPart: `
-              <h1>Welcome to our platform!</h1>
-              <p>Please click the link below to verify your email address:</p>
-              <a href="${verificationUrl}">${verificationUrl}</a>
+              <p>Hi ${email},</p>
+              <p>Thanks for signing up with NEL!</p>
+              <p>Please confirm your email address by clicking the link below:</p>
+              <p>🔗 <a href="${verificationUrl}">${shortLink}</a></p>
               <p>This link will expire in 24 hours.</p>
+              <p>If you didn't sign up, you can safely ignore this email.</p>
+              <p>– The NEL Team</p>
             `
           }
         ]
