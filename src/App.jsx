@@ -181,8 +181,6 @@ function ProtectedContent({ addToast }) {
           />
         )}
         <Routes>
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/*" element={
             <>
               {/* Only show spinner during loading/importing/reloading, nothing else */}
@@ -324,6 +322,16 @@ function InnerApp() {
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+           {/* ✅ Protect the admin panel properly */}
+  <Route 
+    path="/admin" 
+    element={
+      <AdminRoute>
+        <AdminPanel />
+      </AdminRoute>
+    } 
+  />
           {/* Protected routes */}
           <Route
             path="/*"
