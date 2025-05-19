@@ -29,8 +29,16 @@ const Sidebar = React.lazy(() => import('./components/Sidebar'));
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
+  const location = useLocation();
+
+  // ✅ Allow access to /verify-email for unauthenticated users
+  if (location.pathname.startsWith("/verify-email")) {
+    return children;
+  }
+
   return token ? children : <Navigate to="/login" replace />;
 }
+
 
 function AdminRoute({ children }) {
   const { token, isModerator } = useAuth();
