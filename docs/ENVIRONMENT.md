@@ -38,7 +38,7 @@ SMTP_SECURE="false"
 SMTP_USER="your-smtp-username"
 SMTP_PASS="your-smtp-password"
 SMTP_FROM="verification@nel-ai.uk"
-FRONTEND_URL="http://localhost:5173" # or your production URL
+FRONTEND_URL="https://nel-ai.uk" # or your production URL
 ```
 
 ## Optional Environment Variables

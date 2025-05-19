@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider } from '../context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock the character context
