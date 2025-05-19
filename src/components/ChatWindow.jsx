@@ -409,7 +409,12 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
           </button>
         </div>
       )}
-
+      {/* Placeholder if no character is selected */}
+      {!current && (
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-lg">
+          No character selected. Please select a character to start chatting.
+        </div>
+      )}
       {/* Messages */}
       <div className="flex-1 w-full overflow-y-auto px-4 md:px-6 py-4 md:py-8 space-y-4 md:space-y-6 messages-container bg-chatwindow-light dark:bg-chatwindow-dark">
         {isLoading ? (
