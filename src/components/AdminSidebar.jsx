@@ -144,10 +144,10 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
 
   // Helper to get a valid avatar URL
   function getValidAvatarUrl(avatar) {
-    if (!avatar || typeof avatar !== 'string' || avatar.trim() === '' || avatar === 'null') return '/user-avatar.png';
+    if (!avatar || typeof avatar !== 'string' || avatar.trim() === '' || avatar === 'null') return '/default-avatar.png';
     // Accept data URLs, absolute URLs, or fallback
     if (avatar.startsWith('data:') || avatar.startsWith('http')) return avatar;
-    return '/user-avatar.png';
+    return '/default-avatar.png';
   }
 
   return (
@@ -193,9 +193,9 @@ export default function AdminSidebar({ onUserSelect, selectedUserId, refreshKey 
                 className="w-10 h-10 rounded-full object-cover"
                 key={user.avatar || user.id}
                 onError={e => {
-                  if (!e.target.src.endsWith('/user-avatar.png')) {
+                  if (!e.target.src.endsWith('/default-avatar.png')) {
                     e.target.onerror = null;
-                    e.target.src = '/user-avatar.png';
+                    e.target.src = '/default-avatar.png';
                   }
                 }}
               />

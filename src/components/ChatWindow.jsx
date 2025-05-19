@@ -584,9 +584,15 @@ const ChatWindow = forwardRef(function ChatWindow({ onMenuClick, onCharacterPane
                 )}
                 {msg.role === 'user' && (
                   <img
-                    src={user?.avatar || DEFAULT_USER_AVATAR}
+                    src={user?.avatar || '/default-avatar.png'}
                     alt={user?.displayName || user?.username || 'You'}
                     className="w-8 h-8 md:w-9 md:h-9 rounded-full shadow-md object-cover ml-2 order-2"
+                    onError={e => {
+                      if (!e.target.src.endsWith('/default-avatar.png')) {
+                        e.target.onerror = null;
+                        e.target.src = '/default-avatar.png';
+                      }
+                    }}
                   />
                 )}
               </div>
