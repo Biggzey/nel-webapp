@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
+console.log("[VerifyEmail] component loaded");
+
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -10,20 +12,23 @@ export default function VerifyEmail() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log("[VerifyEmail] useEffect running", searchParams.get('token'));
+    const token = searchParams.get('token');
+    console.log("[VerifyEmail] useEffect running. Token:", token);
     const verifyEmail = async () => {
-      const token = searchParams.get('token');
-      
       if (!token) {
         setStatus('error');
         setError('No verification token provided');
+        console.error('[VerifyEmail] No verification token provided');
         return;
       }
 
       try {
         const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
-        const response = await fetch(`${apiUrl}/api/verify-email?token=${token}`);
+        const fetchUrl = `${apiUrl}/api/verify-email?token=${token}`;
+        console.log("[VerifyEmail] About to fetch:", fetchUrl);
+        const response = await fetch(fetchUrl);
         const data = await response.json();
+        console.log("[VerifyEmail] Fetch response:", response, data);
 
         if (response.ok) {
           setStatus('success');
@@ -32,9 +37,10 @@ export default function VerifyEmail() {
         } else {
           setStatus('error');
           setError(data.error || 'Failed to verify email');
+          console.error('[VerifyEmail] Verification failed:', data.error || 'Failed to verify email');
         }
       } catch (err) {
-        console.error('Verification error:', err);
+        console.error('[VerifyEmail] Verification error:', err);
         setStatus('error');
         setError('An unexpected error occurred');
       }
