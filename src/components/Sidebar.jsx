@@ -383,15 +383,8 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
     console.error('Error rendering PrivatePersonalityModal:', error);
   }
 
-  // Always render Nelliel row at the top
-  const nelliel = characters.find(c => c.name === 'Nelliel') || {
-    id: 'nelliel-default',
-    name: 'Nelliel',
-    personality: 'Your custom AI companion.',
-    avatar: '/nel-avatar.png',
-    systemPrompt: 'You are Nelliel, a helpful and friendly AI companion. You are knowledgeable, empathetic, and always eager to assist users with their questions and tasks.',
-    customInstructions: '',
-  };
+  // Always render Nelliel row at the top if she exists in characters
+  const nelliel = characters.find(c => c.name === 'Nelliel');
 
   return (
     <aside className={`w-72 md:w-80 flex-shrink-0 h-full flex flex-col bg-background-container-light dark:bg-background-container-dark border-r border-border-light dark:border-border-dark ${className}`}>
@@ -472,21 +465,23 @@ export default function Sidebar({ className = "", onLinkClick = () => {}, onSett
             </div>
           ) : (
             <>
-              {/* Render Nelliel statically at the top if present and matches search */}
-              <div className="nelliel-row-onboarding-anchor">
-                <SortableCharacterItem
-                  key={nelliel.id}
-                  character={nelliel}
-                  index={characters.findIndex(c => c.id === nelliel.id) !== -1 ? characters.findIndex(c => c.id === nelliel.id) : 0}
-                  isSelected={selectedIndex === (characters.findIndex(c => c.id === nelliel.id) !== -1 ? characters.findIndex(c => c.id === nelliel.id) : 0)}
-                  onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
-                  onClearChat={handleClearChat}
-                  onDelete={handleDeleteCharacterWithConfirm}
-                  onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
-                  isMenuOpen={openMenuIndex === (characters.findIndex(c => c.id === nelliel.id) !== -1 ? characters.findIndex(c => c.id === nelliel.id) : 0)}
-                  menuRef={menuRef}
-                />
-              </div>
+              {/* Render Nelliel at the top if she exists */}
+              {nelliel && (
+                <div className="nelliel-row-onboarding-anchor">
+                  <SortableCharacterItem
+                    key={nelliel.id}
+                    character={nelliel}
+                    index={characters.findIndex(c => c.id === nelliel.id)}
+                    isSelected={selectedIndex === characters.findIndex(c => c.id === nelliel.id)}
+                    onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
+                    onClearChat={handleClearChat}
+                    onDelete={handleDeleteCharacterWithConfirm}
+                    onMenuClick={(idx) => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                    isMenuOpen={openMenuIndex === characters.findIndex(c => c.id === nelliel.id)}
+                    menuRef={menuRef}
+                  />
+                </div>
+              )}
 
               {/* Render other characters */}
               <DndContext

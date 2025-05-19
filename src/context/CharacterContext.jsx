@@ -13,7 +13,7 @@ export function CharacterProvider({ children }) {
   const [isImporting, setIsImporting] = useState(false);
   
   // Load characters from database
-  const [characters, setCharacters] = useState([...defaultCharacters]);
+  const [characters, setCharacters] = useState([]);
   const [selectedIndex, _setSelectedIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReloadingCharacters, setIsReloadingCharacters] = useState(false);
@@ -60,12 +60,9 @@ export function CharacterProvider({ children }) {
           });
           setCharacters(userChars);
         } else {
-          // Show error and fallback to default character
-          console.error("Failed to load characters, using default.");
+          console.error("Failed to load characters");
           setCharacters([]);
         }
-
-        // No longer auto-create Nelliel. If no characters, userChars will be empty.
 
         // Load preferences
         const prefsRes = await fetchWithAuth("/api/preferences");
@@ -86,12 +83,11 @@ export function CharacterProvider({ children }) {
             _setSelectedIndex(idx);
           }
         } else {
-          // If no preference is set, default to Nelliel (first character)
+          // If no preference is set, default to first character
           _setSelectedIndex(0);
         }
       } catch (error) {
         console.error("Error loading character data:", error);
-        // Ensure we have at least Nelliel even if everything fails
         setCharacters([]);
         _setSelectedIndex(0);
       } finally {
