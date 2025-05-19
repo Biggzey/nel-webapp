@@ -634,7 +634,7 @@ try {
           data: {
             userId: user.id,
             name: "Nelliel",
-            age: "24 (appears 16)",
+            age: "24",
             gender: "Female",
             race: "Kitsune-Human Hybrid",
             occupation: "Former priestess & noble; now a personal companion and guide",
@@ -1561,6 +1561,7 @@ try {
    *       401:
    *         description: Not authenticated
    */
+  console.log('Fetching characters for user:', req.user.id);
   app.get("/api/characters", authMiddleware, async (req, res) => {
     try {
       const characters = await prisma.character.findMany({
