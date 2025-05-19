@@ -473,7 +473,7 @@ try {
             ],
             Subject: "Confirm your email to start using Nel-AI",
             HTMLPart: `
-              <p>Hi ${email},</p>
+              <p>Hi ${username},</p>
               <p>Thanks for signing up with NEL!</p>
               <p>Please confirm your email address by clicking the link below:</p>
               <p>🔗 <a href="${verificationUrl}">${shortLink}</a></p>
