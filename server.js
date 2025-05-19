@@ -440,7 +440,7 @@ try {
   }
 
   // Send verification email
-  async function sendVerificationEmail(email, token) {
+  async function sendVerificationEmail(email, username, token) {
     try {
       // Verify Mailjet configuration
       if (!mailjet) {
@@ -661,7 +661,7 @@ try {
       // If we get here, the transaction was successful
       // Try to send verification email
       try {
-        await sendVerificationEmail(email, user.verificationToken);
+        await sendVerificationEmail(email, user.username, user.verificationToken);
       } catch (emailError) {
         console.error('Failed to send verification email:', emailError);
         // Don't fail the signup if email fails, but log it
