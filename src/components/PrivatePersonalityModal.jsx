@@ -165,43 +165,23 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
 
       const privateChar = await privateRes.json();
 
-      // If public toggle is on, create public copy
+      // If public toggle is on, submit for review
       if (confirmPublic) {
         try {
-          const publicRes = await fetch('/api/characters', {
+          // Submit the private character for review
+          const submitRes = await fetch(`/api/characters/${privateChar.id}/submit`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
-            },
-            body: JSON.stringify({
-              ...privateChar,
-              isPublic: true,
-              id: undefined, // Let server generate new ID
-              pendingSubmissions: {
-                create: {
-                  status: 'pending',
-                  name: form.name.trim(),
-                  description: form.description.trim(),
-                  avatar: form.avatar || '/default-avatar.png',
-                  personality: form.personality.trim(),
-                  systemPrompt: form.systemPrompt.trim(),
-                  tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
-                  user: {
-                    connect: {
-                      id: privateChar.userId
-                    }
-                  }
-                }
-              }
-            })
+            }
           });
 
-          if (!publicRes.ok) {
-            throw new Error('Failed to create public character');
+          if (!submitRes.ok) {
+            throw new Error('Failed to submit character for review');
           }
 
-          const publicChar = await publicRes.json();
+          const pendingChar = await submitRes.json();
 
           // Send notification for public submission
           await fetch('/api/notifications', {
@@ -214,7 +194,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
               type: 'CHARACTER_SUBMITTED',
               title: t('notifications.characterSubmitted.title'),
               message: t('notifications.characterSubmitted.message'),
-              metadata: { characterId: publicChar.id }
+              metadata: { characterId: privateChar.id }
             })
           });
 
@@ -228,7 +208,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
             duration: 3000
           });
         } catch (err) {
-          console.error('Error creating public copy:', err);
+          console.error('Error submitting for review:', err);
           addToast({
             type: 'error',
             message: t('character.reviewError'),
@@ -243,7 +223,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
         });
       }
 
-      // Always reload characters and save the private character
+      // Reload characters and save the private character
       await reloadCharacters();
       onSave(privateChar);
       onClose();

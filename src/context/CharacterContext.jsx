@@ -201,7 +201,7 @@ export function CharacterProvider({ children }) {
       selectedIndex === lastIdx &&
       last.name === "New Character" &&
       last.personality === "" &&
-      last.avatar === "/nel-avatar.png";
+      last.avatar === "/nelliel-avatar.png";
 
     if (isBlank) {
       try {

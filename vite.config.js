@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['nel-avatar.png'],
+      includeAssets: ['nelliel-avatar.png'],
       manifest: {
         name: 'Nel WebApp',
         short_name: 'Nel',
@@ -16,7 +16,7 @@ export default defineConfig({
         theme_color: '#000000',
         icons: [
           {
-            src: '/nel-avatar.png',
+            src: '/nelliel-avatar.png',
             sizes: '192x192',
             type: 'image/png'
           }

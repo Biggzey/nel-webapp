@@ -1625,7 +1625,8 @@ try {
             data: {
               ...characterData,
               userId: req.user.id,
-              status: "pending"
+              status: "pending",
+              originalCharacterId: character.id // Link to the original private character
             }
           });
 
@@ -2943,7 +2944,7 @@ if (!existing) {
       fullImage: "/nelliel-full.png",
       firstMessage: "Ah... you're the one I sensed...",
       messageExample: "Hm... looks like the error is coming from a mismatched type...",
-      scenario: "You’ve just signed up on nel-ai.uk...",
+      scenario: "You've just signed up on nel-ai.uk...",
       creatorNotes: "Nel should feel like a real character...",
       isPublic: false,
       reviewStatus: "private",
