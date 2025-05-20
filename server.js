@@ -302,7 +302,7 @@ try {
 
   // Rate limiting per endpoint
   const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
+    windowMs: 2 * 60 * 1000, // 2 minutes
     max: process.env.NODE_ENV === "production" ? 5 : 100, // More lenient in development
     message: { error: "Too many attempts. Please wait 15 minutes before trying again." },
     standardHeaders: true,
