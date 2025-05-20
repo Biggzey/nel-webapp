@@ -1565,7 +1565,7 @@ try {
     try {
       console.log('Fetching characters for user:', req.user.id);
       const characters = await prisma.character.findMany({
-        where: { userId: req.user.id, isPublic: false },
+        where: { userId: req.user.id },
         orderBy: { order: 'asc' }
       });
       res.json(characters);
