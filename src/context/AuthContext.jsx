@@ -74,6 +74,9 @@ export function AuthProvider({ children }) {
     }
     return res;
   }
+  function fetchWithAuth(path, options = {}) {
+    return authenticatedFetch(`${API_BASE_URL}${path}`, options);
+  }
 
   // Add refreshUser function
   const refreshUser = async () => {
@@ -227,6 +230,7 @@ export function AuthProvider({ children }) {
       canModifyRole,
       signup,
       authenticatedFetch,
+      fetchWithAuth,
       user,
       refreshUser
     }}>
