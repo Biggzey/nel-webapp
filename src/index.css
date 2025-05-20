@@ -49,3 +49,15 @@
 .messages-container::-webkit-scrollbar-thumb {
   @apply bg-text-secondary-light dark:bg-text-secondary-dark rounded;
 }
+
+/* ✨ Nelliel glow animation */
+@keyframes glowPulse {
+  0%   { box-shadow: 0 0 0 rgba(0,0,0,0); }
+  50%  { box-shadow: 0 0 12px 6px rgba(173, 216, 230, 0.6); }
+  100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+}
+
+.nelliel-glow {
+  animation: glowPulse 1.6s ease-in-out 1;
+  border-radius: 9999px;
+}

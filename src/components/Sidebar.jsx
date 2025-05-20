@@ -131,6 +131,25 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
     if (isMenuOpen) onMenuClick(null);
   };
 
+  const [showNelGlow, setShowNelGlow] = useState(false);
+
+// Find Nelliel once characters are loaded
+useEffect(() => {
+  const seenNel = localStorage.getItem("nelGlowSeen");
+  const nelExists = characters.some(c => c.name === "Nelliel");
+
+  if (!seenNel && nelExists) {
+    setShowNelGlow(true);
+    localStorage.setItem("nelGlowSeen", "true");
+
+    // Optional: remove the class after animation runs once (cleanup)
+    setTimeout(() => {
+      setShowNelGlow(false);
+    }, 2000); // match your CSS animation duration
+  }
+}, [characters]);
+
+
   return (
     <div
       ref={setNodeRef}
@@ -149,7 +168,7 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
         <img
           src={character.avatar}
           alt=""
-          className="w-10 h-10 rounded-full object-cover ring-1 ring-white/10"
+          className={`w-10 h-10 rounded-full object-cover ring-1 ring-white/10 ${isNelliel && showNelGlow ? 'nelliel-glow' : ''}`}
           onError={e => { e.target.onerror = null; e.target.src = '/default-avatar.png'; }}
         />
         <span className="font-medium truncate max-w-[160px]" title={character.name}>
