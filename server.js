@@ -1529,9 +1529,14 @@ try {
    */
   app.get("/api/characters", authMiddleware, async (req, res) => {
     try {
-      console.log('Fetching characters for user:', req.user.id);
       const characters = await prisma.character.findMany({
-        where: { userId: req.user.id },
+        where: { 
+          userId: req.user.id,
+          OR: [
+            { isPublic: false }, // Show all private characters
+            { isPublic: true, reviewStatus: "rejected" } // Show rejected public characters
+          ]
+        },
         orderBy: { order: 'asc' }
       });
       res.json(characters);
@@ -1625,8 +1630,7 @@ try {
             data: {
               ...characterData,
               userId: req.user.id,
-              status: "pending",
-              originalCharacterId: character.id // Link to the original private character
+              status: "pending"
             }
           });
 
