@@ -102,7 +102,7 @@ function ContextMenuPortal({ anchorRef, isOpen, children, onClose }) {
 }
 
 // Sortable character item component
-function SortableCharacterItem({ character, index, isSelected, onSelect, onClearChat, onDelete, onMenuClick, isMenuOpen, menuRef }) {
+function SortableCharacterItem({ character, characters, index, isSelected, onSelect, onClearChat, onDelete, onMenuClick, isMenuOpen, menuRef }) {
   const isNelliel = character.name === "Nelliel";
   const {
     attributes,
@@ -123,32 +123,26 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
     zIndex: isDragging ? 1 : 0,
   };
 
-  // Ref for the menu button (anchor)
   const buttonRef = useRef();
-
-  // Handler to close menu
   const handleCloseMenu = () => {
     if (isMenuOpen) onMenuClick(null);
   };
 
   const [showNelGlow, setShowNelGlow] = useState(false);
 
-// Find Nelliel once characters are loaded
-useEffect(() => {
-  const seenNel = localStorage.getItem("nelGlowSeen");
-  const nelExists = characters.some(c => c.name === "Nelliel");
+  useEffect(() => {
+    const seenNel = localStorage.getItem("nelGlowSeen");
+    const nelExists = characters?.some(c => c.name === "Nelliel");
 
-  if (!seenNel && nelExists) {
-    setShowNelGlow(true);
-    localStorage.setItem("nelGlowSeen", "true");
+    if (!seenNel && nelExists) {
+      setShowNelGlow(true);
+      localStorage.setItem("nelGlowSeen", "true");
 
-    // Optional: remove the class after animation runs once (cleanup)
-    setTimeout(() => {
-      setShowNelGlow(false);
-    }, 2000); // match your CSS animation duration
-  }
-}, [characters]);
-
+      setTimeout(() => {
+        setShowNelGlow(false);
+      }, 2000);
+    }
+  }, [characters]);
 
   return (
     <div
@@ -506,6 +500,7 @@ export default function Sidebar({
                   <SortableCharacterItem
                     key={nelliel.id}
                     character={nelliel}
+                    characters={characters}
                     index={characters.findIndex(c => c.id === nelliel.id)}
                     isSelected={selectedIndex === characters.findIndex(c => c.id === nelliel.id)}
                     onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
@@ -534,6 +529,7 @@ export default function Sidebar({
                       <SortableCharacterItem
                         key={character.id}
                         character={character}
+                        characters={characters}
                         index={characters.findIndex(c => c.id === character.id)}
                         isSelected={characters.findIndex(c => c.id === character.id) === selectedIndex}
                         onSelect={idx => { setSelectedIndex(idx); if (typeof setShowExplore === 'function') setShowExplore(false); }}
