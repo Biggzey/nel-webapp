@@ -199,6 +199,12 @@ function SortableCharacterItem({ character, index, isSelected, onSelect, onClear
 export default function Sidebar({ className = "", onLinkClick = () => {}, onSettingsClick, onClearChat, sidebarReloadKey, setSidebarReloadKey, setShowExplore }) {
   const navigate = useNavigate();
   const { isModerator, token, user } = useAuth();
+  useEffect(() => {
+    if (token) {
+      reloadCharacters();
+    }
+  }, [token, reloadCharacters]);
+  
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
