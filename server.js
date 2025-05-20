@@ -301,45 +301,40 @@ try {
   app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
   // Rate limiting per endpoint
-  const authLimiter = rateLimit({
-    windowMs: 2 * 60 * 1000, // 2 minutes
-    max: process.env.NODE_ENV === "production" ? 5 : 100, // More lenient in development
-    message: { error: "Too many attempts. Please wait 15 minutes before trying again." },
-    standardHeaders: true,
-    legacyHeaders: false,
-    trustProxy: true,
-    handler: (req, res) => {
-      console.log('Rate limit exceeded:', {
-        ip: req.ip,
-        path: req.path,
-        headers: req.headers
-      });
-      res.status(429).json({ error: "Too many attempts. Please wait 15 minutes before trying again." });
-    }
-  });
+  // Rate limiting per endpoint
+const authLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,      // 5 minutes
+  max: process.env.NODE_ENV === 'production' ? 5 : 100, 
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+  handler: (req, res) => {
+    console.log('Auth rate limit exceeded:', { ip: req.ip, path: req.path });
+    res.status(429).json({ error: 'Too many login attempts. Please wait a few minutes and try again.' });
+  }
+});
 
-  const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: process.env.NODE_ENV === "production" ? 100 : 1000, // More lenient in development
-    message: { error: "Too many API requests. Please try again later." },
-    standardHeaders: true,
-    legacyHeaders: false,
-    trustProxy: true,
-    handler: (req, res) => {
-      console.log('API rate limit exceeded:', {
-        ip: req.ip,
-        path: req.path,
-        headers: req.headers
-      });
-      res.status(429).json({ error: "Too many API requests. Please try again later." });
-    }
-  });
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,     // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+  handler: (req, res) => {
+    console.log('API rate limit exceeded:', { ip: req.ip, path: req.path });
+    res.status(429).json({ error: 'Too many API requests. Please try again later.' });
+  }
+});
 
-  // Apply rate limiting to specific endpoints
-  app.use('/api/login', authLimiter);
-  app.use('/api/signup', authLimiter);
-  app.use('/api/', apiLimiter);
+  // Auth routes: only authLimiter
+app.use('/api/login',  authLimiter);
+app.use('/api/signup', authLimiter);
 
+// All other /api/* routes: skip login/signup, then apply apiLimiter
+app.use('/api', (req, res, next) => {
+  if (req.path === '/login' || req.path === '/signup') return next();
+  return apiLimiter(req, res, next);
+});
   // Swagger documentation - must be before static files
   // app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
@@ -789,16 +784,20 @@ try {
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
       console.log('Token generated successfully');
-      
-      // Set cookie for additional security
+
++     // Clear any failed-login count on success
++     authLimiter.resetKey(req.ip);
+
+      // Set cookie
       res.cookie('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000
       });
-      
+
       res.json({ token });
+
     } catch (err) {
       console.error("Login error details:", {
         error: err.message,
