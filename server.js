@@ -301,7 +301,6 @@ try {
   app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 
   // Rate limiting per endpoint
-  // Rate limiting per endpoint
 const authLimiter = rateLimit({
   windowMs: 5 * 60 * 1000,      // 5 minutes
   max: process.env.NODE_ENV === 'production' ? 5 : 100, 
@@ -316,7 +315,7 @@ const authLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,     // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 100 : 1000,
+  max: process.env.NODE_ENV === 'production' ? 500 : 1000,
   standardHeaders: true,
   legacyHeaders: false,
   trustProxy: true,
