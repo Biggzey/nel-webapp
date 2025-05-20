@@ -130,7 +130,7 @@ export function CharacterProvider({ children }) {
       const blank = {
         name: "New Character",
         personality: "",
-        avatar: "/nel-avatar.png",
+        avatar: "/nelliel-avatar.png",
         systemPrompt: "",
         customInstructions: "",
       };
@@ -384,6 +384,11 @@ export function CharacterProvider({ children }) {
   if (isLoading) {
     return <div>Loading characters...</div>;
   }
+
+  if (!isLoading && characters.length === 0) {
+    return <div>No characters found.</div>;
+  }
+  console.log("✅ Loaded characters:", characters);
 
   return (
     <CharacterContext.Provider
