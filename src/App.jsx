@@ -377,9 +377,9 @@ export default function App() {
             <SettingsProvider>
               <ToastProvider>
                 <OnboardingProvider>
-                <CharacterProvider>
-                  <InnerApp />
-                </CharacterProvider>
+                  <CharacterProvider>
+                    <InnerApp />
+                  </CharacterProvider>
                 </OnboardingProvider>
               </ToastProvider>
             </SettingsProvider>
