@@ -347,7 +347,9 @@ function InnerApp() {
             path="/*"
             element={
               <PrivateRoute>
+                <CharacterProvider>
                   <ProtectedContent addToast={addToast} />
+                  </CharacterProvider>
               </PrivateRoute>
             }
           />
@@ -377,9 +379,7 @@ export default function App() {
             <SettingsProvider>
               <ToastProvider>
                 <OnboardingProvider>
-                  <CharacterProvider>
-                    <InnerApp />
-                  </CharacterProvider>
+                  <InnerApp />
                 </OnboardingProvider>
               </ToastProvider>
             </SettingsProvider>
