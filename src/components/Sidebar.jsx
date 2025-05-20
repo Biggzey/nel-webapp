@@ -346,8 +346,13 @@ export default function Sidebar({
 
   // Remove the local reloadCharacters useEffect and use the context function instead
   useEffect(() => {
-    if (sidebarReloadKey > 0) reloadCharacters();
-  }, [sidebarReloadKey, reloadCharacters]);
+  if (sidebarReloadKey > 0) {
+    const delay = setTimeout(() => {
+      reloadCharacters();
+    }, 300); // Debounce by 300ms
+    return () => clearTimeout(delay);
+  }
+}, [sidebarReloadKey, reloadCharacters]);
 
   useEffect(() => {
     if (pendingImportToast && !isReloadingCharacters) {
