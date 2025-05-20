@@ -242,12 +242,6 @@ export default function Sidebar({
     setIsReloadingCharacters,
   } = useCharacter();
 
-  useEffect(() => {
-    if (token) {
-      reloadCharacters();
-    }
-  }, [token, reloadCharacters]);
-
   const { t } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { clearChat } = useChat();
