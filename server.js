@@ -1534,7 +1534,6 @@ try {
           userId: req.user.id,
           OR: [
             { isPublic: false }, // Show all private characters
-            { isPublic: true, reviewStatus: "rejected" } // Show rejected public characters
           ]
         },
         orderBy: { order: 'asc' }
