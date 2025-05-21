@@ -146,13 +146,32 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           Authorization: localStorage.getItem('token') ? `Bearer ${localStorage.getItem('token')}` : undefined
         },
         body: JSON.stringify({
-          ...form,
-          isPublic: false,
+          isPublic: true,
+          id: undefined,
           name: form.name.trim(),
           description: form.description.trim(),
+          avatar: form.avatar || '/default-avatar.png',
+          fullImage: form.fullImage || '',
           personality: form.personality.trim(),
           systemPrompt: form.systemPrompt.trim(),
-          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim())
+          backstory: form.backstory || '',
+          firstMessage: form.firstMessage || '',
+          messageExample: form.messageExample || '',
+          scenario: form.scenario || '',
+          creatorNotes: form.creatorNotes || '',
+          alternateGreetings: Array.isArray(form.alternateGreetings) ? form.alternateGreetings : [],
+          tags: Array.isArray(form.tags) ? form.tags.map(tag => tag.trim()) : form.tags.split(/,\s*/).map(tag => tag.trim()),
+          age: form.age || '',
+          gender: form.gender || '',
+          race: form.race || '',
+          occupation: form.occupation || '',
+          likes: form.likes || '',
+          dislikes: form.dislikes || '',
+          creator: form.creator || '',
+          characterVersion: form.characterVersion || '',
+          extensions: form.extensions || null,
+          status: 'pending',
+          userId: privateChar.userId
         })
       });
 

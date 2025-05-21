@@ -24,7 +24,7 @@ export default function PrivatePersonalityModal({ isOpen, initialData = {}, onCl
     occupation: '',
     likes: '',
     dislikes: '',
-    avatar: DEFAULT_AVATAR,
+    avatar: '',
     fullImage: '',
     personality: '',
     systemPrompt: '',
