@@ -201,7 +201,11 @@ export default function ExplorePage({ onClose }) {
               <h2 className="text-xl font-semibold mb-1 text-primary drop-shadow">{character.name}</h2>
               <div className="text-base text-text-secondary-light dark:text-text-secondary-dark mb-2">{character.tagline}</div>
               <div className="flex flex-wrap gap-2 justify-center mb-2">
-                {(character.tags || []).map(tag => (
+                {(
+                  typeof character.tags === 'string'
+                    ? (() => { try { return JSON.parse(character.tags); } catch { return []; } })()
+                    : character.tags || []
+                ).map(tag => (
                   <Badge key={tag} variant="primary" size="md">{tag}</Badge>
                 ))}
               </div>
@@ -331,7 +335,11 @@ export default function ExplorePage({ onClose }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                {(modal.tags || []).map(tag => (
+                {(
+                  typeof modal.tags === 'string'
+                    ? (() => { try { return JSON.parse(modal.tags); } catch { return []; } })()
+                    : modal.tags || []
+                ).map(tag => (
                   <Badge key={tag} variant="primary" size="lg">{tag}</Badge>
                 ))}
                 </div>
