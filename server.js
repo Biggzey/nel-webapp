@@ -114,7 +114,7 @@ try {
 
   // Add error-catching middleware for JSON parsing
   app.use(express.json({
-    limit: '10mb', // Increase payload size limit
+    limit: '15mb', // Increase payload size limit
     verify: (req, res, buf) => {
       if (!buf || buf.length === 0) return; // Only parse if not empty
       try {
@@ -134,7 +134,7 @@ try {
 
   app.use(express.urlencoded({ 
     extended: true,
-    limit: '10mb' // Increase payload size limit
+    limit: '15mb' // Increase payload size limit
   }));
 
   // Add error-catching middleware
