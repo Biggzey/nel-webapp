@@ -433,9 +433,10 @@ export default function AdminPanel() {
                 </div>
               ) : (
                 <div className="w-full px-8 flex flex-col gap-8">
-                  {/* System Stats Grid */}
-                  {systemStats ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {/* Metrics and Database Export side by side */}
+                  <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
+                    {/* Metrics Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 flex-1">
                       <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
                         <h2 className="text-lg font-semibold mb-2">Total Users</h2>
                         <div className="text-3xl font-bold">{systemStats.totalUsers ?? 'N/A'}</div>
@@ -472,15 +473,12 @@ export default function AdminPanel() {
                         <h2 className="text-lg font-semibold mb-2">Avg Chars/User</h2>
                         <div className="text-3xl font-bold">{systemStats.avgCharactersPerUser ? Math.round(systemStats.avgCharactersPerUser * 10) / 10 : 'N/A'}</div>
                       </div>
-                      {/* Database Export as a metric card */}
+                    </div>
+                    {/* Database Export Panel on the right */}
+                    <div className="w-full lg:w-80 max-w-xs flex-shrink-0">
                       <DatabaseExportPanel />
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-center h-32">
-                      <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
-                      <span className="ml-4 text-text-secondary-light dark:text-text-secondary-dark">Loading system stats...</span>
-                    </div>
-                  )}
+                  </div>
 
                   {/* Pending Public Characters Section */}
                   <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">
