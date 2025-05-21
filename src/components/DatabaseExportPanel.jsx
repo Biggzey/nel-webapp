@@ -40,7 +40,7 @@ export default function DatabaseExportPanel() {
     }
   };
 
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || !['ADMIN', 'SUPER_ADMIN'].includes(user.role)) {
     return null;
   }
 
