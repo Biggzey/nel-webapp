@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../components/Toast';
 import AdminSidebar from '../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
+import DatabaseExportPanel from '../components/DatabaseExportPanel';
 
 export default function AdminPanel() {
   const { token, userRole } = useAuth();
@@ -478,6 +479,12 @@ export default function AdminPanel() {
                       <span className="ml-4 text-text-secondary-light dark:text-text-secondary-dark">Loading system stats...</span>
                     </div>
                   )}
+
+                  {/* Database Export Section */}
+                  <div className="mt-8">
+                    <DatabaseExportPanel />
+                  </div>
+
                   {/* Pending Public Characters Section */}
                   <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">
                     <h2 className="text-xl font-semibold mb-3 text-primary">Pending Public Characters</h2>
