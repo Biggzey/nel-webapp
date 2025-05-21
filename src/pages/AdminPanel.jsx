@@ -436,43 +436,52 @@ export default function AdminPanel() {
                   {/* Metrics and Database Export side by side */}
                   <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 flex-1">
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Total Users</h2>
-                        <div className="text-3xl font-bold">{systemStats.totalUsers ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Active Now</h2>
-                        <div className="text-3xl font-bold">{systemStats.activeUsers ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">New Today</h2>
-                        <div className="text-3xl font-bold">{systemStats.newUsersToday ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Total Messages</h2>
-                        <div className="text-3xl font-bold">{systemStats.totalMessages ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Messages Today</h2>
-                        <div className="text-3xl font-bold">{systemStats.messagesToday ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Total Characters</h2>
-                        <div className="text-3xl font-bold">{systemStats.totalCharacters ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Characters Created Today</h2>
-                        <div className="text-3xl font-bold">{systemStats.charactersCreatedToday ?? 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Avg Msgs/User</h2>
-                        <div className="text-3xl font-bold">{systemStats.avgMessagesPerUser ? Math.round(systemStats.avgMessagesPerUser * 10) / 10 : 'N/A'}</div>
-                      </div>
-                      <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
-                        <h2 className="text-lg font-semibold mb-2">Avg Chars/User</h2>
-                        <div className="text-3xl font-bold">{systemStats.avgCharactersPerUser ? Math.round(systemStats.avgCharactersPerUser * 10) / 10 : 'N/A'}</div>
-                      </div>
+                    <div className="flex-1">
+                      {systemStats ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Total Users</h2>
+                            <div className="text-3xl font-bold">{systemStats.totalUsers ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Active Now</h2>
+                            <div className="text-3xl font-bold">{systemStats.activeUsers ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">New Today</h2>
+                            <div className="text-3xl font-bold">{systemStats.newUsersToday ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Total Messages</h2>
+                            <div className="text-3xl font-bold">{systemStats.totalMessages ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Messages Today</h2>
+                            <div className="text-3xl font-bold">{systemStats.messagesToday ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Total Characters</h2>
+                            <div className="text-3xl font-bold">{systemStats.totalCharacters ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Characters Created Today</h2>
+                            <div className="text-3xl font-bold">{systemStats.charactersCreatedToday ?? 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Avg Msgs/User</h2>
+                            <div className="text-3xl font-bold">{systemStats.avgMessagesPerUser ? Math.round(systemStats.avgMessagesPerUser * 10) / 10 : 'N/A'}</div>
+                          </div>
+                          <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4">
+                            <h2 className="text-lg font-semibold mb-2">Avg Chars/User</h2>
+                            <div className="text-3xl font-bold">{systemStats.avgCharactersPerUser ? Math.round(systemStats.avgCharactersPerUser * 10) / 10 : 'N/A'}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center h-32">
+                          <div className="loader border-4 border-primary border-t-transparent rounded-full w-10 h-10 animate-spin" />
+                          <span className="ml-4 text-text-secondary-light dark:text-text-secondary-dark">Loading system stats...</span>
+                        </div>
+                      )}
                     </div>
                     {/* Database Export Panel on the right */}
                     <div className="w-full lg:w-80 max-w-xs flex-shrink-0">
