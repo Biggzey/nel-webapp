@@ -472,6 +472,8 @@ export default function AdminPanel() {
                         <h2 className="text-lg font-semibold mb-2">Avg Chars/User</h2>
                         <div className="text-3xl font-bold">{systemStats.avgCharactersPerUser ? Math.round(systemStats.avgCharactersPerUser * 10) / 10 : 'N/A'}</div>
                       </div>
+                      {/* Database Export as a metric card */}
+                      <DatabaseExportPanel />
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-32">
@@ -479,11 +481,6 @@ export default function AdminPanel() {
                       <span className="ml-4 text-text-secondary-light dark:text-text-secondary-dark">Loading system stats...</span>
                     </div>
                   )}
-
-                  {/* Database Export Section */}
-                  <div className="mt-8">
-                    <DatabaseExportPanel />
-                  </div>
 
                   {/* Pending Public Characters Section */}
                   <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-6 w-full relative">

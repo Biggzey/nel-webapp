@@ -45,24 +45,24 @@ export default function DatabaseExportPanel() {
   }
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow">
-      <h2 className="text-xl font-bold mb-4">Database Export</h2>
-      <div className="space-y-4">
-        <div>
-          <p className="text-gray-600 mb-4">
-            Export the entire database to a JSON file. This file can be used to migrate to another database.
-          </p>
-          <button
-            onClick={handleExport}
-            disabled={isExporting}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300"
-          >
-            {isExporting ? 'Exporting...' : 'Export Database'}
-          </button>
-          {error && (
-            <p className="text-red-500 mt-2">{error}</p>
-          )}
-        </div>
+    <div className="bg-background-container-light dark:bg-background-container-dark rounded-2xl border-2 border-primary/20 shadow-md p-4 flex flex-col h-full justify-between">
+      <div>
+        <h2 className="text-lg font-semibold mb-2">Database Export</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          Export the database as a JSON file.
+        </p>
+      </div>
+      <div>
+        <button
+          onClick={handleExport}
+          disabled={isExporting}
+          className="w-full bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 disabled:bg-blue-300 text-sm font-semibold"
+        >
+          {isExporting ? 'Exporting...' : 'Export Database'}
+        </button>
+        {error && (
+          <p className="text-red-500 mt-2 text-xs">{error}</p>
+        )}
       </div>
     </div>
   );
