@@ -589,7 +589,7 @@ app.use('/api', (req, res, next) => {
 
     try {
       // Start a transaction
-      const { user, nelliel } = await prisma.$transaction(async (tx) => {
+      const { user } = await prisma.$transaction(async (tx) => {
         // Check if username or email already exists
         const existingUser = await tx.user.findFirst({
           where: {
@@ -623,7 +623,7 @@ app.use('/api', (req, res, next) => {
           }
         });
 
-        return { user, nelliel };
+        return { user };
       });
 
       // If we get here, the transaction was successful
