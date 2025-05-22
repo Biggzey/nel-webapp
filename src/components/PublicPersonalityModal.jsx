@@ -171,7 +171,6 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           characterVersion: form.characterVersion || '',
           extensions: form.extensions || null,
           status: 'pending',
-          userId: privateChar.userId
         })
       });
 
