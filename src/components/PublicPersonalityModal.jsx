@@ -170,7 +170,8 @@ export default function PublicPersonalityModal({ isOpen, initialData = {}, onClo
           creator: form.creator || '',
           characterVersion: form.characterVersion || '',
           extensions: form.extensions || null,
-          status: 'pending',
+          reviewStatus: 'pending',
+          userId: privateChar.userId
         })
       });
 
