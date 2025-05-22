@@ -6,10 +6,6 @@ import PublicPersonalityModal from './PublicPersonalityModal';
 import Badge from './Badge';
 import { useAuth } from '../context/AuthContext';
 
-function displayField(val) {
-  return val && String(val).trim() !== '' ? val : 'N/A';
-}
-
 export default function ExplorePage({ onClose }) {
   const { t } = useLanguage();
   const { addToCollection, characters: userCharacters, setSelectedIndex, reloadCharacters } = useCharacter();
@@ -332,19 +328,19 @@ export default function ExplorePage({ onClose }) {
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.fields.age')}</dt>
-                      <dd className="font-medium">{displayField(modal.age)}</dd>
+                      <dd className="font-medium">{modal.age || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.fields.gender')}</dt>
-                      <dd className="font-medium">{displayField(modal.gender)}</dd>
+                      <dd className="font-medium">{modal.gender || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.fields.race')}</dt>
-                      <dd className="font-medium">{displayField(modal.race)}</dd>
+                      <dd className="font-medium">{modal.race || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.fields.occupation')}</dt>
-                      <dd className="font-medium">{displayField(modal.occupation)}</dd>
+                      <dd className="font-medium">{modal.occupation || 'N/A'}</dd>
                     </div>
                   </dl>
                 </div>
@@ -363,31 +359,31 @@ export default function ExplorePage({ onClose }) {
                   <dl className="space-y-2">
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.fields.personality')}</dt>
-                      <dd className="font-medium">{displayField(modal.personality)}</dd>
+                      <dd className="font-medium">{modal.personality || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.systemPrompt')}</dt>
-                      <dd className="font-medium">{displayField(modal.systemPrompt)}</dd>
+                      <dd className="font-medium">{modal.systemPrompt || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.backstory')}</dt>
-                      <dd className="font-medium">{displayField(modal.backstory)}</dd>
+                      <dd className="font-medium">{modal.backstory || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.firstMessage')}</dt>
-                      <dd className="font-medium">{displayField(modal.firstMessage)}</dd>
+                      <dd className="font-medium">{modal.firstMessage || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.messageExample')}</dt>
-                      <dd className="font-medium">{displayField(modal.messageExample)}</dd>
+                      <dd className="font-medium">{modal.messageExample || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.scenario')}</dt>
-                      <dd className="font-medium">{displayField(modal.scenario)}</dd>
+                      <dd className="font-medium">{modal.scenario || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm text-gray-500">{t('character.personality.creatorNotes')}</dt>
-                      <dd className="font-medium">{displayField(modal.creatorNotes)}</dd>
+                      <dd className="font-medium">{modal.creatorNotes || 'N/A'}</dd>
                     </div>
                   </dl>
                 </div>
